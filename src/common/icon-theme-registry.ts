@@ -12,6 +12,7 @@ import { SimpleIconsTheme } from './icon-themes/simple-icons-theme';
 import { SimpleIconsColoredTheme } from './icon-themes/simple-icons-colored-theme';
 import { MaterialSymbolsTheme } from './icon-themes/material-symbols-theme';
 import { EmojiTheme } from './icon-themes/emoji-theme';
+import { GNOMEIconTheme } from './icon-themes/gnome-icon-theme';
 
 /**
  * This interface describes an icon theme. An icon theme is a collection of icons that can
@@ -62,6 +63,7 @@ export class IconThemeRegistry {
     this.iconThemes.set('simple-icons-colored', new SimpleIconsColoredTheme());
     this.iconThemes.set('material-symbols-rounded', new MaterialSymbolsTheme());
     this.iconThemes.set('emoji', new EmojiTheme());
+    this.iconThemes.set('gnome', new GNOMEIconTheme());
   }
 
   /**

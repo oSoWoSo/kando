@@ -3,6 +3,7 @@
 
 import type IForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { NormalModuleReplacementPlugin, DefinePlugin } from 'webpack';
+import CopyPlugin from 'copy-webpack-plugin';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const ForkTsCheckerWebpackPlugin: typeof IForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
@@ -25,5 +26,8 @@ export const plugins = [
     cIsMac: process.platform === 'darwin',
     cIsWindows: process.platform === 'win32',
     cIsLinux: process.platform === 'linux',
+  }),
+  new CopyPlugin({
+    patterns: [{ from: 'assets/dist', to: 'assets/gnome' }],
   }),
 ];
