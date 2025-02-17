@@ -490,6 +490,16 @@ export class KandoApp {
           y: info.pointerY,
         }).workArea;
 
+        console.log('--');
+        console.log('Mouse position: ', info.pointerX, info.pointerY);
+        console.log(
+          'Work area: ',
+          workarea.x,
+          workarea.y,
+          workarea.width,
+          workarea.height
+        );
+
         // On Windows, we have to show the window before we can move it. Otherwise, the
         // window will not be moved to the correct monitor.
         if (process.platform === 'win32') {
