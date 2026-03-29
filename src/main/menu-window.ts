@@ -11,8 +11,16 @@
 import os from 'node:os';
 import { BrowserWindow, screen, ipcMain, app } from 'electron';
 
-import { DeepReadonly } from './utils/settings';
-import { IShowMenuRequest, IMenu, IMenuItem, IWMInfo } from '../common';
+import { DeepReadonly } from './settings';
+import {
+  ShowMenuRequest,
+  Menu,
+  MenuItem,
+  WMInfo,
+  SelectionSource,
+  InteractionTarget,
+} from '../common';
+import { IPCCallbacks } from '../common/ipc';
 import { ItemActionRegistry } from './item-actions/item-action-registry';
 import { Notification } from './utils/notification';
 import { KandoApp } from './app';
@@ -29,7 +37,32 @@ export class MenuWindow extends BrowserWindow {
    * This contains the last menu which was shown. It is used to execute the selected
    * action.
    */
-  public lastMenu?: DeepReadonly<IMenu>;
+  public lastMenu?: DeepReadonly<Menu>;
+
+  /** This contains the last request which was used to show the menu. */
+  public lastRequest?: ShowMenuRequest;
+
+  /**
+   * This contains the time points when the last ten selections were made. It is used to
+   * trigger some achievements.
+   */
+  public lastSelections: { time: number; date: Date }[] = [];
+
+  /**
+   * This index is used to select the next menu from the list of menus which would match
+   * the current request. If the sameShortcutBehavior is set to 'cycle', this index is
+   * incremented each time the user presses the same shortcut again.
+   */
+  private menuIndex = 0;
+
+  /** This is true if the window is currently visible. */
+  private visible = false;
+
+  /**
+   * This is set to a value > 0 if we have currently inhibited the shortcut of the active
+   * menu.
+   */
+  private shortcutInhibitionID = 0;
 
   /** This will resolve once the window has fully loaded. */
   private windowLoaded = new Promise<void>((resolve) => {
@@ -39,9 +72,12 @@ export class MenuWindow extends BrowserWindow {
   });
 
   /** This timeout is used to hide the window after the fade-out animation. */
-  private hideTimeout: NodeJS.Timeout;
+  private hideTimeout: NodeJS.Timeout = null;
 
-  constructor(private kando: KandoApp) {
+  constructor(
+    private kando: KandoApp,
+    private ipcCallbacks: IPCCallbacks
+  ) {
     const display = screen.getPrimaryDisplay();
 
     super({
@@ -58,9 +94,9 @@ export class MenuWindow extends BrowserWindow {
         // background throttling disabled.
         backgroundThrottling: false,
         preload: MENU_WINDOW_PRELOAD_WEBPACK_ENTRY,
+        spellcheck: false,
       },
       transparent: true,
-      resizable: false,
       skipTaskbar: true,
       frame: false,
       hasShadow: false,
@@ -77,11 +113,16 @@ export class MenuWindow extends BrowserWindow {
       this.webContents.setZoomFactor(newValue);
     });
 
-    // We prevent CMD+W to close the window on macOS.
-    this.webContents.on('before-input-event', (event, input) => {
-      if (input.meta && input.key === 'w') {
-        event.preventDefault();
-      }
+    // We set the focusable property of the window depending on the 'keepInputFocus'
+    // setting. If this setting is true, the window will not take input focus when it is
+    // shown. This will disable Turbo Mode but make interaction with other applications
+    // easier.
+    if (kando.getGeneralSettings().get('keepInputFocus')) {
+      this.setFocusable(false);
+    }
+
+    this.kando.getGeneralSettings().onChange('keepInputFocus', (newValue) => {
+      this.setFocusable(!newValue);
     });
 
     // We set the window to be always on top. This way, Kando will be visible even on
@@ -89,6 +130,12 @@ export class MenuWindow extends BrowserWindow {
     this.setAlwaysOnTop(true, 'screen-saver');
   }
 
+  /**
+   * This loads the menu window. It will load the menu renderer and set up the IPC
+   * communication with it.
+   *
+   * @returns A promise which resolves once the window has fully loaded.
+   */
   async load() {
     this.initMenuRendererAPI();
 
@@ -107,8 +154,58 @@ export class MenuWindow extends BrowserWindow {
    *
    * @param request Required information to select correct menu.
    * @param info Information about current desktop environment.
+   * @param systemIconsChanged True if the system icon theme has changed since the last
+   *   time the menu was shown.
    */
-  public showMenu(request: Partial<IShowMenuRequest>, info: IWMInfo) {
+  public async showMenu(
+    request: ShowMenuRequest,
+    info: WMInfo,
+    systemIconsChanged: boolean
+  ) {
+    const sameShortcutBehavior = this.kando
+      .getGeneralSettings()
+      .get('sameShortcutBehavior');
+
+    // If a menu is currently shown and the user presses the same shortcut again we will
+    // either close the menu or show the next one with the same shortcut.
+    if (this.isVisible()) {
+      let isSameMenu = false;
+      if (request.name != null) {
+        const lastMenuName = this.lastMenu.root.name;
+        isSameMenu = request.name === lastMenuName;
+      } else if (request.trigger != null) {
+        const useID = !this.kando.getBackend().getBackendInfo().supportsShortcuts;
+        const lastTrigger = useID ? this.lastMenu.shortcutID : this.lastMenu.shortcut;
+        isSameMenu = request.trigger === lastTrigger;
+      }
+
+      if (isSameMenu) {
+        // If the 'sameShortcutBehavior' is set to 'nothing', we do nothing :)
+        if (sameShortcutBehavior === 'nothing') {
+          return;
+        }
+
+        // If the 'sameShortcutBehavior' is set to 'close', we hide the menu.
+        if (sameShortcutBehavior === 'close') {
+          this.webContents.send('menu-window.hide-menu');
+          return;
+        }
+
+        // If the 'sameShortcutBehavior' is set to 'cycle', we will show the next menu which
+        // matches the current request.
+        if (
+          sameShortcutBehavior === 'cycle-from-first' ||
+          sameShortcutBehavior === 'cycle-from-recent'
+        ) {
+          this.menuIndex += 1;
+        }
+      }
+    } else if (sameShortcutBehavior === 'cycle-from-first') {
+      // If the menu is not visible and the 'sameShortcutBehavior' is set to 'cycle-from-first',
+      // we reset the menu index to 0. This way, the first menu will be shown again.
+      this.menuIndex = 0;
+    }
+
     // Select correct menu before showing it to user.
     const menu = this.chooseMenu(request, info);
 
@@ -118,44 +215,28 @@ export class MenuWindow extends BrowserWindow {
       return;
     }
 
-    // We unbind the shortcut of the menu (if any) so that key-repeat events can be
-    // received by the renderer. These are necessary for the turbo-mode to work for
-    // single-key shortcuts. The shortcuts are rebound when the window is hidden.
-    // It is possible to open a menu while another one is already shown. If this
-    // happens, we will replace it without closing and opening the window. As the
-    // shortcut for the previous menu had been unbound when showing it, we have to
-    // rebind it here (if it was a different one).
-    const useID = !this.kando.getBackend().getBackendInfo().supportsShortcuts;
-    const newTrigger = useID ? menu.shortcutID : menu.shortcut;
-    const oldTrigger = useID ? this.lastMenu?.shortcutID : this.lastMenu?.shortcut;
+    // We temporarily inhibit the shortcut of the menu (if any) so that key-repeat events
+    // can be received by the renderer. These are necessary for the turbo-mode to work for
+    // single-key shortcuts. The shortcut is restored when the window is hidden.
+    //
+    // If 'sameShortcutBehavior' is set to anything but 'nothing', we have to keep the
+    // shortcut active so that we know when the user presses the shortcut again.
+    if (sameShortcutBehavior === 'nothing') {
+      const useID = !this.kando.getBackend().getBackendInfo().supportsShortcuts;
+      const shortcut = useID ? menu.shortcutID : menu.shortcut;
 
-    // First, unbind the trigger for the new menu.
-    if (newTrigger) {
-      this.kando.getBackend().unbindShortcut(newTrigger);
+      // Push the current shortcuts to the stack and inhibit the menu's shortcut
+      if (shortcut && shortcut.length > 0) {
+        this.shortcutInhibitionID = await this.kando
+          .getBackend()
+          .inhibitShortcut(shortcut);
+      }
     }
 
-    // If old and new trigger are the same, we don't need to rebind it. If the
-    // hideTimeout is set, the window is about to be hidden and the shortcuts have
-    // been rebound already.
-    if (oldTrigger && oldTrigger != newTrigger && this.isVisible() && !this.hideTimeout) {
-      this.kando.getBackend().bindShortcut({
-        trigger: oldTrigger,
-        action: () => {
-          this.kando.showMenu({ trigger: oldTrigger });
-        },
-      });
-    }
-
-    // Store the last menu to be able to execute the selected action later. The IWMInfo
+    // Store the last menu to be able to execute the selected action later. The WMInfo
     // will be passed to the action as well.
     this.lastMenu = menu;
-
-    // Get the work area of the screen where the pointer is located. We will move the
-    // window to this screen and show the menu at the pointer position.
-    const workarea = screen.getDisplayNearestPoint({
-      x: info.pointerX,
-      y: info.pointerY,
-    }).workArea;
+    this.lastRequest = request;
 
     // On Windows, we have to show the window before we can move it. Otherwise, the
     // window will not be moved to the correct monitor.
@@ -170,31 +251,31 @@ export class MenuWindow extends BrowserWindow {
       // 1x1 pixel. This seems to apply the correct DPI scaling. Afterward, we can
       // scale the window to the correct size.
       this.setBounds({
-        x: workarea.x,
-        y: workarea.y,
+        x: info.workArea.x,
+        y: info.workArea.y,
         width: 1,
         height: 1,
       });
     }
 
     // Move and resize the window to the work area of the screen where the pointer is.
-    this.setBounds({
-      x: workarea.x,
-      y: workarea.y,
-      width: workarea.width,
-      height: workarea.height,
-    });
+    this.setBounds(info.workArea, false);
+
+    // On macOS with stage manager enabled, this helps to ensure that the window is
+    // really maximized. Else the window will be placed next to the stage manager area.
+    if (os.platform() == 'darwin') {
+      setTimeout(() => this.setBounds(info.workArea, false));
+    }
 
     // On all platforms except Windows, we show the window after we moved it.
     if (process.platform !== 'win32') {
       this.show();
     }
 
-    // Usually, the menu is shown at the pointer position. However, if the menu is
-    // centered, we show it in the center of the screen.
+    // Usually, the menu is shown at the pointer position.
     const mousePosition = {
-      x: (info.pointerX - workarea.x) / this.webContents.getZoomFactor(),
-      y: (info.pointerY - workarea.y) / this.webContents.getZoomFactor(),
+      x: (info.pointerX - info.workArea.x) / this.webContents.getZoomFactor(),
+      y: (info.pointerY - info.workArea.y) / this.webContents.getZoomFactor(),
     };
 
     // We have to pass the size of the window to the renderer because window.innerWidth
@@ -202,8 +283,8 @@ export class MenuWindow extends BrowserWindow {
     // Also, we incorporate the zoom factor of the window so that the clamping to the
     // work area is done correctly.
     const windowSize = {
-      x: workarea.width / this.webContents.getZoomFactor(),
-      y: workarea.height / this.webContents.getZoomFactor(),
+      x: info.workArea.width / this.webContents.getZoomFactor(),
+      y: info.workArea.height / this.webContents.getZoomFactor(),
     };
 
     // Send the menu to the renderer process. If the menu is centered, we delay the
@@ -222,20 +303,23 @@ export class MenuWindow extends BrowserWindow {
         centeredMode: this.lastMenu.centered,
         anchoredMode: this.lastMenu.anchored,
         hoverMode: this.lastMenu.hoverMode,
+        systemIconsChanged,
       },
       {
         appName: info.appName,
         windowName: info.windowName,
         windowPosition: {
-          x: workarea.x,
-          y: workarea.y,
+          x: info.workArea.x,
+          y: info.workArea.y,
         },
       }
     );
+
+    this.ipcCallbacks.onOpen();
   }
 
   /** This shows the window. */
-  public show() {
+  public override show() {
     // Cancel any ongoing window-hiding.
     if (this.hideTimeout) {
       clearTimeout(this.hideTimeout);
@@ -265,13 +349,34 @@ export class MenuWindow extends BrowserWindow {
     setTimeout(() => {
       this.focus();
     }, 100);
+
+    this.visible = true;
   }
 
   /**
-   * This hides the window. As shortcuts are unbound when the window is shown, we have to
-   * rebind them when the window is hidden. This method also accepts a delay parameter
-   * which can be used to delay the hiding of the window. This is useful when we want to
-   * show a fade-out animation.
+   * This hides the window. It will wait for the fade-out animation to finish before
+   * actually hiding the window.
+   */
+  public override hide() {
+    if (this.isVisible()) {
+      this.webContents.send('menu-window.hide-menu');
+      this.visible = false;
+    }
+  }
+
+  /**
+   * If the fade-out animation is currently running, this already returns false.
+   *
+   * @returns Returns true if the menu window is currently visible and not fading out.
+   */
+  public override isVisible() {
+    return this.visible;
+  }
+
+  /**
+   * This hides the window. This method also accepts a delay parameter which can be used
+   * to delay the hiding of the window. This is useful when we want to show a fade-out
+   * animation.
    *
    * When Electron windows are hidden, input focus is not necessarily returned to the
    * topmost window below the hidden window. This is a problem if we want to simulate key
@@ -288,24 +393,20 @@ export class MenuWindow extends BrowserWindow {
    *
    * See also: https://stackoverflow.com/questions/50642126/previous-window-focus-electron
    */
-  public async hide() {
+  private async hideWindow() {
+    this.visible = false;
+
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout);
+    }
+
+    // If we inhibited the menu's shortcut, we restore it now.
+    if (this.shortcutInhibitionID > 0) {
+      await this.kando.getBackend().releaseInhibition(this.shortcutInhibitionID);
+      this.shortcutInhibitionID = 0;
+    }
+
     return new Promise<void>((resolve) => {
-      if (this.hideTimeout) {
-        clearTimeout(this.hideTimeout);
-      }
-
-      const useID = !this.kando.getBackend().getBackendInfo().supportsShortcuts;
-      const lastTrigger = useID ? this.lastMenu.shortcutID : this.lastMenu.shortcut;
-
-      if (lastTrigger) {
-        this.kando.getBackend().bindShortcut({
-          trigger: lastTrigger,
-          action: () => {
-            this.kando.showMenu({ trigger: lastTrigger });
-          },
-        });
-      }
-
       this.hideTimeout = setTimeout(() => {
         if (process.platform === 'win32') {
           this.setIgnoreMouseEvents(true);
@@ -329,61 +430,82 @@ export class MenuWindow extends BrowserWindow {
   /**
    * This chooses the correct menu depending on the environment.
    *
-   * If the request contains a menu name, this menu is chosen. If no menu with the given
-   * name is found, an exception is thrown. No other conditions are checked in this case.
+   * If the request contains a custom menu, this menu is returned. No other conditions are
+   * checked in this case.
    *
-   * If the request contains a trigger (shortcut or shortcutID), a list of menus bound to
-   * this trigger is assembled and the menu with the best matching conditions is chosen.
-   * If no menu with the given trigger is found, null is returned.
+   * If the request contains a trigger (shortcut or shortcutID) or menu name, we first
+   * check whether there are any menus with the given trigger or name. If none are found,
+   * an exception is thrown.
    *
-   * If neither a menu name nor a trigger is given, null is returned.
+   * Then, a list of menu candidates is assembled and the menu with the best matching
+   * conditions is chosen. If no menu with the given trigger or name is found, null is
+   * returned.
    *
    * @param request Required information to select correct menu.
    * @param info Information about current desktop environment.
    * @returns The selected menu or null if no menu was found.
    */
-  public chooseMenu(request: Partial<IShowMenuRequest>, info: IWMInfo) {
+  public chooseMenu(request: ShowMenuRequest, info: WMInfo) {
+    // If a custom menu is given in the request, we return this menu directly.
+    if (request.menu) {
+      return request.menu;
+    }
+
     // Get list of current menus.
     const menus = this.kando.getMenuSettings().get('menus');
 
-    // We check if the request has a menu name. If that's the case we return it as chosen
-    // menu, there's no need to check the rest.
+    // We check if the request has a menu name. If no menu with this name is found, we
+    // throw an error.
     if (request.name != null) {
       const menu = menus.find((m) => m.root.name === request.name);
-      if (menu) {
-        return menu;
+      if (!menu) {
+        throw new Error(`No menu with name "${request.name}" found.`);
       }
-
-      throw new Error(`Menu with name "${request.name}" not found.`);
     }
 
-    // If no trigger is given, we can stop here.
-    if (request.trigger == null) {
+    // We check if the request has a trigger. If no menu with this trigger is found, we
+    // throw an error.
+    if (request.trigger != null) {
+      const useID = !this.kando.getBackend().getBackendInfo().supportsShortcuts;
+      const menu = menus.find(
+        (m) => (useID ? m.shortcutID : m.shortcut) === request.trigger
+      );
+      if (!menu) {
+        throw new Error(`No menu with trigger "${request.trigger}" found.`);
+      }
+    }
+
+    // If no trigger or name is given, we can stop here (this should not happen).
+    if (request.trigger == null && request.name == null) {
       return null;
     }
 
-    // Score of currently selected menu.
-    let currentScore = 0;
+    // Store scores for all menus which match the request.
+    const scores: number[] = [];
 
-    // Currently best matching menu.
-    let selectedMenu: DeepReadonly<IMenu>;
+    menus.forEach((menu, index) => {
+      scores[index] = 0;
 
-    for (const menu of menus) {
-      let menuScore = 0;
-
-      // Then we check if menu trigger matches our request, if not we skip this menu.
-      if (request.trigger != menu.shortcut && request.trigger != menu.shortcutID) {
-        continue;
+      // If the trigger or name matches, we set the score to 1. Else we skip this menu.
+      if (request.trigger) {
+        const useID = !this.kando.getBackend().getBackendInfo().supportsShortcuts;
+        const menuTrigger = useID ? menu.shortcutID : menu.shortcut;
+        if (request.trigger === menuTrigger) {
+          scores[index] += 1;
+        } else {
+          return;
+        }
+      } else if (request.name) {
+        if (request.name === menu.root.name) {
+          scores[index] += 1;
+        } else {
+          return;
+        }
       }
 
-      // If no other menu matches, we will choose the first one with no conditions set.
-      if (!menu.conditions || Object.keys(menu.conditions).length === 0) {
-        if (!selectedMenu) {
-          selectedMenu = menu;
-        }
-
-        // As we don't have any conditions to check we continue with next menu.
-        continue;
+      // If no conditions are given, we can stop here. The menu is a solid candidate.
+      if (!menu.conditions) {
+        return;
       }
 
       // If the conditions starts with / we treat it as regex, otherwise we treat it as
@@ -404,18 +526,20 @@ export class MenuWindow extends BrowserWindow {
       // If appName condition does not exists we skip it.
       if (menu.conditions.appName) {
         if (testStringCondition(menu.conditions.appName, info.appName)) {
-          menuScore += 1;
+          scores[index] += 1;
         } else {
-          continue;
+          scores[index] = 0;
+          return;
         }
       }
 
       // We do the same for windowName condition.
       if (menu.conditions.windowName) {
         if (testStringCondition(menu.conditions.windowName, info.windowName)) {
-          menuScore += 1;
+          scores[index] += 1;
         } else {
-          continue;
+          scores[index] = 0;
+          return;
         }
       }
 
@@ -435,22 +559,57 @@ export class MenuWindow extends BrowserWindow {
           (condition.yMin == null || info.pointerY >= condition.yMin) &&
           (condition.yMax == null || info.pointerY <= condition.yMax)
         ) {
-          menuScore += 1;
+          scores[index] += 1;
         } else {
-          continue;
+          scores[index] = 0;
+          return;
         }
       }
+    });
 
-      // If our menuScore is higher than currentScore we need to select this menu
-      // as it matches more conditions than the previous selection.
-      if (menuScore > currentScore) {
-        selectedMenu = menu;
-        currentScore = menuScore;
+    // Find the highest score.
+    let maxScore = 0;
+    for (const score of scores) {
+      if (score > maxScore) {
+        maxScore = score;
       }
     }
 
-    // We finally return our last selected menu as chosen.
-    return selectedMenu;
+    // If no menu has a score greater than 0, we return null.
+    if (maxScore === 0) {
+      return null;
+    }
+
+    // Assemble a list of all menus which have the highest score.
+    const bestMenus: DeepReadonly<Menu>[] = [];
+    for (let i = 0; i < scores.length; i++) {
+      if (scores[i] === maxScore) {
+        bestMenus.push(menus[i]);
+      }
+    }
+
+    // If the sameShortcutBehavior is set to 'cycle', we select the menu at the current
+    // index. If the index is out of bounds, we wrap around to the first menu.
+    const behavior = this.kando.getGeneralSettings().get('sameShortcutBehavior');
+    if (behavior === 'cycle-from-first' || behavior === 'cycle-from-recent') {
+      return bestMenus[this.menuIndex % bestMenus.length];
+    }
+
+    // Else, we select the first menu from the list of best menus.
+    return bestMenus[0];
+  }
+
+  /**
+   * This converts a path string to an array of numbers.
+   *
+   * @param path The path string to convert.
+   * @returns The array of numbers.
+   */
+  private pathToArray(path: string): number[] {
+    return path
+      .substring(1)
+      .split('/')
+      .map((x: string) => parseInt(x));
   }
 
   /**
@@ -464,12 +623,9 @@ export class MenuWindow extends BrowserWindow {
    * @returns The menu item at the given path.
    * @throws If the path is invalid.
    */
-  private getMenuItemAtPath(root: DeepReadonly<IMenuItem>, path: string) {
+  private getMenuItemAtPath(root: DeepReadonly<MenuItem>, path: string) {
     let item = root;
-    const indices = path
-      .substring(1)
-      .split('/')
-      .map((x: string) => parseInt(x));
+    const indices = this.pathToArray(path);
 
     for (const index of indices) {
       if (!item.children || index >= item.children.length) {
@@ -492,9 +648,9 @@ export class MenuWindow extends BrowserWindow {
     ipcMain.on('menu-window.move-pointer', (event, dist) => {
       let scale = 1;
 
-      // On macOS, the pointer movement seems to be scaled automatically. We have to
-      // scale the movement manually on other platforms.
-      if (os.platform() !== 'darwin') {
+      // On Windows, the pointer movement has to be scaled to the DPI scale of the
+      // display where the menu is shown.
+      if (os.platform() === 'win32') {
         const bounds = this.getBounds();
         const display = screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y });
         scale = display.scaleFactor;
@@ -512,56 +668,125 @@ export class MenuWindow extends BrowserWindow {
     // When the user selects an item, we execute the corresponding action. Depending on
     // the action, we might need to wait for the fade-out animation to finish before we
     // execute the action.
-    ipcMain.on('menu-window.select-item', (event, path) => {
-      const execute = (item: DeepReadonly<IMenuItem>) => {
-        ItemActionRegistry.getInstance()
-          .execute(item, this.kando)
-          .catch((error) => {
-            Notification.showError('Failed to execute action', error.message || error);
+    ipcMain.on(
+      'menu-window.select-item',
+      (
+        event,
+        target: InteractionTarget,
+        path: string,
+        time: number,
+        source: SelectionSource
+      ) => {
+        const pathArray = this.pathToArray(path);
+
+        if (target === InteractionTarget.eItem) {
+          const execute = (item: DeepReadonly<MenuItem>) => {
+            ItemActionRegistry.getInstance()
+              .execute(item, this.kando)
+              .catch((error) => {
+                Notification.show({
+                  title: 'Failed to execute action',
+                  message: error instanceof Error ? error.message : error,
+                  type: 'error',
+                });
+              });
+          };
+
+          let item: DeepReadonly<MenuItem>;
+          let executeDelayed = false;
+
+          try {
+            // Find the selected item.
+            item = this.getMenuItemAtPath(this.lastMenu.root, path);
+
+            // If the action is not delayed, we execute it immediately.
+            executeDelayed = ItemActionRegistry.getInstance().delayedExecution(item);
+            if (!executeDelayed) {
+              execute(item);
+            }
+          } catch (error) {
+            Notification.show({
+              title: 'Failed to select item',
+              message: error instanceof Error ? error.message : error,
+              type: 'error',
+            });
+          }
+
+          // Also wait with the execution of the selected action until the fade-out
+          // animation is finished to make sure that any resulting events (such as virtual
+          // key presses) are not captured by the window.
+          this.hideWindow().then(() => {
+            // If the action is delayed, we execute it after the window is hidden.
+            if (executeDelayed) {
+              execute(item);
+            }
           });
-      };
 
-      let item: DeepReadonly<IMenuItem>;
-      let executeDelayed = false;
+          // Track selection for achievements.
+          this.kando.achievementTracker.onSelectionMade(
+            Math.min(Math.max(pathArray.length, 1), 3) as 1 | 2 | 3, // depth between 1 and 3
+            time,
+            source
+          );
 
-      try {
-        // Find the selected item.
-        item = this.getMenuItemAtPath(this.lastMenu.root, path);
+          this.lastSelections.push({ time, date: new Date() });
+          if (this.lastSelections.length > 10) {
+            this.lastSelections.shift();
+          }
 
-        // If the action is not delayed, we execute it immediately.
-        executeDelayed = ItemActionRegistry.getInstance().delayedExecution(item);
-        if (!executeDelayed) {
-          execute(item);
+          // Check for many-selections-streak achievement.
+          if (this.lastSelections.length === 10) {
+            const oldest = this.lastSelections[0];
+            const newest = this.lastSelections[9];
+            const timeDiff = newest.date.getTime() - oldest.date.getTime();
+
+            if (timeDiff <= 30000) {
+              this.kando.achievementTracker.incrementStat('manySelectionsStreaks1');
+            }
+
+            if (timeDiff <= 20000) {
+              this.kando.achievementTracker.incrementStat('manySelectionsStreaks2');
+            }
+
+            if (timeDiff <= 10000) {
+              this.kando.achievementTracker.incrementStat('manySelectionsStreaks3');
+            }
+          }
+
+          // Check for the speedy-selections-streak achievement.
+          if (this.lastSelections.length === 10) {
+            let average = 0.0;
+            this.lastSelections.forEach((selection) => {
+              average += selection.time / this.lastSelections.length;
+            });
+            if (average < 750) {
+              this.kando.achievementTracker.incrementStat('speedySelectionsStreaks1');
+            }
+            if (average < 500) {
+              this.kando.achievementTracker.incrementStat('speedySelectionsStreaks2');
+            }
+            if (average < 250) {
+              this.kando.achievementTracker.incrementStat('speedySelectionsStreaks3');
+            }
+          }
         }
-      } catch (error) {
-        Notification.showError('Failed to select item', error.message);
+
+        // Call the provided callbacks if they exist.
+        this.ipcCallbacks.onSelect(target, pathArray);
       }
+    );
 
-      // Also wait with the execution of the selected action until the fade-out
-      // animation is finished to make sure that any resulting events (such as virtual
-      // key presses) are not captured by the window.
-      this.hide().then(() => {
-        // If the action is delayed, we execute it after the window is hidden.
-        if (executeDelayed) {
-          execute(item);
-        }
-      });
-    });
-
-    // When the user hovers a menu item, we report this to the main process.
-    ipcMain.on('menu-window.hover-item', (/*event, path*/) => {
-      // Nothing to do here yet.
-    });
-
-    // When the user unhovers a menu item, we report this to the main process.
-    ipcMain.on('menu-window.unhover-item', (/*event, path*/) => {
-      // Nothing to do here yet.
+    // When the user hovers a menu item, we report this to whoever requested the menu.
+    ipcMain.on('menu-window.hover-item', (event, target, path) => {
+      this.ipcCallbacks.onHover(target, this.pathToArray(path));
     });
 
     // We do not hide the window immediately when the user aborts a selection. Instead, we
     // wait for the fade-out animation to finish.
     ipcMain.on('menu-window.cancel-selection', () => {
-      this.hide();
+      this.hideWindow();
+      this.ipcCallbacks.onCancel();
+      this.kando.achievementTracker.incrementStat('cancels');
     });
 
     // Show the settings window when the user clicks on the settings button in the menu.

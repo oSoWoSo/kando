@@ -17,6 +17,7 @@ import { Menu } from './menu';
 import { SettingsButton } from './settings-button';
 import { MenuTheme } from './menu-theme';
 import { SoundTheme } from './sound-theme';
+import { IconThemeRegistry } from '../common/icon-themes/icon-theme-registry';
 
 /**
  * This file is the main entry point for Kando's menu renderer process. It is responsible
@@ -66,13 +67,19 @@ Promise.all([
   soundTheme.loadDescription(soundThemeDescription);
   soundTheme.setVolume(settings.soundVolume);
 
-  // This will be called below whenever the sound theme should be reloaded.
-  const reloadSoundTheme = async () => {
+  // This will be called whenever the sound theme should be reloaded.
+  window.menuAPI.onReloadSoundTheme(async () => {
     const description = await window.commonAPI.getSoundTheme();
     soundTheme.loadDescription(description);
-  };
+  });
 
-  window.menuAPI.onReloadSoundTheme(reloadSoundTheme);
+  // This will be called whenever the icons should be reloaded.
+  window.menuAPI.onReloadIconThemes(async () => {
+    await IconThemeRegistry.getInstance().init();
+  });
+
+  // Initialize the icon theme registry.
+  await IconThemeRegistry.getInstance().init();
 
   // Create the settings button. This is the button that is shown in one corner of the
   // screen. It is used to open the settings dialog.
@@ -84,9 +91,7 @@ Promise.all([
   // Helper function to group and re-use function calls
   // associated with showing the settings window.
   const showSettings = () => {
-    menu.hide();
-    settingsButton.hide();
-    window.menuAPI.cancelSelection();
+    menu.cancel();
     window.menuAPI.showSettings();
   };
 
@@ -105,9 +110,17 @@ Promise.all([
   );
 
   // Show the menu when the main process requests it.
-  window.menuAPI.onShowMenu((root, menuOptions) => {
+  window.menuAPI.onShowMenu(async (root, menuOptions) => {
+    if (menuOptions.systemIconsChanged) {
+      await IconThemeRegistry.getInstance().reloadSystemIcons();
+    }
     menu.show(root, menuOptions);
     settingsButton.show();
+  });
+
+  // Hide the menu when the main process requests it.
+  window.menuAPI.onHideMenu(() => {
+    menu.cancel();
   });
 
   // Tell the menu about settings changes. This could check more detailed which setting
@@ -144,19 +157,18 @@ Promise.all([
   });
 
   // Hide Kando's window when the user selects an item and notify the main process.
-  menu.on('select', (path) => {
-    menu.hide();
-    settingsButton.hide();
-    window.menuAPI.selectItem(path);
+  menu.on('select', (target, path, time, source) => {
+    if (target === 'item') {
+      menu.hide();
+      settingsButton.hide();
+    }
+    window.menuAPI.selectItem(target, path, time, source);
   });
 
   // Report hover events to the main process.
-  menu.on('hover', (path) => {
-    window.menuAPI.hoverItem(path);
+  menu.on('hover', (target, path) => {
+    window.menuAPI.hoverItem(target, path);
   });
-
-  // Report unhover events to the main process.
-  menu.on('unhover', (path) => window.menuAPI.unhoverItem(path));
 
   document.body.addEventListener('keydown', async (ev) => {
     // Hide the menu when the user presses escape.

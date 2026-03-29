@@ -1,0 +1,573 @@
+{
+    "settings": {
+        "icon-picker-dialog": {
+            "base64-hint": "Ikony zakodowane w Base64 stanowią prosty sposób na dołączanie dowolnego rodzaju ikony do menu. Możesz użyć portalu takiego jak [www.base64-image.de]({{link}}) do konwersji dowolnego obrazu na zakodowany ciąg Base64. Działa to nawet w przypadku animowanych gifów!",
+            "base64-example": "Przykład użycia Base64:",
+            "file-example": "plik: przykład URI:",
+            "url-example": "Przykład URL:",
+            "search-placeholder": "Szukaj ikon…",
+            "hint": "Sprawdź [here]({{link}}) aby dowiedzieć się jak dodać lub stworzyć swoje własne motywy ikon.",
+            "reload-button-tooltip": "Reload all icon themes"
+        },
+        "not-bound": "Nie związany",
+        "invalid-dropdown-selection": "Wybierz opcję…",
+        "file-picker": {
+            "select-file": "Wybierz plik",
+            "select-directory": "Wybierz bibliotekę"
+        },
+        "add-tags-placeholder": "Dodaj tagi…",
+        "about-dialog": {
+            "title": "O Kando",
+            "message": "Tworzę Kando z pasji. Jeśli lubisz z niego korzystać tak bardzo, jak ja go tworzyć, to możesz [kupić mi kawę]({{link}})!\n\n💖 Simon",
+            "kando-version": "Wersja Kando",
+            "electron-version": "Wersja Electron",
+            "chrome-version": "Wersja Chrome",
+            "check-latest-release": "Sprawdź ostatnią wersję",
+            "read-release-notes": "Przeczytaj o wersji",
+            "kando-backend": "Kando Backend"
+        },
+        "general-settings-dialog": {
+            "none": "Żadne",
+            "auto-language": "Użyj język systemowy",
+            "title": "Ustawienia główne",
+            "message": "Wszystkie ustawienia Kando są przechowywane w pliku JSON, który można również edytować, udostępniać lub tworzyć jego kopię zapasową. Kliknij [tutaj]({{link}}), aby otworzyć katalog, w którym przechowywany jest plik config.json.",
+            "localization-label": "Język",
+            "localization-info": "Uruchom ponownie Kando, aby ustawić nowy język.",
+            "check-for-new-versions": "Sprawdź aktualizacje",
+            "check-for-new-versions-info": "Jeżeli aktywne, Kando wyświetli powiadomienie kiedy nowa wersja będzie dostępna.",
+            "invisible-settings-button": "Przycisk niewidzialnych ustawień",
+            "invisible-settings-button-info": "Możesz ciągle użyć przycisku, pokaże się gdy najedziesz na niego myszką.",
+            "settings-button-position": "Ustawienia pozycji przycisku ustawień",
+            "settings-button-position-info": "Wybierz narożnik ekranu, w którym będzie przycisk ustawień.",
+            "top-left": "Górny lewy",
+            "top-right": "Górny prawy",
+            "bottom-left": "Dolny lewy",
+            "bottom-right": "Dolny prawy",
+            "settings-window-color-scheme": "Ustawienia schematu kolorów okna",
+            "settings-window-color-scheme-info": "Jeśli wybierzesz „system”, okno ustawień użyje tego samego schematu kolorów co Twój system operacyjny.",
+            "system": "System",
+            "light": "Jasny",
+            "dark": "Ciemny",
+            "settings-window-flavor": "Ustawienia okna - wariant",
+            "settings-window-flavor-info": "Jeśli wybierzesz przezroczysty kolor, będziesz musiał ponownie uruchomić okno ustawień, aby zastosować efekt.",
+            "transparent-light": "Przezroczysty jasny",
+            "transparent-dark": "Przezroczysty ciemny",
+            "transparent-system": "Przezroczysty systemowy",
+            "sakura-light": "Sakura jasny",
+            "sakura-dark": "Sakura ciemny",
+            "sakura-system": "Sakura systemowy",
+            "tray-icon-flavor": "Kolor ikon zasobnika",
+            "tray-icon-flavor-info": "Możesz również całkowicie ukryć ikonę zasobnika.",
+            "hidden": "Ukryty",
+            "color": "Kolor",
+            "white": "Biały",
+            "black": "Czarny",
+            "lazy-initialization": "Powolna inicjalizacja",
+            "lazy-initialization-info": "Jeśli włączone, okno menu zostanie utworzone tylko przy pierwszym otwarciu menu. Spowoduje to, że pierwsze otwarcie menu będzie nieco wolniejsze, ale może zapobiec problemom, gdy Kando zostanie uruchomione zbyt wcześnie podczas logowania. Domyślnie jest wyłączone.",
+            "hardware-acceleration": "Włącz akcelerację sprzętową",
+            "hardware-acceleration-info": "Ta opcja może zwiększyć wydajność aplikacji, ale może również prowadzić do pewnych problemów z wyświetlaniem. Musisz ponownie uruchomić Kando, aby zastosować to ustawienie.",
+            "menu-behavior": "Zachowanie menu",
+            "keep-input-focus": "Utrzymuj aktywną włączoną aplikację",
+            "keep-input-focus-info": "Jeśli włączone, menu nie otrzyma włączonego trybu pisania kiedy zostanie otwarte. Ta funkcja wyłącza tryb Turbo, ale może być przydatna, jeśli chcesz aby inne aplikacje pozostały aktywne gdy otwierasz menu.",
+            "enable-marking-mode": "Włącz tryb zaznaczania",
+            "enable-marking-mode-info": "Po włączeniu trybu zaznaczania możesz wybierać elementy, przeciągając nad nimi myszą.",
+            "enable-turbo-mode": "Włącz tryb Turbo",
+            "enable-turbo-mode-info": "Po włączeniu trybu Turbo, możesz wykonywać gesty tak długo, jak trzymasz wciśnięty klawisz modyfikujący, taki jak Shift lub Ctrl.",
+            "move-pointer-to-menu-center": "Przesuń kursor do środka menu",
+            "move-pointer-to-menu-center-info": "Jeśli zaznaczone, wskaźnik myszy zostanie przesunięty do środka menu lub podmenu, gdy będzie to konieczne. Może to mieć miejsce, jeśli menu zostanie otwarte zbyt blisko krawędzi ekranu lub jeśli menu zostanie otwarte w trybie wyśrodkowanym.",
+            "require-click-for-hover-mode": "Wymagaj kliknięcia do wyboru w trybie najechania",
+            "require-click-for-hover-mode-info": "Jeśli opcja jest odznaczona, elementy zostaną natychmiast zaznaczone po przesunięciu nad nimi kursora myszy w menu korzystających z trybu najechania.",
+            "right-mouse-button-selects-parent": "Prawy przycisk myszy wybiera \"rodzica\"",
+            "right-mouse-button-selects-parent-info": "Jeśli opcja jest niezaznaczona, prawy przycisk myszy zamknie menu.",
+            "enable-gamepad-support": "Włącz obsługę gamepada",
+            "enable-gamepad-support-info": "Jeśli zaznaczone, możesz użyć podłączonego gamepada do sterowania menu.",
+            "press-again-behavior-info": "To określa, co się dzieje po ponownym naciśnięciu skrótu, gdy wyświetlane jest menu. Jeśli wiele menu jest przypisanych do tego samego skrótu, możesz użyć tego, aby przechodzić przez wszystkie pasujące menu. Upewnij się, że przytrzymujesz klawisz modyfikujący tylko wtedy, gdy chcesz użyć trybu Turbo razem z opcją inną niż „Nic nie rób”.",
+            "do-nothing": "Nie rób nic",
+            "cycle-from-first": "Pokaż następne menu (zacznij od początku)",
+            "cycle-from-recent": "Pokaż następne menu (kontynuuj od poprzedniego)",
+            "close-menu": "Zamknij menu",
+            "menu-sounds": "Dźwięki menu",
+            "learn-how-to-add-sound-themes": "Sprawdź jak dodać nowe motywy dźwięku do Kando [tutaj]({{link}})!",
+            "sound-theme": "Motyw dźwięku",
+            "sound-theme-info": "Motyw dźwięku to zbiór dźwięków odtwarzanych podczas interakcji z menu.",
+            "volume": "Głośność",
+            "volume-info": "Ogólna głośność motywu dźwiękowego. Domyślna wartość to 0.5.",
+            "advanced-menu-options": "Zaawansowane ustawienia menu",
+            "advanced-menu-options-note": "Zazwyczaj można pozostawić te ustawienia w wartościach domyślnych.",
+            "center-click-zone-radius": "Strefa kliknięcia środkowego przycisku",
+            "center-click-zone-radius-info": "Rozmiar obszaru na środku menu, który po kliknięciu albo zamknie menu, albo nawiguje poziom wyżej. Domyślnie 50px.",
+            "minimum-submenu-distance": "Minimalny dystans podmenu",
+            "minimum-submenu-distance-info": "Jeśli podmenu zostanie otwarte blisko menu nadrzędnego, menu nadrzędne zostanie przesunięte o tę odległość. Domyślnie jest to 150px.",
+            "movement-threshold": "Próg ruchu",
+            "movement-threshold-info": "Mniejsze ruchy myszy nie będą brane pod uwagę w trybie Zaznaczania lub trybie Turbo. Domyślnie jest to 15px.",
+            "minimum-gesture-length": "Minimalna długość gestu",
+            "minimum-gesture-length-info": "Proste ruchy muszą mieć co najmniej taką długość, aby uruchomić wybór. Domyślnie jest to 150 pikseli.",
+            "minimum-gesture-angle": "Minimalny kąt gestu",
+            "minimum-gesture-angle-info": "Mniejsze odchylenia od prostych ruchów nie wywołają selekcji. Domyślnie jest to 20°.",
+            "gesture-jitter-threshold": "Próg drżenia gestu",
+            "gesture-jitter-threshold-info": "Mniejsze ruchy nie będą brane pod uwagę w detekcji gestów. Domyślnie jest to 10px.",
+            "gesture-pause-timeout-info": "Zatrzymaj gest na tak długo, aby uruchomić wybór. Domyślnie jest to 100 ms.",
+            "fixed-stroke-length": "Ustalona długość skoku",
+            "wlroots-pointer-get-timeout-default-behavior-info": "Determines where the pointer should be assumed to be if no position could be obtained from the wlroots-based backends within the configured timeout.",
+            "wlroots-pointer-get-timeout-touch-info": "The maximum time in milliseconds to wait for a touch pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 1500ms.",
+            "reload-menu-theme": "Reload menu theme",
+            "menu-window-dev-tools": "Inspect menu",
+            "backup-and-restore": "Backup and Restore",
+            "windows-ink-workaround": "Windows-Ink workaround",
+            "enable-achievement-notifications-info": "If enabled, notifications are shown when achievements are unlocked.",
+            "restore-settings": "Restore config.json…",
+            "fixed-stroke-length-info": "Usually, items are selected when you stop the movement or make a turn. If you set this to a value greater than 0, this behavior will change: Now items will only be selected if you dragged an item this far away from the center. Default is 0px.",
+            "enable-achievements-info": "If enabled, Kando will track your progress towards achievements.",
+            "dev-tools-note": "Kando uses two windows: One for the menu and one for the settings. You can open the development tools to inspect both windows separately.",
+            "enable-achievement-notifications": "Show achievement notifications",
+            "windows-ink-workaround-info": "This enables a workaround for the issue where getting the stylus position is not possible with Windows Ink enabled. This introduces a delay of 100ms before opening the menu, so if you don't use a stylus, you can disable it to make the menu open faster.",
+            "gesture-pause-timeout": "Gesture Pause Timeout",
+            "reload-sound-theme": "Reload sound theme",
+            "enable-achievements": "Track achievements",
+            "wlroots-pointer-get-timeout-mouse": "Get-pointer-position timeout",
+            "center": "Center",
+            "restore-menus": "Restore menus.json…",
+            "wlroots-pointer-get-timeout-mouse-info": "The maximum time in milliseconds to wait for a mouse pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 500ms.",
+            "backup-settings": "Backup config.json…",
+            "backup-menus": "Backup menus.json…",
+            "max-selection-radius": "Maximum selection radius",
+            "previously-reported": "Previously reported",
+            "settings-window-dev-tools": "Inspect settings",
+            "options-that-will-only-affect-the-wlroots-backend": "These options only affect wlroots-based backends and have no effect on other backends.",
+            "wlroots-specific-options": "Options for wlroots-based Backends",
+            "developer-options": "Developer Options",
+            "reload-note": "When you reload the menu theme, CSS changes will be applied even if a menu is currently shown. For changes made to the theme.json file, you need to re-open the menu.",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "press-again-behavior": "Press-shortcut-again behavior",
+            "wlroots-pointer-get-timeout-default-behavior": "Pointer fallback position",
+            "wlroots-pointer-get-timeout-touch": "Get-touch-position timeout"
+        },
+        "delete-menu": "Delete menu",
+        "create-menu-button": "New menu",
+        "window-picker-dialog": {
+            "instructions": "Hit the button below and focus the target window within the next five seconds.",
+            "countdown_one": "Selecting in {{count}} second…",
+            "countdown_few": "Selecting in {{count}} seconds…",
+            "countdown_many": "Selecting in {{count}} seconds…",
+            "start-countdown": "Start countdown",
+            "confirm": "Use this value",
+            "result": "You selected \"{{name}}\".",
+            "restart-countdown": "Start countdown again"
+        },
+        "menu-behavior": "Menu Behavior",
+        "menu-themes-dialog": {
+            "menu-scale": "Menu scale",
+            "default-colors": "Default colors",
+            "title": "Menu Themes",
+            "fade-in-time": "Fade-in time",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "author": "by {{author}}",
+            "accent-colors": "Accent Colors",
+            "fade-in-time-info": "The time it takes for the menu to fade in. Default is 150ms.",
+            "light-dark-mode-info": "If enabled, you can choose a different theme and color set if your system is in light or dark color mode.",
+            "save-preset-error-title": "Failed to save preset",
+            "create-your-own-themes": "Create your own themes",
+            "selection-wedges": "Draw item wedges",
+            "reload-presets": "Reload presets",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "menu-scale-info": "Use this to increase or decrease the size of your menus. Default is 1.0.",
+            "selection-wedges-info": "If enabled and supported by the selected theme, the selectable area of menu items will be highlighted.",
+            "preset-name-placeholder": "e.g. My Custom Colors",
+            "fade-out-time": "Fade-out time",
+            "open-theme-directory": "Open theme directory",
+            "save-preset": "Save preset",
+            "no-accent-colors": "This theme does not support accent colors.",
+            "light": "Light Mode",
+            "open-presets-directory": "Open preset directory",
+            "light-dark-mode": "Enable light/dark mode",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "choose-preset": "Choose preset…",
+            "dark": "Dark Mode",
+            "fade-out-time-info": "The time it takes for the menu to fade out. Default is 200ms.",
+            "get-themes-online": "Get themes online"
+        },
+        "achievements-dialog": {
+            "reset-button-tooltip": "Reset all achievements and level progress",
+            "xp": "XP",
+            "reset-button": "Reset Progress",
+            "no-completed-achievements": "You have not completed any achievements yet.",
+            "title": "Achievements",
+            "completed-button": "Completed",
+            "in-progress-button": "In Progress",
+            "reset-confirmation-title": "Do you really want to reset all progress?",
+            "reset-confirmation-message": "All achievements and level progress will be lost. This action cannot be undone.",
+            "no-in-progress-achievements": "Congratulations! You have completed all achievements."
+        },
+        "introduction-dialog": {
+            "slide12-text": "Kando is highly customizable. You can use it to open applications, files, execute keyboard macros, and many other things. You can [change the menu style]({{link1}}), [add icon themes]({{link2}}) and even [use sounds]({{link3}}) in your menus!",
+            "slide5-hint": "Click anywhere here to go up one level.",
+            "slide2-text-no-shortcuts": "If you launched Kando for the first time, you [may need to perform some additional steps on Linux to get the global hotkeys working]({{link}}). Once this is working, you can close a menu with the Escape key or with your right mouse button.",
+            "slide11-text": "**Don't be afraid of accidental selections!** Actions are only executed as soon as you release your mouse button in Marking Mode or a keyboard key in Turbo Mode. Use this to explore the menu!",
+            "slide2-text-standard": "If you launched Kando for the first time, you can open the example menu with Ctrl+Space. Close it again with the Escape key or with your right mouse button anywhere on the screen.",
+            "slide6-text": "This way, you can quickly explore the menu structure.",
+            "slide5-text": "To **navigate back**, either click in the parent's wedge or in the center of the menu.",
+            "slide4-text": "A submenu will **always** open at your mouse pointer. You **do not need to wait for the animation to finish**. Trust your muscle memory and proceed with your selection!",
+            "title": "Welcome to Kando!",
+            "chapter5": "Getting Help",
+            "slide1-title": "Kando offers a unique and efficient way for interacting with your computer.",
+            "chapter3": "Turbo Mode",
+            "slide9-title": "Be lightning fast: Turbo Mode",
+            "chapter4": "Next Steps",
+            "chapter2": "Marking Mode",
+            "slide3-text": "In Kando, **your entire screen is a click-target**! You do not have to aim for the icons, you can click anywhere in an item's wedge. This makes it much more efficient to select items.",
+            "slide1-text": "Swipe through these slides to learn what Kando can do for you! You can use the chapter marks on the left to quickly jump to a specific part of the introduction.",
+            "show-again": "Show this dialog again",
+            "slide7-title": "Become faster: Marking Mode",
+            "slide2-title": "Open the menu!",
+            "slide9-text": "If you **keep a key pressed** (such as _Ctrl_, _Shift_, or _Alt_) after opening the menu, you can perform selections by just moving the pointer. No clicking or dragging is necessary.",
+            "slide8-text": "**The menu reacts to your mouse movements!** A submenu opens when you want it to open. With some practice, you will be able to select items without even looking at the menu.",
+            "slide13-text": "If you need help at any point, feel free to join our [Discord Server]({{link1}}) or check out the [documentation]({{link2}})!",
+            "slide7-text": "Click and drag over an item to enter Marking Mode. **If you pause the pointer movement or make a turn, the currently dragged submenu will open!** Remember the path to an item and draw it with expressive zig-zag movements.",
+            "slide3-hint2": "Click anywhere here to select the item.",
+            "slide12-title": "There is more!",
+            "chapter1": "Getting Started",
+            "slide10-text": "**Do not wait for the animations to finish!** Just zigzag your way through the menu. This is the fastest way to select items!",
+            "slide3-hint1": "You can also click here to close the menu."
+        },
+        "app-picker": {
+            "hint": "You can also drag and drop an app from your start menu to Kando's menu editor!",
+            "search-placeholder": "Search for an app…",
+            "use-selected": "Use selected"
+        },
+        "app-condition-placeholder": "App name",
+        "search-menus-placeholder": "Search menus…",
+        "restore-general-settings-warning-title": "Do you really want to restore the general settings?",
+        "add-collection-tooltip": "Create a new menu collection. Use collections to group your menus by tags!",
+        "empty-collection-note": "Edit the tags above or add a completely new menu to this collection with the button below.",
+        "app-condition-info": "Show the menu only if a specific application is focused. This supports regular expressions like /firefox|chrome/i.",
+        "restore-general-settings-warning-message": "This will overwrite your current application settings with the contents of the selected backup file! Your menus and menu collections will not be affected.",
+        "no-menus": "You have no menus.",
+        "window-condition-tooltip": "Select a window",
+        "screen-area-picker": {
+            "top-left-value": "Left: {{x}}, Top: {{y}}",
+            "confirm": "Use this area",
+            "top-left": "Drag this to the top left corner of your area.",
+            "bottom-right-value": "Right: {{x}}, Bottom: {{y}}",
+            "bottom-right": "Drag this to the bottom right corner of your area.",
+            "invalid": "Make sure the top left corner is above and to the left of the bottom right corner.",
+            "valid": "Great! You have selected a valid area."
+        },
+        "anchored-mode": "Anchored Mode",
+        "tags": "Tags",
+        "hover-mode": "Hover Mode",
+        "export-menu-error-title": "Failed to export menu",
+        "add-menu-items": "Add Menu Items",
+        "no-menus-note": "If you deleted the last one by accident, you can restore it using the undo button.",
+        "area-condition-left-placeholder": "Left",
+        "menu-conditions": "Menu Conditions",
+        "import-menu-error-title": "Failed to import menu",
+        "add-menu-item-hint": "Drag this item to add it to the menu above!",
+        "restore-menu-settings-success-message": "Your menus and menu collections have been restored from the backup file.",
+        "empty-collection": "This collection is empty.",
+        "window-condition-placeholder": "Window title",
+        "shortcut-label": "Shortcut",
+        "undo": "Undo",
+        "delete-menu-item": "Delete menu item",
+        "restore-menu-settings-success-title": "Success!",
+        "redo": "Redo",
+        "area-condition-top-placeholder": "Top",
+        "no-matching-menus-note": "Maybe try a different search term?",
+        "area-condition-tooltip": "Select a screen area",
+        "import-menu-error-message": "The selected file could not be imported. It does not contain a valid Kando exported menu.",
+        "menu-conditions-info": "You can bind multiple menus to the same shortcut and then choose under which conditions each menu should be shown.",
+        "area-condition-bottom-placeholder": "Bottom",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "shortcut-id-label": "Shortcut ID",
+        "area-condition-info": "Show the menu only if the pointer is in a given area on the screen. The area is given in pixels relative to the top left corner of your main display. If you leave a field empty, the area is unbounded in that direction.",
+        "quick-select-key-label": "Quick-select key",
+        "app-condition": "Limit to Specific Apps",
+        "restore-general-settings-success-title": "Success!",
+        "area-condition-right-placeholder": "Right",
+        "cancel": "Cancel",
+        "all-menus": "All Menus",
+        "quick-select-key-recording": "Select key…",
+        "restore-menu-settings-warning-message": "This will overwrite your current menus and menu collections with the contents of the selected backup file!",
+        "restore-menu-settings-error-title": "Failed to load menus backup!",
+        "tags-info": "Tags can be used to group menus in menu collections.",
+        "import-menu": "Import menu",
+        "centered-mode-info": "Open the menu in the screen's center instead of at the cursor.",
+        "duplicate-menu": "Duplicate menu",
+        "restore-general-settings-error-title": "Failed to load general settings backup!",
+        "hover-mode-info": "For power users only! Select items by hovering over them.",
+        "anchored-mode-info": "Open submenus at the same position as the parent menu. Checking this, will disable Marking Mode and Turbo Mode.",
+        "restore-menu-settings-warning-title": "Do you really want to restore the menu settings?",
+        "restore-general-settings-success-message": "Your general settings have been restored from the backup file.",
+        "area-condition": "Limit to Specific Screen Area",
+        "restore-backup": "Restore Backup…",
+        "shortcut-recording": "Press a shortcut…",
+        "menu-behavior-info": "Before you enable these options, we recommend learning why we like Kando's default behavior [here]({{link}})!",
+        "shortcut-info": "This shortcut opens the menu. It must contain one normal key and any number of modifiers such as Ctrl, Alt, or Shift. When recording, you do not have to press all keys at once, you can also press them one after another. This is useful if a shortcut is already bound to another menu!",
+        "window-condition": "Limit to Specific Window Titles",
+        "window-condition-info": "Show the menu only if the focused window's title contains a given text. This supports regular expressions like /youtube|vimeo/i.",
+        "centered-mode": "Centered Mode",
+        "duplicate-menu-item": "Duplicate menu item",
+        "app-condition-tooltip": "Select an app",
+        "no-matching-menus": "No menus found."
+    },
+    "menu-items": {
+        "common": {
+            "delayed-option": "Wait for fade-out animation",
+            "delayed-option-info": "Useful if the action targets a window that needs to be focused.",
+            "inhibit-shortcuts": "Disable shortcuts",
+            "inhibit-shortcuts-info": "Disables all Kando shortcuts while the hotkey or macro is being simulated. This prevents the simulated input from accidentally triggering other menu shortcuts."
+        },
+        "command": {
+            "placeholder": "Insert any command…",
+            "choose-app": "Choose an app…",
+            "name": "Run Command",
+            "tip-5": "Use {{pointer_x}} and {{pointer_y}} to insert the pointer position where the menu was opened.",
+            "isolated": "Run isolated",
+            "tip-6": "Click [here]({{link}}) to learn how to to find the commands for launching your apps.",
+            "tip-2": "If the path to an executable contains spaces, you should \"wrap it in quotes\".",
+            "isolated-info": "This will run the command in a clean environment, meaning that it will not inherit any environment variables from Kando. This can help with commands that do not start properly.",
+            "detached": "Run detached",
+            "description": "Launch apps or scripts.",
+            "tip-1": "You can use the Command item type to launch applications or scripts.",
+            "detached-info": "This will disconnect the command from Kando, so it will continue to run even if Kando is closed. Disabling this may resolve issues with commands that do not start properly.",
+            "tip-4": "Use {{window_name}} to insert the name of the window which was focused when you opened the menu.",
+            "tip-3": "Use {{app_name}} to insert the name of the application which was focused when you opened the menu."
+        },
+        "hotkey": {
+            "description": "Presses a key combination.",
+            "tip-1": "When recording a hotkey, you do not have to press all keys at once. You can press them one after another.",
+            "hotkey": "Hotkey",
+            "tip-3": "Click [this link]({{link}}) to see all valid key names.",
+            "tip-2": "If you cannot record a key because it is used by the system, try typing its name directly.",
+            "recording-placeholder": "Type a hotkey…",
+            "name": "Simulate Hotkey",
+            "hotkey-info": "This hotkey will be triggered when the item is selected. When recording, you do not have to press all keys at once, you can also press them one after another. This is useful if a hotkey is already bound to some global action!"
+        },
+        "uri": {
+            "tip-1": "You can use the URI item type to open a website using the http:// protocol.",
+            "tip-5": "Use {{window_name}} to insert the name of the window which was focused when you opened the menu.",
+            "tip-2": "You can use this to call custom URI schemes like slack:// or zoommtg://.",
+            "tip-3": "You can use the URI item type to open a mailto: link.",
+            "name": "Open URI",
+            "placeholder": "Insert any URI…",
+            "tip-6": "Use {{pointer_x}} and {{pointer_y}} to insert the pointer position where the menu was opened.",
+            "tip-4": "Use {{app_name}} to insert the name of the application which was focused when you opened the menu.",
+            "description": "Opens websites and more."
+        },
+        "macro": {
+            "description": "Types a keyboard macro.",
+            "name": "Execute Macro",
+            "tip-2": "You can edit the macro also by hand. This is useful if you want to adjust the timing of the keys.",
+            "tip-1": "Per default, Kando adds a 10ms delay before each key event. You can change this with the \"delay\" property.",
+            "placeholder": "Hit the record button to start recording!",
+            "recording-placeholder": "Press any keys…"
+        },
+        "redirect": {
+            "name": "Redirect",
+            "description": "Opens another menu."
+        },
+        "file": {
+            "placeholder": "Choose a file or folder…",
+            "description": "Opens a file or folder.",
+            "name": "Open File",
+            "tip-1": "You can use this item type to open files or folders."
+        },
+        "submenu": {
+            "tip-7": "You can delete a menu or a menu item with the trash icon below.",
+            "tip-3": "Submenus can be used to create complex menu structures.",
+            "tip-4": "You should avoid adding more than twelve items to a submenu. Eight is a good number.",
+            "tip-6": "You can reorder items by dragging them in the preview.",
+            "tip-1": "Submenus can be used to group items.",
+            "tip-5": "You can use the tiny lock icons in the preview to fix an item's position in the menu.",
+            "name": "Submenu",
+            "description": "Contains other menu items.",
+            "tip-2": "You can also nest submenus inside of submenus."
+        },
+        "text": {
+            "tip-1": "This action uses your clipboard to paste the text. After using the action, the clipboard will contain the text.",
+            "name": "Paste Text",
+            "description": "Inserts the given text.",
+            "placeholder": "Insert any text…"
+        },
+        "settings": {
+            "tip-1": "This item type opens the Kando settings window.",
+            "description": "Opens the Kando settings window.",
+            "name": "Open Settings"
+        }
+    },
+    "achievements": {
+        "speedy-selections-streak": {
+            "description": "Make {{n}} consecutive selections on average faster than {{time}} ms.",
+            "name": "Faster than Thought {{tier}}"
+        },
+        "backup": {
+            "name": "Path of Foresight {{tier}}",
+            "description": "Backup your menus or settings {{n}} times."
+        },
+        "tier": {
+            "I": "I",
+            "IV": "IV",
+            "III": "III",
+            "II": "II",
+            "V": "V"
+        },
+        "keyboard-selector": {
+            "description": "Select {{n}} items using your keyboard.",
+            "name": "{{attribute}} Hotkey Hero"
+        },
+        "restore": {
+            "name": "Second Chance {{tier}}",
+            "description": "Restore a backup {{n}} times."
+        },
+        "click-selector": {
+            "description": "Select {{n}} items using mouse clicks.",
+            "name": "{{attribute}} Click-Click Champion"
+        },
+        "gesture-selector": {
+            "description": "Select {{n}} items using turbo or marking mode.",
+            "name": "{{attribute}} Power Ninja"
+        },
+        "depth-selector": {
+            "description": "Select {{n}} items at depth {{depth}} in less than {{time}} ms.",
+            "name2": "{{attribute}} Two-Layer Slicer",
+            "name3": "{{attribute}} Deep Slicer",
+            "name1": "{{attribute}} Slicer"
+        },
+        "attributes": {
+            "capable": "Capable",
+            "master": "Sensei",
+            "novice": "Novice",
+            "expert": "Expert",
+            "skilled": "Skilled"
+        },
+        "cancelor": {
+            "description": "Abort a selection {{n}} times.",
+            "name": "Road of Emptiness {{tier}}"
+        },
+        "deleted-all-menus": {
+            "description": "Delete all of your menus.",
+            "name": "Clear the Dojo"
+        },
+        "menu-themes-selected": {
+            "name": "Way of the Aesthete",
+            "description": "Switch the menu theme {{n}} times."
+        },
+        "full-menu": {
+            "name": "Breadth over Depth",
+            "description": "Create a menu with more than twelve items."
+        },
+        "tutorial-viewed": {
+            "description": "Complete the Kando introduction tutorial.",
+            "name": "The Journey Begins"
+        },
+        "selector": {
+            "description": "Select {{n}} items.",
+            "name": "{{attribute}} Samurai"
+        },
+        "deep-menu": {
+            "description": "Add a menu item to a four-level deep submenu.",
+            "name": "Master of Depth"
+        },
+        "sponsors-viewed": {
+            "description": "Consider becoming a sponsor of Kando.",
+            "name": "Guardian of Kando"
+        },
+        "completed-title": "Achievement unlocked!",
+        "settings-opened": {
+            "name": "The Journey is the Reward {{tier}}",
+            "description": "Open the settings dialog {{n}} times."
+        },
+        "many-selections-streak": {
+            "description": "Select {{n}} items within {{time}} s.",
+            "name": "Hands of Lightning {{tier}}"
+        },
+        "added-items": {
+            "description": "Create {{n}} items in the menu editor.",
+            "name": "Way of Kando {{tier}}"
+        },
+        "gamepad-selector": {
+            "name": "{{attribute}} Gamepad Warrior",
+            "description": "Select {{n}} items using a gamepad."
+        }
+    },
+    "example-menu": {
+        "bookmarks": {
+            "downloads": "Downloads",
+            "pictures": "Pictures",
+            "home": "Home",
+            "videos": "Videos",
+            "desktop": "Desktop",
+            "documents": "Documents",
+            "music": "Music",
+            "submenu": "Bookmarks"
+        },
+        "apps": {
+            "safari": "Safari",
+            "terminal": "Terminal",
+            "web-browser": "Web Browser",
+            "file-browser": "File Browser",
+            "gimp": "GIMP",
+            "paint": "Paint",
+            "finder": "Finder",
+            "email": "E-Mail",
+            "submenu": "Apps",
+            "apple-music": "Music"
+        },
+        "windows": {
+            "close-window": "Close Window",
+            "tile-left": "Tile Left",
+            "tile-right": "Tile Right",
+            "submenu": "Windows",
+            "toggle-maximize": "Toggle Maximize",
+            "mission-control": "Mission Control"
+        },
+        "name": "Example Menu",
+        "audio": {
+            "mute": "Mute",
+            "next-track": "Next Track",
+            "play-pause": "Play / Pause",
+            "submenu": "Audio",
+            "previous-track": "Previous Track"
+        },
+        "web-links": {
+            "google": "Google",
+            "kando-on-youtube": "Kando on YouTube",
+            "kando-on-discord": "Kando on Discord",
+            "submenu": "Web Links",
+            "kando-on-github": "Kando on GitHub",
+            "kando-on-kofi": "Kando on Ko-fi"
+        },
+        "clipboard": {
+            "cut": "Cut",
+            "submenu": "Clipboard",
+            "paste": "Paste",
+            "copy": "Copy"
+        },
+        "previous-workspace": "Previous Workspace",
+        "next-workspace": "Next Workspace"
+    },
+    "backends": {
+        "kde-wayland": {
+            "shortcut-info": "Kando cannot directly bind global shortcuts on KDE/Wayland. Instead, specify a shortcut ID here and then search for it in the KWin section of the global shortcuts in your KDE's system settings. There you can assign the shortcut which will open this menu."
+        },
+        "niri": {
+            "shortcut-info": "Niri does not yet support global shortcuts. But you can open this menu using 'kando --menu \"Menu Name\"' from the command line or from your niri config."
+        },
+        "hyprland": {
+            "shortcut-info": "Kando cannot directly bind global shortcuts on Hyprland. Instead, specify a shortcut ID here and bind a shortcut in your hyprland.conf with something like \"bind = CTRL, Space, global, kando:example-menu\". Replace example-menu with the ID chosen here."
+        },
+        "gnome": {
+            "error": "Could not connect to Kando Integration GNOME Shell extension. You can get it from here: {{link}}"
+        }
+    },
+    "main": {
+        "show-settings": "Show settings",
+        "quit": "Quit",
+        "inhibit-shortcuts": "Temporarily disable all shortcuts",
+        "invalid-link-message": "The deep link could not be parsed.",
+        "invalid-link-header": "Invalid link",
+        "new-version-notification-body": "Get it from {{link}}.",
+        "un-inhibit-shortcuts": "Re-enable shortcuts",
+        "new-version-notification-header": "A new version of Kando is available!"
+    }
+}

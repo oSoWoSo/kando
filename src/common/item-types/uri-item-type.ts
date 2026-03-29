@@ -10,20 +10,24 @@
 
 import i18next from 'i18next';
 
-import { IItemType } from './item-type-registry';
+import { ItemType } from './item-type-registry';
 
 /**
  * For this type of menu items, the user can configure a URL that will be opened when the
  * item is clicked.
  */
-export interface IItemData {
+export type ItemData = {
   uri: string;
-}
+};
 
 /** This class provides meta information for menu items that open a URL. */
-export class URIItemType implements IItemType {
+export class URIItemType implements ItemType {
   get hasChildren(): boolean {
     return false;
+  }
+
+  get isUserSelectable(): boolean {
+    return true;
   }
 
   get defaultName(): string {
@@ -38,7 +42,7 @@ export class URIItemType implements IItemType {
     return 'kando';
   }
 
-  get defaultData(): IItemData {
+  get defaultData(): ItemData {
     return {
       uri: '',
     };

@@ -8,7 +8,7 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
-import { IVec2 } from '../../common';
+import { Vec2 } from '../../common';
 
 /** This method returns the the given value clamped to the given range. */
 export function clamp(value: number, min: number, max: number): number {
@@ -26,33 +26,56 @@ export function toRadians(degrees: number): number {
 }
 
 /** This method returns the length of the given vector. */
-export function getLength(vec: IVec2): number {
+export function getLength(vec: Vec2): number {
   return Math.sqrt(vec.x * vec.x + vec.y * vec.y);
 }
 
 /** This method normalizes the given vector. */
-export function normalize(vec: IVec2): IVec2 {
+export function normalize(vec: Vec2): Vec2 {
   const length = getLength(vec);
   return { x: vec.x / length, y: vec.y / length };
 }
 
 /** This method returns the distance between the two given vectors. */
-export function getDistance(vec1: IVec2, vec2: IVec2): number {
+export function getDistance(vec1: Vec2, vec2: Vec2): number {
   return getLength({ x: vec1.x - vec2.x, y: vec1.y - vec2.y });
 }
 
-/** This adds two IVec2 together. */
-export function add(vec1: IVec2, vec2: IVec2): IVec2 {
+/** This method returns the distance of a point to a line segment defined by two points. */
+export function getDistanceToLineSegment(
+  point: Vec2,
+  lineStart: Vec2,
+  lineEnd: Vec2
+): number {
+  const lineVec = subtract(lineEnd, lineStart);
+  const lineLength = getLength(lineVec);
+  const lineDir = multiply(lineVec, 1 / lineLength);
+
+  const pointVec = subtract(point, lineStart);
+  const projectionLength = pointVec.x * lineDir.x + pointVec.y * lineDir.y;
+
+  if (projectionLength < 0) {
+    return getDistance(point, lineStart);
+  } else if (projectionLength > lineLength) {
+    return getDistance(point, lineEnd);
+  }
+
+  const projectionPoint = add(lineStart, multiply(lineDir, projectionLength));
+  return getDistance(point, projectionPoint);
+}
+
+/** This adds two Vec2 together. */
+export function add(vec1: Vec2, vec2: Vec2): Vec2 {
   return { x: vec1.x + vec2.x, y: vec1.y + vec2.y };
 }
 
 /** This subtracts vec2 from vec1. */
-export function subtract(vec1: IVec2, vec2: IVec2): IVec2 {
+export function subtract(vec1: Vec2, vec2: Vec2): Vec2 {
   return { x: vec1.x - vec2.x, y: vec1.y - vec2.y };
 }
 
 /** This multiplies a vector with a scalar. */
-export function multiply(vec: IVec2, scalar: number): IVec2 {
+export function multiply(vec: Vec2, scalar: number): Vec2 {
   return { x: vec.x * scalar, y: vec.y * scalar };
 }
 
@@ -131,21 +154,12 @@ export function isAngleBetween(angle: number, start: number, end: number): boole
  * @returns An array of three angles.
  */
 export function normalizeConsequtiveAngles(start: number, center: number, end: number) {
-  while (center < start) {
-    center += 360;
-  }
-
-  while (end < center) {
-    end += 360;
-  }
-
-  while (center >= 360) {
-    start -= 360;
-    center -= 360;
-    end -= 360;
-  }
-
-  return [start, center, end];
+  center = center % 360;
+  return [
+    getEquivalentAngleSmallerThan(start, center),
+    center,
+    getEquivalentAngleLargerThan(end, center),
+  ];
 }
 
 /**
@@ -153,7 +167,7 @@ export function normalizeConsequtiveAngles(start: number, center: number, end: n
  * on the right, 180° is on the bottom and 270° is on the right. The vector does not need
  * to be normalized.
  */
-export function getAngle(vec: IVec2): number {
+export function getAngle(vec: Vec2): number {
   const angle = (toDegrees(Math.atan2(vec.y, vec.x)) + 90) % 360;
   if (angle < 0) {
     return 360 + angle;
@@ -166,7 +180,7 @@ export function getAngle(vec: IVec2): number {
  * This method returns the direction vector for the given angle and length. 0° is on the
  * top, 90° is on the right, 180° is on the bottom and 270° is on the right.
  */
-export function getDirection(angle: number, length: number): IVec2 {
+export function getDirection(angle: number, length: number): Vec2 {
   const radians = toRadians(angle - 90);
   return {
     x: Math.cos(radians) * length,
@@ -399,21 +413,26 @@ export function computeItemAngles(
  * @returns A list of start and end angles for each item. Each item in the list
  *   corresponds to the item at the same index in the `itemAngles` list. The start angle
  *   will always be smaller than the end angle. Consequently, the start angle can be
- *   negative and the end angle can be larger than 360°.
+ *   negative and the end angle can be larger than 360°. If a parent angle was given,
+ *   there will be an additional `parentWedge` property in the returned object which
+ *   contains the start and end angles of the parent wedge.
  */
 export function computeItemWedges(
   itemAngles: number[],
   parentAngle?: number
-): { start: number; end: number }[] {
+): {
+  itemWedges: { start: number; end: number }[];
+  parentWedge?: { start: number; end: number };
+} {
   // This should never happen, but who knows...
   if (itemAngles.length === 0 && parentAngle === undefined) {
-    return [];
+    return { itemWedges: [] };
   }
 
   // If the item has a single child but no parent (e.g. it's the root item), we can
   // simply return a full circle.
   if (itemAngles.length === 1 && parentAngle === undefined) {
-    return [{ start: 0, end: 360 }];
+    return { itemWedges: [{ start: 0, end: 360 }] };
   }
 
   // If the item has a single child and a parent, we can set the start and end
@@ -426,12 +445,17 @@ export function computeItemWedges(
     [start, center, end] = normalizeConsequtiveAngles(start, center, end);
     [start, end] = scaleWedge(start, center, end, 0.5);
 
-    return [{ start: start, end: end }];
+    return {
+      itemWedges: [{ start: start, end: end }],
+      parentWedge: { start: end, end: start + 360 },
+    };
   }
 
   // In all other cases, we loop through the items and compute the wedges. If the parent
   // angle happens to be inside a wedge, we crop the wedge accordingly.
-  const wedges: { start: number; end: number }[] = [];
+  const itemWedges: { start: number; end: number }[] = [];
+  let parentStart: number | undefined;
+  let parentEnd: number | undefined;
 
   for (let i = 0; i < itemAngles.length; i++) {
     let start = itemAngles[(i + itemAngles.length - 1) % itemAngles.length];
@@ -441,16 +465,39 @@ export function computeItemWedges(
     [start, center, end] = normalizeConsequtiveAngles(start, center, end);
 
     if (parentAngle !== undefined) {
+      // If the parent angle is inside the wedge, we store the start and end angles of the
+      // parent wedge.
+      if (isAngleBetween(parentAngle, start, center)) {
+        parentStart = start;
+      } else if (isAngleBetween(parentAngle, center, end)) {
+        parentEnd = end;
+      }
+
       [start, end] = cropWedge(start, center, end, parentAngle);
       [start, center, end] = normalizeConsequtiveAngles(start, center, end);
     }
 
     [start, end] = scaleWedge(start, center, end, 0.5);
 
-    wedges.push({ start: start, end: end });
+    itemWedges.push({ start: start, end: end });
   }
 
-  return wedges;
+  if (parentAngle !== undefined && parentStart !== undefined && parentEnd !== undefined) {
+    [parentStart, parentAngle, parentEnd] = normalizeConsequtiveAngles(
+      parentStart,
+      parentAngle,
+      parentEnd
+    );
+
+    [parentStart, parentEnd] = scaleWedge(parentStart, parentAngle, parentEnd, 0.5);
+
+    return {
+      itemWedges,
+      parentWedge: { start: parentStart, end: parentEnd },
+    };
+  }
+
+  return { itemWedges };
 }
 
 /**
@@ -506,11 +553,7 @@ function scaleWedge(start: number, center: number, end: number, scale: number) {
  * @param monitorSize The size of the monitor.
  * @returns The clamped position.
  */
-export function clampToMonitor(
-  position: IVec2,
-  radius: number,
-  monitorSize: IVec2
-): IVec2 {
+export function clampToMonitor(position: Vec2, radius: number, monitorSize: Vec2): Vec2 {
   const maxX = monitorSize.x - radius;
   const maxY = monitorSize.y - radius;
 

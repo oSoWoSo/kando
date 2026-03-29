@@ -8,11 +8,14 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
+import { WindowWithAPIs } from '../../settings-window-api';
+declare const window: WindowWithAPIs;
+
 import React from 'react';
 import i18next from 'i18next';
 import classNames from 'classnames/bind';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { TbPlus, TbCopy, TbTrash } from 'react-icons/tb';
+import { TbPlus, TbDownload } from 'react-icons/tb';
 
 import * as classes from './MenuList.module.scss';
 const cx = classNames.bind(classes);
@@ -24,7 +27,7 @@ import CollectionDetails from './CollectionDetails';
 import { ensureUniqueKeys } from '../../utils';
 
 /** For rendering the menus, a list of these objects is created. */
-interface IRenderedMenu {
+type RenderedMenu = {
   /** A unique key for react. */
   key: string;
 
@@ -42,7 +45,7 @@ interface IRenderedMenu {
 
   /** The theme from which the above icon should be used. */
   iconTheme: string;
-}
+};
 
 /**
  * This is a vertical list of buttons, one for each configured menu. They can be reordered
@@ -90,7 +93,7 @@ export default function MenuList() {
     const shortcut =
       (backend.supportsShortcuts ? menu.shortcut : menu.shortcutID) ||
       i18next.t('settings.not-bound');
-    const renderedMenu: IRenderedMenu = {
+    const renderedMenu: RenderedMenu = {
       key: menu.name + menu.icon + menu.iconTheme + shortcut,
       index,
       name: menu.name,
@@ -148,7 +151,7 @@ export default function MenuList() {
               <div key="-1" className={classes.message}>
                 <h1>{i18next.t('settings.no-menus')}</h1>
                 <Note>{i18next.t('settings.no-menus-note')}</Note>
-                <Swirl variant="2" marginTop={10} />
+                <Swirl marginTop={10} variant="2" />
               </div>
             )}
             {menus.length > 0 &&
@@ -157,7 +160,7 @@ export default function MenuList() {
                 <div key="-1" className={classes.message}>
                   <h1>{i18next.t('settings.no-matching-menus')}</h1>
                   <Note>{i18next.t('settings.no-matching-menus-note')}</Note>
-                  <Swirl variant="2" marginTop={10} />
+                  <Swirl marginTop={10} variant="2" />
                 </div>
               )}
             {menus.length > 0 &&
@@ -166,27 +169,22 @@ export default function MenuList() {
                 <div key="-1" className={classes.message}>
                   <h1>{i18next.t('settings.empty-collection')}</h1>
                   <Note>{i18next.t('settings.empty-collection-note')}</Note>
-                  <Swirl variant="2" marginTop={10} />
+                  <Swirl marginTop={10} variant="2" />
                 </div>
               )}
 
             {renderedMenus.map((menu) => {
               return (
-                <button
+                <div
                   key={menu.key}
+                  draggable
                   className={cx({
                     menu: true,
                     selected: menu.index === selectedMenu,
                     dragging: dragIndex === menu.index,
                   })}
+                  tabIndex={0}
                   onClick={() => selectMenu(menu.index)}
-                  draggable
-                  onDragStart={(event) => {
-                    event.dataTransfer.setData('kando/menu-index', menu.index.toString());
-                    event.dataTransfer.setData('kando/menu', JSON.stringify(menu));
-                    setDragIndex(menu.index);
-                    setDropIndex(menu.index);
-                  }}
                   onDragEnd={() => {
                     moveMenu(dragIndex, dropIndex);
 
@@ -205,42 +203,6 @@ export default function MenuList() {
 
                     setDragIndex(null);
                     setDropIndex(null);
-                  }}
-                  onDragOver={(event) => {
-                    if (
-                      event.dataTransfer.types.includes('kando/menu-index') ||
-                      event.dataTransfer.types.includes('kando/child-path')
-                    ) {
-                      event.preventDefault();
-                    }
-                  }}
-                  onDrop={(event) => {
-                    // If a menu item is dropped on a menu, we need to remove the menu
-                    // item from its current menu and add it to the new menu.
-                    if (
-                      event.dataTransfer.types.includes('kando/child-path') &&
-                      menu.index !== selectedMenu
-                    ) {
-                      const fromPath = JSON.parse(
-                        event.dataTransfer.getData('kando/child-path')
-                      );
-
-                      const toPath = [0];
-
-                      // We have to make sure that the menu item is moved in the drag-end
-                      // event, because else the drag-end event of the dragged menu item
-                      // will not be triggered as it's removed by the moveMenuItem state
-                      // update.
-                      const handleDragEnd = () => {
-                        moveMenuItem(selectedMenu, fromPath, menu.index, toPath);
-                        window.removeEventListener('dragend', handleDragEnd);
-                      };
-
-                      // Attach a one-time event listener for the dragend event.
-                      window.addEventListener('dragend', handleDragEnd);
-
-                      (event.target as HTMLElement).classList.remove(classes.dropping);
-                    }
                   }}
                   onDragEnter={(event) => {
                     // If we are dragging a menu over another menu, we need to set the
@@ -280,21 +242,120 @@ export default function MenuList() {
                       (event.target as HTMLElement).classList.remove(classes.dropping);
                     }
                   }}
+                  onDragOver={(event) => {
+                    if (
+                      event.dataTransfer.types.includes('kando/menu-index') ||
+                      event.dataTransfer.types.includes('kando/child-path')
+                    ) {
+                      event.preventDefault();
+                    }
+                  }}
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData('kando/menu-index', menu.index.toString());
+                    event.dataTransfer.setData('kando/menu', JSON.stringify(menu));
+                    setDragIndex(menu.index);
+                    setDropIndex(menu.index);
+                  }}
+                  onDrop={(event) => {
+                    // If a menu item is dropped on a menu, we need to remove the menu
+                    // item from its current menu and add it to the new menu.
+                    if (
+                      event.dataTransfer.types.includes('kando/child-path') &&
+                      menu.index !== selectedMenu
+                    ) {
+                      const fromPath = JSON.parse(
+                        event.dataTransfer.getData('kando/child-path')
+                      );
+
+                      const toPath = [0];
+
+                      // We have to make sure that the menu item is moved in the drag-end
+                      // event, because else the drag-end event of the dragged menu item
+                      // will not be triggered as it's removed by the moveMenuItem state
+                      // update.
+                      const handleDragEnd = () => {
+                        moveMenuItem(selectedMenu, fromPath, menu.index, toPath);
+                        window.removeEventListener('dragend', handleDragEnd);
+                      };
+
+                      // Attach a one-time event listener for the dragend event.
+                      window.addEventListener('dragend', handleDragEnd);
+
+                      (event.target as HTMLElement).classList.remove(classes.dropping);
+                    }
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === 'Delete' || event.key === 'Backspace') {
                       deleteMenu(menu.index);
                     }
                   }}>
-                  <div style={{ display: 'flex' }}>
+                  <div
+                    style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
                     <div style={{ flexShrink: 0, width: 32, marginRight: 10 }}>
                       <ThemedIcon name={menu.icon} theme={menu.iconTheme} />
                     </div>
-                    <div style={{ minWidth: 0 }}>
+                    <div style={{ minWidth: 0, flexGrow: 1 }}>
                       <div className={classes.menuTitle}>{menu.name}</div>
                       <div className={classes.menuSubtitle}>{menu.shortcut}</div>
                     </div>
+
+                    <div
+                      className={cx({
+                        toolButtonContainer: true,
+                      })}>
+                      <div
+                        className={cx({
+                          toolButton: true,
+                        })}
+                        data-tooltip-content="Preview Menu"
+                        data-tooltip-id="main-tooltip"
+                        onClick={() => window.settingsAPI.openMenu(selectedMenu)}>
+                        <ThemedIcon name="preview-menu.svg" theme="kando" />
+                      </div>
+                      <div
+                        className={cx({
+                          toolButton: true,
+                        })}
+                        data-tooltip-content="More Options"
+                        data-tooltip-id="main-tooltip"
+                        onClick={() =>
+                          window.ipcAPI.showMenu(
+                            'Menu Options',
+                            'open-menu.svg',
+                            'kando',
+                            [
+                              {
+                                name: i18next.t('settings.duplicate-menu'),
+                                icon: 'content_copy',
+                                iconTheme: 'material-symbols-rounded',
+                                callback: () => {
+                                  duplicateMenu(selectedMenu);
+                                },
+                              },
+                              {
+                                name: i18next.t('settings.delete-menu'),
+                                icon: 'delete',
+                                iconTheme: 'material-symbols-rounded',
+                                callback: () => {
+                                  deleteMenu(selectedMenu);
+                                },
+                              },
+                              {
+                                name: 'Export Menu',
+                                icon: 'upload_2',
+                                iconTheme: 'material-symbols-rounded',
+                                callback: () => {
+                                  window.settingsAPI.exportMenu(selectedMenu);
+                                },
+                              },
+                            ]
+                          )
+                        }>
+                        <ThemedIcon name="open-menu.svg" theme="kando" />
+                      </div>
+                    </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -302,34 +363,24 @@ export default function MenuList() {
 
         <div className={classes.floatingButton}>
           <Button
+            isGrouped
             icon={<TbPlus />}
+            size="large"
             tooltip={i18next.t('settings.create-menu-button')}
             variant="floating"
-            size="large"
-            grouped
             onClick={() => {
               addMenu(menuCollections[selectedCollection]?.tags || []);
               selectMenu(menus.length);
             }}
           />
           <Button
-            icon={<TbCopy />}
-            tooltip={i18next.t('settings.duplicate-menu')}
-            variant="floating"
+            isGrouped
+            icon={<TbDownload />}
             size="large"
-            grouped
-            onClick={() => {
-              duplicateMenu(selectedMenu);
-            }}
-          />
-          <Button
-            icon={<TbTrash />}
-            tooltip={i18next.t('settings.delete-menu')}
+            tooltip={i18next.t('settings.import-menu')}
             variant="floating"
-            size="large"
-            grouped
             onClick={() => {
-              deleteMenu(selectedMenu);
+              window.settingsAPI.importMenu();
             }}
           />
         </div>

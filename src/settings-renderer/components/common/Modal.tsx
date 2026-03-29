@@ -19,9 +19,9 @@ import { FocusTrapManager } from '../../utils';
 
 import * as classes from './Modal.module.scss';
 
-interface IProps {
+type Props = {
   /** Whether the modal is visible. */
-  visible: boolean;
+  isVisible: boolean;
 
   /** Function to call when the modal is requested to be closed. */
   onClose: () => void;
@@ -55,30 +55,32 @@ interface IProps {
 
   /** Padding to apply to the right side of the modal content. */
   paddingRight?: number;
-}
+};
 
 /**
- * A customizable modal component. When props.visible becomes true, the modal will be
+ * A customizable modal component. When props.isVisible becomes true, the modal will be
  * faded in with a CSS transition. When it becomes false, the modal will be faded out and
  * its content will be unmounted.
+ *
+ * If neither an icon nor a title is provided, the header bar will not be displayed.
  *
  * @param props - The properties for the modal component.
  * @returns A modal element.
  */
-export default function Modal(props: IProps) {
+export default function Modal(props: Props) {
   const modalContent = React.useRef(null);
   const pointerDownOnBackground = React.useRef(false);
 
   React.useEffect(() => {
     // If the modal is not visible, we don't need to do anything.
-    if (!props.visible || !modalContent.current) {
+    if (!props.isVisible || !modalContent.current) {
       return;
     }
 
     // Hide on escape.
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        if (props.visible) {
+        if (props.isVisible) {
           props.onClose();
         }
       }
@@ -110,12 +112,12 @@ export default function Modal(props: IProps) {
       document.removeEventListener('focusin', handleFocusIn);
       FocusTrapManager.remove(modalContent.current);
     };
-  }, [props.visible]);
+  }, [props.isVisible]);
 
   // Define the close button with an icon. On macOS, the close button is displayed on the
   // left side of the header bar. On other platforms, it is displayed on the right side.
   const closeButton = (
-    <Button icon={<RiCloseLargeFill />} onClick={props.onClose} variant="tool" />
+    <Button icon={<RiCloseLargeFill />} variant="tool" onClick={props.onClose} />
   );
 
   // Both the title and the icon are optional. If no title is provided, only the icon will
@@ -129,39 +131,42 @@ export default function Modal(props: IProps) {
 
   return createPortal(
     <CSSTransition
-      in={props.visible}
-      nodeRef={modalContent}
+      unmountOnExit
       // The modal CSS class uses a 200ms transition when fading in and out, so we set the
       // timeout to 200ms to match this.
-      timeout={200}
       classNames={{
         enter: classes.fadeEnter,
         enterDone: classes.fadeEnterDone,
       }}
-      unmountOnExit>
+      in={props.isVisible}
+      nodeRef={modalContent}
+      timeout={200}>
       <div
         ref={modalContent}
-        onPointerDown={(event) => {
-          // Set the flag if the pointer down occurred on the background.
-          pointerDownOnBackground.current = event.target === modalContent.current;
-        }}
+        className={classes.modalBackground}
         onClick={(event) => {
           // Ensure that the click was on the background and the pointer down also started on the background.
           if (pointerDownOnBackground.current && event.target === modalContent.current) {
             props.onClose();
           }
         }}
-        className={classes.modalBackground}>
+        onPointerDown={(event) => {
+          // Set the flag if the pointer down occurred on the background.
+          pointerDownOnBackground.current = event.target === modalContent.current;
+        }}>
         <div className={classes.modal} style={{ maxWidth: props.maxWidth }}>
-          <Headerbar
-            left={cIsMac ? closeButton : title}
-            center={cIsMac ? title : null}
-            right={!cIsMac ? closeButton : null}
-            // The macOS header bar has no padding on the left side as there is the close
-            // button. On other platforms, there is some padding on the left side as there
-            // is the title.
-            paddingLeft={cIsMac ? 0 : 15}
-          />
+          {props.title || props.icon ? (
+            <Headerbar
+              center={cIsMac ? title : null}
+              left={cIsMac ? closeButton : title}
+              // The macOS header bar has no padding on the left side as there is the close
+              // button. On other platforms, there is some padding on the left side as there
+              // is the title.
+              paddingLeft={cIsMac ? 5 : 15}
+              paddingRight={cIsMac ? 15 : 5}
+              right={!cIsMac ? closeButton : null}
+            />
+          ) : null}
           <div
             className={classes.content}
             style={{

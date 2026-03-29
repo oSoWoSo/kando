@@ -12,47 +12,40 @@ import i18next from 'i18next';
 import { app } from 'electron';
 import fs from 'fs';
 import DBus from 'dbus-final';
+import lodash from 'lodash';
 import { exec } from 'child_process';
 
-import { Backend, IWMInfo, Shortcut } from '../../../backend';
+import { LinuxBackend } from '../../backend';
 import { RemoteDesktop } from '../../portals/remote-desktop';
-import { IKeySequence } from '../../../../../common';
+import { GlobalShortcuts } from '../../portals/global-shortcuts';
+import { KeySequence, WMInfo } from '../../../../../common';
 import { mapKeys } from '../../../../../common/key-codes';
+import { screen } from 'electron';
 
 /**
- * This backend is used on KDE with Wayland. It uses the KWin scripting interface to bind
- * global keyboard shortcuts and to get information about the currently focused window as
- * well as the current pointer position. Mouse and keyboard events are simulated using the
- * RemoteDesktop portal.
+ * This backend is used on KDE with Wayland. It uses the GlobalShortcuts desktop portal to
+ * bind shortcuts. If this is not available, it falls back to a hacky KWin-scripting based
+ * method. It also uses a KWin script to get information about the currently focused
+ * window as well as the current pointer position. Mouse and keyboard events are simulated
+ * using the RemoteDesktop portal.
  *
  * Using the KWin scripting interface is a bit hacky, but for now it seems to be the only
- * way to get information on the focused window and the mouse pointer position! Also, the
- * scripting interface seems to be the only viable way to bind global keyboard shortcuts
- * for now. Here are alternative approaches which I considered:
- *
- * Getting the name and app of the focused window:
- *
- * - There is a request for a corresponding desktop portal:
- *   https://github.com/flatpak/xdg-desktop-portal/issues/304
- *
- * Binding global keyboard shortcuts:
- *
- * - We could omit automatic binding of global shortcuts on KDE Wayland and let the users
- *   configure their own key bindings in the system settings.
- * - There is a corresponding desktop portal, but it is very new and not yet available
- *   ubiquitously: https://github.com/flatpak/xdg-desktop-portal/issues/624. At some
- *   point, Electron will probably support it, so we could maybe wait a couple of months.
- *   https://github.com/electron/electron/issues/38288
- * - There is KGlobaAccel. Directly using the D-Bus interface is not possible, because it
- *   uses some serialized Qt types. The only approach would be a native module which links
- *   against Qt. While this could be possible, it would introduce a lot of complexity.
+ * way to get information on the focused window and the mouse pointer position! Here is a
+ * request for a corresponding desktop portal:
+ * https://github.com/flatpak/xdg-desktop-portal/issues/304
  */
-export class KDEWaylandBackend implements Backend {
+export class KDEWaylandBackend extends LinuxBackend {
   /** Here we store the current KWin version as [major, minor, patch]. */
   private kwinVersion: number[];
 
-  /** The remote desktop portal is used to simulate mouse and keyboard events. */
+  /** The remote-desktop portal is used to simulate mouse and keyboard events. */
   private remoteDesktop = new RemoteDesktop();
+
+  /** The global-shortcuts portal is used to bind os-level shortcuts if possible. */
+  private globalShortcuts = new GlobalShortcuts();
+
+  /** This indicates whether the global-shortcuts portal is available on the system. */
+  private globalShortcutsAvailable = false;
 
   /**
    * The KWin scripting interface is used to load custom JavaScript code into KWin. The
@@ -76,9 +69,6 @@ export class KDEWaylandBackend implements Backend {
    */
   private triggerScriptID = -1;
 
-  /** Here we store all shortcuts which are currently bound. */
-  private shortcuts: Shortcut[] = [];
-
   /**
    * On KDE, the 'toolbar' window type is used. The 'dock' window type makes the window
    * not receive any keyboard events.
@@ -94,23 +84,23 @@ export class KDEWaylandBackend implements Backend {
   }
 
   /**
-   * This initializes the backend. It will create and store the two KWin scripts in a
-   * temporary directory and load the trigger-script into KWin in order to register the
-   * global shortcut.
+   * This initializes the backend. It will create and store the one or two KWin scripts in
+   * a temporary directory and load the trigger-script into KWin in order to register the
+   * global shortcuts if the global shortcuts portal is not available.
    *
    * In addition, it will set up the D-Bus interface which is used by the KWin scripts to
    * communicate with Kando.
    */
   public async init() {
-    // Get the KWin version.
     this.kwinVersion = await this.getKWinVersion();
+    this.globalShortcutsAvailable = await this.globalShortcuts.isAvailable();
 
     // Create the KWin script which will send information about the currently focused
     // window and the mouse pointer position to Kando.
     const property = this.kwinVersion[0] >= 6 ? 'activeWindow' : 'activeClient';
     this.wmInfoScriptPath = this.storeScript(
       'get-info.js',
-      `callDBus('menu.kando.Kando', '/menu/kando/Kando', 
+      `callDBus('menu.kando.Kando', '/menu/kando/Kando',
                'menu.kando.Kando', 'sendWMInfo',
                workspace.${property} ? workspace.${property}.caption : "",
                workspace.${property} ? workspace.${property}.resourceClass : "",
@@ -123,6 +113,18 @@ export class KDEWaylandBackend implements Backend {
     `
     );
 
+    // This is called if a shortcut is activated either via the global shortcuts portal
+    // or via the KWin script. As this backend does not support inhibiting shortcuts by
+    // unbinding them, we only prevent the action from being executed if the shortcut
+    // is in the inhibitedShortcuts array.
+    const onShortcutActivated = (shortcutID: string) => {
+      if (!this.isShortcutInhibited(shortcutID)) {
+        this.onShortcutPressed(shortcutID);
+      }
+    };
+
+    this.globalShortcuts.on('ShortcutActivated', onShortcutActivated);
+
     // Create the D-Bus interface for the KWin script to communicate with.
     this.kandoInterface = new CustomInterface('menu.kando.Kando');
     CustomInterface.configureMembers({
@@ -132,22 +134,27 @@ export class KDEWaylandBackend implements Backend {
       },
     });
 
-    // Execute the trigger action whenever the KWin script sends a signal.
-    this.kandoInterface.triggerCallback = (trigger: string) => {
-      const shortcut = this.shortcuts.find((s) => s.trigger === trigger);
-      if (shortcut) {
-        shortcut.action();
-      }
-    };
+    // Execute the shortcut action whenever the KWin script sends a signal.
+    this.kandoInterface.triggerCallback = onShortcutActivated;
 
     const bus = DBus.sessionBus();
-
     await bus.requestName('menu.kando.Kando', 0);
     bus.export('/menu/kando/Kando', this.kandoInterface);
 
     // Acquire the KWin scripting interface to run the scripts.
     const obj = await bus.getProxyObject('org.kde.KWin', '/Scripting');
     this.scriptingInterface = obj.getInterface('org.kde.kwin.Scripting');
+  }
+
+  /**
+   * We only unbind all shortcuts if we are using the KWin scripting interface for binding
+   * shortcuts. Global shortcuts bound via the global shortcuts portal should stay bound
+   * even if Kando is closed.
+   */
+  public async deinit(): Promise<void> {
+    if (!this.globalShortcutsAvailable) {
+      await this.bindShortcuts([]);
+    }
   }
 
   /**
@@ -162,6 +169,7 @@ export class KDEWaylandBackend implements Backend {
     appName: string;
     pointerX: number;
     pointerY: number;
+    workArea: Electron.Rectangle;
   }> {
     return new Promise((resolve, reject) => {
       this.kandoInterface.wmInfoCallback = resolve;
@@ -194,7 +202,7 @@ export class KDEWaylandBackend implements Backend {
    *
    * @param shortcut The keys to simulate.
    */
-  public async simulateKeys(keys: IKeySequence): Promise<void> {
+  protected override async simulateKeysImpl(keys: KeySequence) {
     // We first need to convert the given DOM key names to X11 key codes. If a key code is
     // not found, this throws an error.
     const keyCodes = mapKeys(keys, 'linux');
@@ -213,43 +221,84 @@ export class KDEWaylandBackend implements Backend {
   }
 
   /**
-   * This binds a shortcut. The action callback of the shortcut is called when the
-   * shortcut is pressed. On KDE Wayland, this uses a KWin script.
+   * This method binds the given global shortcuts. It tries to use the global shortcuts
+   * portal if it is available. If it is not available, it falls back to a KWin script
+   * which registers the shortcuts via the KWin scripting interface.
    *
-   * @param shortcut The shortcut to simulate.
-   * @returns A promise which resolves when the shortcut has been bound.
+   * @param currentShortcuts The shortcuts that should be bound now. Some of these may be
+   *   inhibited and should therefore not lead to emitting the 'shortcutPressed' event.
+   * @param previousShortcuts The shortcuts that were bound before this call.
+   * @returns A promise which resolves when the shortcuts have been updated.
    */
-  public async bindShortcut(shortcut: Shortcut) {
-    this.shortcuts.push(shortcut);
-    await this.updateShortcuts();
+  protected override async onShortcutsChanged(
+    currentShortcuts: string[],
+    previousShortcuts: string[]
+  ): Promise<void> {
+    // No need to do anything if the shortcuts did not change.
+    if (lodash.isEqual(currentShortcuts, previousShortcuts)) {
+      return;
+    }
+
+    // If the global shortcuts portal is available, we use it to bind the shortcuts.
+    if (this.globalShortcutsAvailable) {
+      return this.bindShortcutsViaPortal(currentShortcuts);
+    }
+
+    // Otherwise, we use the KWin scripting interface to bind the shortcuts.
+    return this.bindShortcutsViaKWin(currentShortcuts);
   }
 
   /**
-   * Unbinds a keyboard shortcut. For now, this function stops the background KWIn script
-   * which registered the shortcut. A new script is started which re-registers all
-   * remaining shortcuts.
+   * On KDE Wayland, we cannot unbind shortcuts to inhibit them. If we did, the global
+   * shortcuts portal would pop up all the time. So instead, we just check whether a
+   * shortcut is in the inhibitedShortcuts array and do not emit the 'shortcutPressed' if
+   * it is pressed. So we do not need to do anything here.
    *
-   * @param trigger The trigger of a previously bound.
+   * @param shortcuts The shortcuts that should be inhibited now.
+   * @param previouslyInhibited The shortcuts that were inhibited before this call.
+   * @returns A promise which resolves when the shortcuts have been inhibited.
    */
-  public async unbindShortcut(trigger: string) {
-    this.shortcuts = this.shortcuts.filter((s) => s.trigger !== trigger);
-    await this.updateShortcuts();
-  }
+  protected async inhibitShortcutsImpl(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    shortcuts: string[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    previouslyInhibited: string[]
+  ) {}
 
   /**
-   * Unbinds all keyboard shortcuts. This function stops the background KWIn script which
-   * registered all the shortcut.
+   * This method binds the shortcuts via the global shortcuts portal. It first checks
+   * which shortcuts are already bound and only triggers the portal if a new shortcut has
+   * been added.
+   *
+   * @param shortcuts The shortcuts that should be bound now.
+   * @returns A promise which resolves when the shortcuts have been bound.
    */
-  public async unbindAllShortcuts() {
-    this.shortcuts = [];
-    await this.updateShortcuts();
+  private async bindShortcutsViaPortal(shortcuts: string[]) {
+    if (shortcuts.length === 0) {
+      return;
+    }
+
+    // Check if any of the shortcuts are new. If they are, we bind them via the portal.
+    const oldShortcuts = await this.globalShortcuts.listShortcuts();
+    const hasNewShortcut = shortcuts.some((shortcut) => !oldShortcuts.includes(shortcut));
+
+    if (hasNewShortcut) {
+      this.globalShortcuts.bindShortcuts(
+        shortcuts.map((shortcut) => {
+          return { id: shortcut, description: shortcut };
+        })
+      );
+    }
   }
 
   /**
    * Creates and runs a KWin script which registers all configured shortcuts. Any
    * previously registered shortcuts are unregistered.
+   *
+   * @param shortcuts The shortcuts that should be bound now.
+   * @returns A promise which resolves when the shortcuts have been bound.
    */
-  private async updateShortcuts() {
+  private async bindShortcutsViaKWin(shortcuts: string[]) {
     // First disable all shortcuts by stopping the script.
     if (this.triggerScriptID >= 0) {
       await this.stopScript(this.triggerScriptID);
@@ -257,15 +306,15 @@ export class KDEWaylandBackend implements Backend {
     }
 
     // If there are no shortcuts, we are done.
-    if (this.shortcuts.length === 0) {
+    if (shortcuts.length === 0) {
       return;
     }
 
     // Then create a new script which registers all shortcuts.
-    const script = this.shortcuts
+    const script = shortcuts
       .map((shortcut) => {
         // Escape any ' or \ in the ID or description.
-        const id = this.escapeString(shortcut.trigger);
+        const id = this.escapeString(shortcut);
 
         return `
           if(registerShortcut('${id}', 'Kando - ${id}', '',
@@ -389,7 +438,7 @@ export class KDEWaylandBackend implements Backend {
 // This class is available via DBus in the KWin script.
 class CustomInterface extends DBus.interface.Interface {
   // These callbacks are set by the KDEWaylandBackend class above.
-  public wmInfoCallback: (info: IWMInfo) => void;
+  public wmInfoCallback: (info: WMInfo) => void;
   public triggerCallback: (shortcutID: string) => void;
 
   // This is called by the get-info KWin script.
@@ -400,7 +449,16 @@ class CustomInterface extends DBus.interface.Interface {
     pointerY: number
   ) {
     if (this.wmInfoCallback) {
-      this.wmInfoCallback({ windowName, appName, pointerX, pointerY });
+      this.wmInfoCallback({
+        windowName,
+        appName,
+        pointerX,
+        pointerY,
+        workArea: screen.getDisplayNearestPoint({
+          x: pointerX,
+          y: pointerY,
+        }).workArea,
+      });
     }
   }
 

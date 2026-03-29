@@ -12,14 +12,14 @@ import React from 'react';
 import i18next from 'i18next';
 
 import { useAppState, useMenuSettings, getSelectedChild } from '../../../state';
-import { RandomTip, FilePicker } from '../../common';
-import { IItemData } from '../../../../common/item-types/file-item-type';
+import { FilePicker } from '../../common';
+import { ItemData } from '../../../../common/item-types/file-item-type';
 
 /**
  * The configuration component for file items is primarily a text input field for the file
  * path.
  */
-export default () => {
+export function FileItemConfig() {
   const menus = useMenuSettings((state) => state.menus);
   const selectedMenu = useAppState((state) => state.selectedMenu);
   const selectedChildPath = useAppState((state) => state.selectedChildPath);
@@ -28,28 +28,30 @@ export default () => {
 
   // Sanity check. Should never happen, but just in case.
   if (!selectedItem || selectedItem.type !== 'file') {
-    return <></>;
+    return null;
   }
 
-  const data = selectedItem.data as IItemData;
+  const data = selectedItem.data as ItemData;
 
   return (
-    <>
-      <FilePicker
-        placeholder={i18next.t('menu-items.file.placeholder')}
-        initialValue={data.path}
-        onChange={(path) => {
-          const parts = path.split(/[/\\]/);
-          const name = parts[parts.length - 1];
+    <FilePicker
+      initialValue={data.path}
+      placeholder={i18next.t('menu-items.file.placeholder')}
+      onChange={(path) => {
+        const parts = path.split(/[/\\]/);
+        const name = parts[parts.length - 1];
 
-          editMenuItem(selectedMenu, selectedChildPath, (item) => {
-            item.name = name;
-            (item.data as IItemData).path = path;
-            return item;
-          });
-        }}
-      />
-      <RandomTip marginTop={50} tips={[i18next.t('menu-items.file.tip-1')]} />
-    </>
+        editMenuItem(selectedMenu, selectedChildPath, (item) => {
+          item.name = name;
+          (item.data as ItemData).path = path;
+          return item;
+        });
+      }}
+    />
   );
-};
+}
+
+/** The tips component for file items shows a list of useful tips for file items. */
+export function getFileItemTips() {
+  return [i18next.t('menu-items.file.tip-1')];
+}

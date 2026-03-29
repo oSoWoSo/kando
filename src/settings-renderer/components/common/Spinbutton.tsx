@@ -15,38 +15,38 @@ import { Button, SettingsRow } from '.';
 
 import * as classes from './Spinbutton.module.scss';
 
-interface IProps {
+type Props = {
   /**
    * Function to call when the value changes. This will be called when the user uses one
    * of the plus or minus buttons, when the user presses Enter after typing a value, or
    * when the user clicks outside of the button.
    */
-  onChange?: (value: number) => void;
+  readonly onChange?: (value: number) => void;
 
   /** Initial value of the spinbutton. */
-  initialValue: number;
+  readonly initialValue: number;
 
   /** Optional label text to display next to the spinbutton. */
-  label?: string;
+  readonly label?: string;
 
   /** Optional information to display next to the label. */
-  info?: string;
+  readonly info?: string;
 
   /** Whether the spinbutton is disabled. Defaults to false. */
-  disabled?: boolean;
+  readonly isDisabled?: boolean;
 
   /** Optional minimum width of the spinbutton. Useful to align multiple spinbuttons. */
-  width?: number;
+  readonly width?: number;
 
   /** Optional minimum value of the spinbutton. */
-  min?: number;
+  readonly min?: number;
 
   /** Optional maximum value of the spinbutton. */
-  max?: number;
+  readonly max?: number;
 
   /** Step size for the spinbutton. Defaults to 1. */
-  step?: number;
-}
+  readonly step?: number;
+};
 
 /**
  * This component is a spinbutton that allows the user to increase or decrease a number by
@@ -55,7 +55,7 @@ interface IProps {
  * @param props - The properties for the spinbutton component.
  * @returns A spinbutton element.
  */
-export default function Spinbutton(props: IProps) {
+export default function Spinbutton(props: Props) {
   // We store the value of the spin button internally as a string. This way we can properly
   // handle empty strings when the user deletes the value.
   const [value, setValue] = React.useState(props.initialValue.toString());
@@ -94,28 +94,28 @@ export default function Spinbutton(props: IProps) {
   };
 
   return (
-    <SettingsRow label={props.label} info={props.info}>
+    <SettingsRow info={props.info} label={props.label}>
       <div className={classes.spinbutton}>
         {/* Button to decrease the value. */}
         <Button
-          onClick={() => emitChange(-(props.step || 1))}
+          isGrouped
           icon={<TbMinus />}
-          size="small"
-          grouped
-          disabled={
-            props.disabled ||
+          isDisabled={
+            props.isDisabled ||
             parseFloat(value) <= (props.min === undefined ? -Infinity : props.min)
           }
+          size="small"
+          onClick={() => emitChange(-(props.step || 1))}
         />
         <input
-          type="number"
-          disabled={props.disabled}
-          value={value}
+          disabled={props.isDisabled}
+          max={props.max}
           min={props.min}
+          step={props.step}
           style={{ width: props.width }}
           title="" // Remove the tooltip that is shown when a value is not a multiple of the step.
-          max={props.max}
-          step={props.step}
+          type="number"
+          value={value}
           onBlur={() => emitChange(0)}
           onChange={(event) => setValue(event.target.value)}
           onKeyDown={(event) => {
@@ -126,14 +126,14 @@ export default function Spinbutton(props: IProps) {
         />
         {/* Button to increase the value. */}
         <Button
-          onClick={() => emitChange(props.step || 1)}
+          isGrouped
           icon={<TbPlus />}
-          size="small"
-          grouped
-          disabled={
-            props.disabled ||
+          isDisabled={
+            props.isDisabled ||
             parseFloat(value) >= (props.max === undefined ? Infinity : props.max)
           }
+          size="small"
+          onClick={() => emitChange(props.step || 1)}
         />
       </div>
     </SettingsRow>

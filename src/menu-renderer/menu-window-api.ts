@@ -8,10 +8,16 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, webFrame } from 'electron';
 
 import { COMMON_WINDOW_API } from '../common/common-window-api';
-import { IVec2, IMenuItem, IShowMenuOptions } from '../common';
+import {
+  Vec2,
+  MenuItem,
+  ShowMenuOptions,
+  SelectionSource,
+  InteractionTarget,
+} from '../common';
 
 /**
  * These functions are available in the menu window's renderer process. They are available
@@ -32,7 +38,7 @@ export const MENU_WINDOW_API = {
    *
    * @param dist The distance to move the mouse pointer.
    */
-  movePointer: (dist: IVec2) => {
+  movePointer: (dist: Vec2) => {
     ipcRenderer.send('menu-window.move-pointer', dist);
   },
 
@@ -41,37 +47,49 @@ export const MENU_WINDOW_API = {
    *
    * @param callback This callback will be called when a new menu should be shown.
    */
-  onShowMenu: (func: (root: IMenuItem, menuOptions: IShowMenuOptions) => void) => {
+  onShowMenu: (func: (root: MenuItem, menuOptions: ShowMenuOptions) => void) => {
     ipcRenderer.on('menu-window.show-menu', (event, root, menuOptions) =>
       func(root, menuOptions)
     );
   },
 
   /**
+   * This will be called by the host process when the menu should be closed. Usually, the
+   * renderer will call selectItem or cancelSelection to close the menu, but sometimes the
+   * host process needs to close the menu without a selection.
+   *
+   * @param callback This callback will be called when the menu should be closed.
+   */
+  onHideMenu: (func: () => void) => {
+    ipcRenderer.on('menu-window.hide-menu', func);
+  },
+
+  /**
    * This will be called by the render process when the user selects a menu item.
    *
+   * @param target The type of the selected item (e.g. item, submenu, parent).
    * @param path The path of the selected menu item.
+   * @param time The time it took to select the item in milliseconds. This is used for
+   *   achievement tracking.
+   * @param source The source used to make the selection.
    */
-  selectItem: (path: string) => {
-    ipcRenderer.send('menu-window.select-item', path);
+  selectItem: (
+    target: InteractionTarget,
+    path: string,
+    time: number,
+    source: SelectionSource
+  ) => {
+    ipcRenderer.send('menu-window.select-item', target, path, time, source);
   },
 
   /**
    * This will be called by the render process when the user hovers a menu item.
    *
+   * @param target The type of the hovered item (e.g. item, submenu, parent).
    * @param path The path of the hovered menu item.
    */
-  hoverItem: (path: string) => {
-    ipcRenderer.send('menu-window.hover-item', path);
-  },
-
-  /**
-   * This will be called by the render process when the user unhovers a menu item.
-   *
-   * @param path The path of the unhovered menu item.
-   */
-  unhoverItem: (path: string) => {
-    ipcRenderer.send('menu-window.unhover-item', path);
+  hoverItem: (target: InteractionTarget, path: string) => {
+    ipcRenderer.send('menu-window.hover-item', target, path);
   },
 
   /**
@@ -104,13 +122,23 @@ export const MENU_WINDOW_API = {
   onReloadSoundTheme: (func: () => void) => {
     ipcRenderer.on('menu-window.reload-sound-theme', func);
   },
+
+  /**
+   * This will be called by the host process when the icon themes should be reloaded.
+   *
+   * @param callback This callback will be called when the icon themes should be reloaded.
+   */
+  onReloadIconThemes: (func: () => void) => {
+    webFrame.clearCache();
+    ipcRenderer.on('menu-window.reload-icon-themes', func);
+  },
 };
 
 /**
- * This interface extends the global window object with the `api` objects. These `api`
- * objects contain all functions that can be called by the renderer process.
+ * This type extends the global window object with the `api` objects. These `api` objects
+ * contain all functions that can be called by the renderer process.
  */
-export interface WindowWithAPIs extends Window {
-  commonAPI: typeof COMMON_WINDOW_API;
-  menuAPI: typeof MENU_WINDOW_API;
-}
+export type WindowWithAPIs = {
+  readonly commonAPI: typeof COMMON_WINDOW_API;
+  readonly menuAPI: typeof MENU_WINDOW_API;
+} & Window;

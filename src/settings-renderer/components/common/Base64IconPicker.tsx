@@ -13,16 +13,16 @@ import i18next from 'i18next';
 
 import * as classes from './Base64IconPicker.module.scss';
 
-interface IProps {
+type Props = {
   /**
    * Function to call when the value changes. This will be called when the user entered a
    * valid base64 image string.
    */
-  onChange?: (value: string) => void;
+  readonly onChange?: (value: string) => void;
 
   /** Initial value of the base64 picker. */
-  initialValue: string;
-}
+  readonly initialValue: string;
+};
 
 /**
  * This component is a textarea that allows the user to enter a base64 encoded image.
@@ -30,7 +30,7 @@ interface IProps {
  * @param props - The properties for the icon picker component.
  * @returns A textarea element that allows the user to enter a base64 encoded image.
  */
-export default function Base64IconPicker(props: IProps) {
+export default function Base64IconPicker(props: Props) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const [value, setValue] = React.useState('');
 
@@ -70,11 +70,8 @@ export default function Base64IconPicker(props: IProps) {
 
   return (
     <textarea
-      className={classes.picker}
-      value={value}
       ref={textareaRef}
-      onChange={(e) => onChange(e.target.value)}
-      spellCheck="false"
+      className={classes.picker}
       placeholder={[
         i18next.t('settings.icon-picker-dialog.base64-example'),
         'data:image/svg+xml;base64,...',
@@ -85,6 +82,9 @@ export default function Base64IconPicker(props: IProps) {
         i18next.t('settings.icon-picker-dialog.url-example'),
         'https://cdn.simpleicons.org/simpleicons/white',
       ].join('\n')}
+      spellCheck="false"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
     />
   );
 }

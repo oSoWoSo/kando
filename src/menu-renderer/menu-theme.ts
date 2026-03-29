@@ -8,16 +8,16 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
-import { IMenuThemeDescription } from '../common';
+import { MenuThemeDescription } from '../common';
 import { IconThemeRegistry } from '../common/icon-themes/icon-theme-registry';
 import { getClosestEquivalentAngle } from '../common/math';
-import { IRenderedMenuItem } from './rendered-menu-item';
+import { RenderedMenuItem } from './rendered-menu-item';
 
 /**
  * Menu themes in Kando are responsible for rendering the menu items. A theme consists of
  * a JSON file, a CSS file, and potentially some assets like fonts or images.
  *
- * The JSON file contains a IMenuThemeDescription which defines some meta data and the
+ * The JSON file contains a MenuThemeDescription which defines some meta data and the
  * different layers which are drawn on top of each other for each menu item. Each layer
  * will be a html div element with a class defined in the theme file. Also, each layer can
  * have a `content` property which can be used to make the layer contain the item's icon
@@ -37,7 +37,7 @@ export class MenuTheme {
    * The current theme description. When the user changes the theme, this will be updated
    * via the `loadDescription` method.
    */
-  private description: IMenuThemeDescription;
+  private description: MenuThemeDescription;
 
   /**
    * Creates a new MenuTheme. This will register the custom CSS properties used by the
@@ -107,17 +107,31 @@ export class MenuTheme {
     return this.description.drawChildrenBelow;
   }
 
+  /** Returns true if the center text of the menu should be drawn. */
+  public get drawCenterText() {
+    return this.description.drawCenterText;
+  }
+
+  /** Returns true if the selection wedges should be visualized for this theme. */
+  public get drawSelectionWedges() {
+    return this.description.drawSelectionWedges;
+  }
+
+  /**
+   * Returns true if the separator lines between selection wedges should be visualized for
+   * this theme.
+   */
+  public get drawWedgeSeparators() {
+    return this.description.drawWedgeSeparators;
+  }
+
   /**
    * Loads the given theme description and applies it to the document. This will remove
    * any old theme first and then add the new theme to the document. It will also register
    * the colors defined in the theme description as CSS properties.
    */
-  public loadDescription(description: IMenuThemeDescription) {
+  public loadDescription(description: MenuThemeDescription) {
     this.description = description;
-
-    // Use defaults if some properties are not set.
-    this.description.maxMenuRadius = this.description.maxMenuRadius || 150;
-    this.description.centerTextWrapWidth = this.description.centerTextWrapWidth || 90;
 
     // Remove any old theme first.
     const oldTheme = document.getElementById('kando-menu-theme');
@@ -159,7 +173,7 @@ export class MenuTheme {
    * @param item The menu item to create the html elements for.
    * @returns The created html element.
    */
-  public createItem(item: IRenderedMenuItem) {
+  public createItem(item: RenderedMenuItem) {
     const nodeDiv = document.createElement('div');
     nodeDiv.classList.add('menu-node');
 
@@ -174,7 +188,14 @@ export class MenuTheme {
       layerDiv.classList.add(layer.class);
 
       if (layer.content === 'name') {
-        layerDiv.innerText = item.name;
+        // If the item has a quick select key, we underline the first occurrence of the
+        // key in the name.
+        if (item.quickSelectKey) {
+          const regex = new RegExp(`(${item.quickSelectKey})`, 'i');
+          layerDiv.innerHTML = item.name.replace(regex, '<u>$1</u>');
+        } else {
+          layerDiv.innerText = item.name;
+        }
       } else if (layer.content === 'icon') {
         const icon = IconThemeRegistry.getInstance().createIcon(
           item.iconTheme,
@@ -204,7 +225,7 @@ export class MenuTheme {
    * @param item The menu item to set the properties for.
    * @param pointerAngle The angle towards the pointer.
    */
-  public setChildProperties(item: IRenderedMenuItem, pointerAngle: number) {
+  public setChildProperties(item: RenderedMenuItem, pointerAngle: number) {
     let angleDiff = Math.abs(item.angle - pointerAngle) % 360;
     angleDiff = Math.min(angleDiff, 360 - angleDiff);
     item.nodeDiv.style.setProperty('--angle-diff', angleDiff.toString());
@@ -219,7 +240,7 @@ export class MenuTheme {
    * @param parentHovered True if the parent item is hovered.
    */
   public setCenterProperties(
-    item: IRenderedMenuItem,
+    item: RenderedMenuItem,
     pointerAngle: number,
     hoverAngle: number,
     parentHovered: boolean

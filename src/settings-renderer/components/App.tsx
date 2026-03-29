@@ -19,6 +19,7 @@ import classNames from 'classnames/bind';
 import { useGeneralSetting, useMenuSettings } from '../state';
 import {
   AboutDialog,
+  AchievementsDialog,
   GeneralSettingsDialog,
   MenuThemesDialog,
   IntroDialog,
@@ -79,36 +80,40 @@ export default function App() {
 
   return (
     <>
-      <div className={classes.container}>
-        <Sidebar position="left" mainDirection="row">
+      <div
+        className={cx({
+          container: true,
+          transparentLightFlavor: settingsWindowFlavor === 'transparent-light',
+          transparentDarkFlavor: settingsWindowFlavor === 'transparent-dark',
+          transparentSystemFlavor: settingsWindowFlavor === 'transparent-system',
+          sakuraLightFlavor: settingsWindowFlavor === 'sakura-light',
+          sakuraDarkFlavor: settingsWindowFlavor === 'sakura-dark',
+          sakuraSystemFlavor: settingsWindowFlavor === 'sakura-system',
+        })}>
+        <Sidebar mainDirection="row" position="left">
           <CollectionList />
           <MenuList />
         </Sidebar>
         <div
           className={cx({
             centerArea: true,
-            transparentLightFlavor: settingsWindowFlavor === 'transparent-light',
-            transparentDarkFlavor: settingsWindowFlavor === 'transparent-dark',
-            transparentSystemFlavor: settingsWindowFlavor === 'transparent-system',
-            sakuraLightFlavor: settingsWindowFlavor === 'sakura-light',
-            sakuraDarkFlavor: settingsWindowFlavor === 'sakura-dark',
-            sakuraSystemFlavor: settingsWindowFlavor === 'sakura-system',
           })}>
           <PreviewHeader />
           <MenuPreview />
           <PreviewFooter />
         </div>
-        <Sidebar position="right" mainDirection="column">
+        <Sidebar mainDirection="column" position="right">
           <Properties />
         </Sidebar>
         <GeneralSettingsDialog />
+        <AchievementsDialog />
         <AboutDialog />
         <IntroDialog />
         <MenuThemesDialog />
       </div>
       <Tooltip
-        id="main-tooltip"
         delayShow={500}
+        id="main-tooltip"
         openEvents={{
           click: true,
           mouseover: true,

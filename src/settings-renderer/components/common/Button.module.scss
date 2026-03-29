@@ -12,7 +12,6 @@
 
 .button {
   display: inline-flex;
-  justify-content: center;
   align-items: center;
 
   color: $text-normal;
@@ -20,10 +19,12 @@
   border-radius: 5px;
   font-size: inherit;
   white-space: nowrap;
+  line-height: 1.3rem;
 
-  svg {
-    position: relative;
-    top: -0.05em;
+  .text {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    min-width: 0;
   }
 
   &:active {
@@ -39,6 +40,37 @@
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
   }
+
+  .indicator {
+    width: 8px;
+    height: 8px;
+    background-color: $key-dark;
+    border-radius: 50%;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+  }
+
+  .badge {
+    font-size: 0.75em;
+    background-color: $key-dark;
+    color: $text-always-light;
+    border-radius: 4px;
+    padding: 2px 8px;
+    transform: translateX(8px);
+  }
+}
+
+.left {
+  justify-content: flex-start;
+}
+
+.right {
+  justify-content: flex-end;
+}
+
+.center {
+  justify-content: center;
 }
 
 .secondary {
@@ -46,6 +78,10 @@
 
   &:hover {
     background-color: $widget-normal-hover;
+  }
+
+  &.pressed {
+    background-color: $widget-normal-active;
   }
 }
 
@@ -72,26 +108,33 @@
   &:hover {
     background-color: $widget-primary-hover;
   }
+
+  &.pressed {
+    background-color: $widget-primary-active;
+  }
 }
 
 .floating {
-  background-color: $toolbar-background;
+  background-color: $widget-normal;
   border-radius: 50px;
 
-  opacity: 0.8;
-
   &:hover {
-    opacity: 1;
+    color: $text-link-hover;
+    background-color: $widget-normal-hover;
+  }
+
+  &.pressed {
+    background-color: $widget-normal-active;
   }
 }
 
 .small {
-  padding: 5px 9px;
+  padding: 7px;
   font-size: 0.8em;
   gap: 4px;
 
   &.grouped {
-    padding: 5px;
+    padding: 7px;
 
     &.flat:last-child,
     &.floating:last-child {
@@ -105,12 +148,12 @@
 }
 
 .medium {
-  padding: 7px 15px;
+  padding: 8px;
   font-size: 1em;
   gap: 6px;
 
   &.grouped {
-    padding: 7px;
+    padding: 8px;
 
     &.flat:last-child,
     &.floating:last-child {
@@ -124,12 +167,12 @@
 }
 
 .large {
-  padding: 10px 18px;
+  padding: 13px;
   font-size: 1.2em;
   gap: 8px;
 
   &.grouped {
-    padding: 9px;
+    padding: 11px;
 
     &.flat:last-child,
     &.floating:last-child {

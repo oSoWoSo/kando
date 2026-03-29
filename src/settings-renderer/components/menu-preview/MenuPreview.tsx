@@ -8,6 +8,9 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
+import { WindowWithAPIs } from '../../settings-window-api';
+declare const window: WindowWithAPIs;
+
 import React from 'react';
 import classNames from 'classnames/bind';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
@@ -16,6 +19,7 @@ import * as classes from './MenuPreview.module.scss';
 const cx = classNames.bind(classes);
 
 import { useAppState, useMenuSettings } from '../../state';
+import { AchievementStatsNumberKeys } from '../../../common';
 import * as math from '../../../common/math';
 import * as utils from './utils';
 
@@ -27,7 +31,7 @@ import { ensureUniqueKeys } from '../../utils';
  * For rendering the menu items around the center item, a list of these objects is
  * created.
  */
-interface IRenderedMenuItem {
+type RenderedMenuItem = {
   /** A unique key for the menu item. This is required for React to identify the item. */
   key: string;
 
@@ -45,7 +49,7 @@ interface IRenderedMenuItem {
 
   /** The fixed angle of the item. This is only set if the item is locked. */
   angle?: number;
-}
+};
 
 /**
  * This component encapsules the center area of the settings dialog. It contains the
@@ -95,7 +99,7 @@ export default function MenuPreview() {
   const [dragIndex, setDragIndex] = React.useState<number | null>(null);
   const [dropIndex, setDropIndex] = React.useState<number | null>(null);
   const [dropInto, setDropInto] = React.useState(false);
-  const [tempItem, setTempItem] = React.useState<IRenderedMenuItem | null>(null);
+  const [tempItem, setTempItem] = React.useState<RenderedMenuItem | null>(null);
   const [dragAngle, setDragAngle] = React.useState<number | null>(null);
 
   // Some booleans matching to the three cases explained above to make the code below more
@@ -148,7 +152,7 @@ export default function MenuPreview() {
   let renderedChildAngles = childAngles;
   const renderedChildren =
     centerItem.children?.map((child, i) => {
-      const item: IRenderedMenuItem = {
+      const item: RenderedMenuItem = {
         // We prepend the selected menu to the key so that there is no weird transition
         // animation when the selected menu changes.
         key: selectedMenu + child.name + child.icon + child.iconTheme,
@@ -351,7 +355,7 @@ export default function MenuPreview() {
   };
 
   // Assembles a list of divs for the grandchild items of the given child item.
-  const renderGrandchildren = (child: IRenderedMenuItem, angle: number) => {
+  const renderGrandchildren = (child: RenderedMenuItem, angle: number) => {
     if (!centerItem.children || !centerItem.children[child.index]?.children) {
       return null;
     }
@@ -368,7 +372,7 @@ export default function MenuPreview() {
     return grandchildDirections.map((direction, index) => {
       return (
         <div
-          key={index}
+          key={`direction-${String(index)}`}
           className={classes.grandChild}
           style={utils.makeCSSProperties(
             'dir',
@@ -386,8 +390,9 @@ export default function MenuPreview() {
 
   // Assembles a list of divs for the child items of the center item. Each child is
   // rendered as a div with a contained icon and potentially a list of grandchild items.
-  const renderChild = (child: IRenderedMenuItem, index: number) => {
+  const renderChild = (child: RenderedMenuItem, index: number) => {
     let angleDragMayStart = false;
+    let clickedDownContainer: HTMLDivElement | null = null;
     const selected = selectedChild >= 0 && selectedChild === child.index;
 
     return (
@@ -399,8 +404,14 @@ export default function MenuPreview() {
           dragging: isDraggedChild(child),
           dropping: dropInto && dropIndex === child.index,
         })}
-        tabIndex={0}
         draggable={child.angle === undefined}
+        style={utils.makeCSSProperties('dir', childDirections[index])}
+        tabIndex={0}
+        onDragEnd={() => {
+          setDropIndex(null);
+          setDragIndex(null);
+          setDropInto(false);
+        }}
         onDragStart={(event) => {
           event.dataTransfer.effectAllowed = 'copyMove';
           event.dataTransfer.setData(
@@ -411,36 +422,24 @@ export default function MenuPreview() {
           setDropIndex(index);
           setDropInto(false);
         }}
-        onDragEnd={() => {
-          setDropIndex(null);
-          setDragIndex(null);
-          setDropInto(false);
+        onKeyDown={(event) => {
+          // Select the child if the user presses enter or space. This is required for
+          // keyboard navigation in the menu preview.
+          if (event.key === 'Enter' || event.key === ' ') {
+            selectChild(index, true);
+          }
+
+          // Delete the item if the user presses the delete key.
+          if (event.key === 'Delete' || event.key === 'Backspace') {
+            deleteMenuItem(selectedMenu, centerItemPath.concat(index));
+            selectCenter();
+          }
         }}
         onPointerDown={() => {
           if (child.angle !== undefined) {
             angleDragMayStart = true;
           }
-        }}
-        onPointerUp={() => {
-          if (angleDragOngoing) {
-            setDragAngle(null);
-            setDragIndex(null);
-            angleDragMayStart = false;
-
-            // If the angle was changed, we need to update the item in the menu.
-            editMenuItem(selectedMenu, centerItemPath, (center) => {
-              center.children.forEach((item, i) => {
-                item.angle = renderedChildren[i].angle;
-              });
-              return center;
-            });
-          }
-          // Only select the child if it is not currently selected. Also, during touch
-          // interaction, onPointerUp is also called at the end of a drag operation. In
-          // this case we do not want to select the child.
-          else if (!selected && dragIndex === null) {
-            selectChild(index, true);
-          }
+          clickedDownContainer = currentContainer.current;
         }}
         onPointerMove={(event) => {
           if (angleDragOngoing || angleDragMayStart) {
@@ -476,23 +475,34 @@ export default function MenuPreview() {
             }
           }
         }}
-        onKeyDown={(event) => {
-          // Select the child if the user presses enter or space. This is required for
-          // keyboard navigation in the menu preview.
-          if (event.key === 'Enter' || event.key === ' ') {
+        onPointerUp={() => {
+          if (angleDragOngoing) {
+            setDragAngle(null);
+            setDragIndex(null);
+            angleDragMayStart = false;
+
+            // If the angle was changed, we need to update the item in the menu.
+            editMenuItem(selectedMenu, centerItemPath, (center) => {
+              center.children.forEach((item, i) => {
+                item.angle = renderedChildren[i].angle;
+              });
+              return center;
+            });
+          }
+          // Only select the child if it is not currently selected. Also, during touch
+          // interaction, onPointerUp is also called at the end of a drag operation. In
+          // this case we do not want to select the child.
+          else if (
+            !selected &&
+            dragIndex === null &&
+            clickedDownContainer === currentContainer.current
+          ) {
             selectChild(index, true);
           }
-
-          // Delete the item if the user presses the delete key.
-          if (event.key === 'Delete' || event.key === 'Backspace') {
-            deleteMenuItem(selectedMenu, centerItemPath.concat(index));
-            selectCenter();
-          }
-        }}
-        style={utils.makeCSSProperties('dir', childDirections[index])}>
-        {child.iconTheme && child.icon && (
-          <ThemedIcon size={'100%'} theme={child.iconTheme} name={child.icon} />
-        )}
+        }}>
+        {child.iconTheme && child.icon ? (
+          <ThemedIcon name={child.icon} size="100%" theme={child.iconTheme} />
+        ) : null}
         {renderGrandchildren(child, renderedChildAngles[index])}
       </div>
     );
@@ -500,7 +510,7 @@ export default function MenuPreview() {
 
   // Renders the lock icon for the given child item. The lock is locked if the item has a
   // fixed angle.
-  const renderLock = (child: IRenderedMenuItem, index: number) => {
+  const renderLock = (child: RenderedMenuItem, index: number) => {
     return (
       <div
         key={child.key}
@@ -524,9 +534,9 @@ export default function MenuPreview() {
           });
         }}>
         <ThemedIcon
-          size={'100%'}
-          theme={'material-symbols-rounded'}
           name={child.angle !== undefined ? 'lock' : 'lock_open'}
+          size="100%"
+          theme="material-symbols-rounded"
         />
       </div>
     );
@@ -576,7 +586,7 @@ export default function MenuPreview() {
   };
 
   // Returns true if the given child is the currently dragged item.
-  const isDraggedChild = (child: IRenderedMenuItem) => {
+  const isDraggedChild = (child: RenderedMenuItem) => {
     return (
       child.key.startsWith('dragged') || // For external drag-and-drop.
       (internalDragOngoing && dragIndex === child.index) // For internal drag-and-drop.
@@ -594,14 +604,14 @@ export default function MenuPreview() {
         <TransitionGroup>
           <CSSTransition
             key={transitionPing ? 'ping' : 'pong'}
-            nodeRef={currentContainer}
-            timeout={350}
             classNames={{
               enter: classes.fadeEnter,
               enterActive: classes.fadeEnterActive,
               exit: classes.fadeExit,
               exitActive: classes.fadeExitActive,
-            }}>
+            }}
+            nodeRef={currentContainer}
+            timeout={350}>
             <div
               ref={currentContainer}
               className={classes.transitionContainer}
@@ -611,11 +621,11 @@ export default function MenuPreview() {
                 // we create a temporary dragged item which will be used as a "drop
                 // indicator" item.
                 if (tempItem === null && dragIndex === null) {
-                  const dataType = ItemTypeRegistry.getInstance().getPreferredDataType(
-                    event.dataTransfer.types
+                  const supported = ItemTypeRegistry.getInstance().hasSupportedDataType(
+                    event.dataTransfer
                   );
 
-                  if (dataType) {
+                  if (supported) {
                     setTempItem({
                       key: 'dragged',
                       index: -1,
@@ -625,7 +635,6 @@ export default function MenuPreview() {
 
                 event.preventDefault();
               }}
-              onDragOver={onDragOver}
               onDragLeave={(event) => {
                 // If we leave the container during an external drag, we reset the drop
                 // data so that the drop indicator is hidden.
@@ -640,7 +649,8 @@ export default function MenuPreview() {
 
                 event.preventDefault();
               }}
-              onDrop={(event) => {
+              onDragOver={onDragOver}
+              onDrop={async (event) => {
                 // If the drag index is set, we are moving an item around. In this case, we need to
                 // move the item to the new position. If it is not set, something new is dragged
                 // from somewhere else. In this case, we need to create a new item at the drop
@@ -676,40 +686,53 @@ export default function MenuPreview() {
                     }
                   }
                 } else {
-                  const preferredType =
-                    ItemTypeRegistry.getInstance().getPreferredDataType(
-                      event.dataTransfer.types
-                    );
+                  const item = await ItemTypeRegistry.getInstance().createItem(
+                    event.dataTransfer
+                  );
 
-                  if (preferredType) {
-                    const item = ItemTypeRegistry.getInstance().createItem(
-                      preferredType,
-                      event.dataTransfer.getData(preferredType)
-                    );
-
-                    if (item) {
-                      if (dropIndex === -1 && dropInto) {
-                        // Create new item in parent.
-                        const parentPath = centerItemPath.slice(0, -1);
-                        editMenuItem(selectedMenu, parentPath, (parent) => {
-                          parent.children.push(item);
-                          return parent;
-                        });
-                      } else if (dropIndex >= 0 && dropInto) {
-                        // Create new item in submenu.
-                        const submenuPath = centerItemPath.concat(dropIndex);
-                        editMenuItem(selectedMenu, submenuPath, (submenu) => {
-                          submenu.children.push(item);
-                          return submenu;
-                        });
-                      } else if (dropIndex >= 0) {
-                        // Create new item among siblings and select it.
-                        editMenuItem(selectedMenu, centerItemPath, (center) => {
-                          center.children.splice(dropIndex, 0, item);
-                          return center;
-                        });
-                        selectChildPath(centerItemPath.concat(dropIndex));
+                  if (item) {
+                    const addAchievementStats = (depth: number, siblings: number) => {
+                      const achievementStats: AchievementStatsNumberKeys[] = [
+                        'addedItems',
+                      ];
+                      if (siblings == 12) {
+                        achievementStats.push('addedItemsToFullMenu');
                       }
+                      if (depth == 4) {
+                        achievementStats.push('addedItemsToDeepMenu');
+                      }
+
+                      window.commonAPI.incrementAchievementStats(achievementStats);
+                    };
+
+                    if (dropIndex === -1 && dropInto) {
+                      // Create new item in parent.
+                      const parentPath = centerItemPath.slice(0, -1);
+                      editMenuItem(selectedMenu, parentPath, (parent) => {
+                        parent.children.push(item);
+                        addAchievementStats(parentPath.length, parent.children.length);
+                        return parent;
+                      });
+                    } else if (dropIndex >= 0 && dropInto) {
+                      // Create new item in submenu.
+                      const submenuPath = centerItemPath.concat(dropIndex);
+                      editMenuItem(selectedMenu, submenuPath, (submenu) => {
+                        submenu.children.push(item);
+                        addAchievementStats(submenuPath.length, submenu.children.length);
+                        return submenu;
+                      });
+                    } else if (dropIndex >= 0) {
+                      // Create new item among siblings and select it.
+                      editMenuItem(selectedMenu, centerItemPath, (center) => {
+                        center.children.splice(dropIndex, 0, item);
+                        addAchievementStats(
+                          centerItemPath.length,
+                          center.children.length
+                        );
+
+                        return center;
+                      });
+                      selectChildPath(centerItemPath.concat(dropIndex));
                     }
                   }
                 }
@@ -730,17 +753,17 @@ export default function MenuPreview() {
                       backLink: true,
                       dropping: dropInto && dropIndex === -1,
                     })}
-                    onClick={() => selectParent()}
                     style={utils.makeCSSProperties(
                       'dir',
                       math.getDirection(parentAngle, 1),
                       'angle',
                       parentAngle - 90
-                    )}>
+                    )}
+                    onClick={() => selectParent()}>
                     <ThemedIcon
+                      name="chevron_right"
                       size="100%"
                       theme="material-symbols-rounded"
-                      name="chevron_right"
                     />
                   </div>
                 )
@@ -751,6 +774,7 @@ export default function MenuPreview() {
                   selected: selectedChild === -1,
                 })}
                 tabIndex={0}
+                onClick={() => selectCenter()}
                 onKeyDown={(event) => {
                   // Select the center item if the user presses enter or space. This is
                   // required for keyboard navigation in the menu preview.
@@ -769,12 +793,11 @@ export default function MenuPreview() {
                       selectParent();
                     }
                   }
-                }}
-                onClick={() => selectCenter()}>
+                }}>
                 <ThemedIcon
-                  size={'100%'}
-                  theme={centerItem.iconTheme}
                   name={centerItem.icon}
+                  size="100%"
+                  theme={centerItem.iconTheme}
                 />
               </div>
               {

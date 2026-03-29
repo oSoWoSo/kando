@@ -12,33 +12,45 @@ import React from 'react';
 
 import Note from './Note';
 
-interface IProps {
+type Props = {
   /** One of these will be displayed. */
-  tips: string[];
+  readonly tips: string[];
 
   /** Margin to apply to the top of the note. Defaults to 0. */
-  marginTop?: number | string;
+  readonly marginTop?: number | string;
 
   /** Margin to apply to the bottom of the note. Defaults to 0. */
-  marginBottom?: number | string;
+  readonly marginBottom?: number | string;
+};
+
+function getRandomTipIndex(tipCount: number) {
+  if (tipCount <= 0) {
+    return 0;
+  }
+
+  return Math.floor(Math.random() * tipCount);
 }
 
 /**
- * Shows a random tip of the day. The tip is chosen from the given list of tips.
+ * Shows a random tip of the day. The tip is chosen from the given list of tips. The tip
+ * is randomly selected on component mount and re-selected whenever the list of tips
+ * changes.
  *
  * @param props - The properties for the tip component.
  * @returns A note element.
  */
-export default function RandomTip(props: IProps) {
+export default function RandomTip(props: Props) {
+  const selectedTipIndex = getRandomTipIndex(props.tips.length);
+
   return (
     <Note
-      center
-      marginLeft={'10%'}
-      marginRight={'10%'}
+      isCentered
+      useMarkdown
       marginBottom={props.marginBottom}
-      marginTop={props.marginTop}
-      markdown>
-      {props.tips[Math.floor(Math.random() * props.tips.length)]}
+      marginLeft="10%"
+      marginRight="10%"
+      marginTop={props.marginTop}>
+      {props.tips[selectedTipIndex] ?? ''}
     </Note>
   );
 }

@@ -28,11 +28,15 @@
   // This theme draws child items below their parent items.
   drawChildrenBelow: false,
 
+  // Do not draw the center text of the menu.
+  drawCenterText: false,
+
   // These colors can be configured by the user and are vailable in the CSS file as CSS
   // variables. The default values are used if the user does not provide any values.
   colors: {
     'icon-color': '#333',
     'label-background-color': '#333',
+    'label-color': '#ddd',
   },
 
   // This theme uses two layers, one for the icon and the background and one for the arrow

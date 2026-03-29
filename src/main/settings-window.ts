@@ -9,10 +9,10 @@
 // SPDX-License-Identifier: MIT
 
 import os from 'node:os';
-import { BrowserWindow, shell, ipcMain, Menu } from 'electron';
+import { BrowserWindow, shell, ipcMain } from 'electron';
 
-import { IGeneralSettings } from '../common';
-import { Settings } from './utils/settings';
+import { GeneralSettings } from '../common';
+import { Settings } from './settings';
 import { Backend } from './backends';
 import { WindowsBackend } from './backends/windows/backend';
 
@@ -22,13 +22,23 @@ declare const SETTINGS_WINDOW_WEBPACK_ENTRY: string;
 /** This is window which contains the settings of Kando. */
 export class SettingsWindow extends BrowserWindow {
   /** This will resolve once the window has fully loaded. */
-  private windowLoaded = new Promise<void>((resolve) => {
+  public onWindowLoaded = new Promise<void>((resolve) => {
     ipcMain.on('settings-window.ready', () => {
       resolve();
     });
   });
 
-  constructor(backend: Backend, settings: Settings<IGeneralSettings>) {
+  constructor(backend: Backend, settings: Settings<GeneralSettings>) {
+    // The special 'auto' flavor is only used as an initial default value. We override it
+    // with the preferred flavor of the backend.
+    if (settings.get('settingsWindowFlavor') === 'auto') {
+      settings.set({
+        settingsWindowFlavor: backend.getBackendInfo().shouldUseTransparentSettingsWindow
+          ? 'transparent-system'
+          : 'sakura-system',
+      });
+    }
+
     const settingsWindowFlavor = settings.get('settingsWindowFlavor');
     const transparent =
       settingsWindowFlavor === 'transparent-light' ||
@@ -44,6 +54,7 @@ export class SettingsWindow extends BrowserWindow {
         // Hence, we have to disable webSecurity in development mode.
         webSecurity: process.env.NODE_ENV !== 'development',
         preload: SETTINGS_WINDOW_PRELOAD_WEBPACK_ENTRY,
+        spellcheck: false,
       },
       backgroundColor: '#00000000',
       titleBarStyle: 'hidden',
@@ -69,37 +80,6 @@ export class SettingsWindow extends BrowserWindow {
       autoHideMenuBar: true,
     });
 
-    // On macOS, we loose the copy and paste functionality when using no menu bar. So we
-    // add a hidden menu bar with the default macOS menu.
-    if (os.platform() === 'darwin') {
-      const template = [
-        {
-          label: 'Edit',
-          submenu: [
-            {
-              role: 'undo',
-            },
-            {
-              role: 'redo',
-            },
-            {
-              role: 'cut',
-            },
-            {
-              role: 'copy',
-            },
-            {
-              role: 'paste',
-            },
-          ],
-        },
-      ];
-      const menu = Menu.buildFromTemplate(
-        template as Electron.MenuItemConstructorOptions[]
-      );
-      Menu.setApplicationMenu(menu);
-    }
-
     // Due to an Electron issue, the acrylic effect on Windows is broken after maximizing
     // the window (https://github.com/electron/electron/issues/42393). We can fix this by
     // some direct calls to the Win32 API.
@@ -118,6 +98,6 @@ export class SettingsWindow extends BrowserWindow {
     this.loadURL(SETTINGS_WINDOW_WEBPACK_ENTRY);
 
     // Show the window when the renderer is ready.
-    this.windowLoaded.then(() => this.show());
+    this.onWindowLoaded.then(() => this.show());
   }
 }

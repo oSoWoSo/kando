@@ -10,6 +10,7 @@
 
 import os from 'node:os';
 import fs from 'fs';
+import fsExtra from 'fs-extra';
 import mime from 'mime-types';
 import path from 'path';
 import json5 from 'json5';
@@ -18,23 +19,40 @@ import i18next from 'i18next';
 
 import { MenuWindow } from './menu-window';
 import { SettingsWindow } from './settings-window';
-import { Backend, getBackend } from './backends';
+import { Backend } from './backends';
 import {
-  IMenuItem,
-  IMenu,
-  IMenuSettings,
-  IGeneralSettings,
-  IShowMenuRequest,
-  IIconThemesInfo,
-  ISoundThemeDescription,
-  IMenuThemeDescription,
-  getDefaultGeneralSettings,
-  getDefaultMenuSettings,
-  IWMInfo,
+  MenuItem,
+  Menu as MenuType,
+  MenuSettings,
+  GeneralSettings,
+  ShowMenuRequest,
+  AchievementStatsNumberKeys,
+  IconThemesInfo,
+  SoundThemeDescription,
+  MenuThemeDescription,
+  WMInfo,
+  SoundType,
+  FileIconThemeDescription,
+  SoundEffect,
+  CommandlineOptions,
+  SystemInfo,
+  VersionInfo,
 } from '../common';
-import { Settings, DeepReadonly } from './utils/settings';
+import {
+  Settings,
+  getConfigDirectory,
+  tryLoadGeneralSettingsFile,
+  tryLoadMenuSettingsFile,
+} from './settings';
+import { IPCServer, IPCCallbacks } from '../common/ipc';
+import { MENU_SCHEMA_V1 } from '../common/settings-schemata/menu-settings-v1';
+import {
+  EXPORTED_MENU_SCHEMA_V1,
+  ExportedMenuV1,
+} from '../common/settings-schemata/exported-menu-v1';
 import { Notification } from './utils/notification';
 import { UpdateChecker } from './utils/update-checker';
+import { AchievementTracker } from './achievements/achievement-tracker';
 import { supportsIsolatedProcesses } from './utils/shell';
 
 /**
@@ -45,15 +63,6 @@ import { supportsIsolatedProcesses } from './utils/shell';
  */
 export class KandoApp {
   /**
-   * The backend is responsible for all the system interaction. It is implemented
-   * differently for each platform.
-   */
-  private backend: Backend = getBackend();
-
-  /** This is used to check for updates. */
-  private updateChecker = new UpdateChecker();
-
-  /**
    * The window is the main window of the application. It is a transparent window which
    * covers the whole screen. It is always on top and has no frame. It is used to display
    * the pie menu.
@@ -61,8 +70,8 @@ export class KandoApp {
   private menuWindow?: MenuWindow;
   private settingsWindow?: SettingsWindow;
 
-  /** True if shortcuts are currently inhibited. */
-  private inhibitShortcuts = false;
+  /** Set to a value > 0 if shortcuts are currently inhibited. */
+  private inhibitAllShortcutsID = 0;
 
   /** This flag is used to determine if the bindShortcuts() method is currently running. */
   private bindingShortcuts = false;
@@ -73,84 +82,92 @@ export class KandoApp {
    */
   private tray: Tray;
 
-  /**
-   * This is the settings object which is used to store the general application settings
-   * in the user's home directory.
-   */
-  private generalSettings: Settings<IGeneralSettings>;
+  /** This is used to track achievements. */
+  public achievementTracker: AchievementTracker;
+
+  /** This is used to check for updates. */
+  private updateChecker = new UpdateChecker();
+
+  /** This is used to manage the IPC interface for opening menus from other processes. */
+  private ipcServer: IPCServer;
+
+  /** This is used to keep track of all active IPC observers. */
+  private ipcObservers: Map<number, IPCCallbacks> = new Map();
+
+  /** This contains the last WMInfo which was received. */
+  private lastWMInfo?: WMInfo;
+
+  /** This will cache the icon themes. */
+  private iconThemesCache?: IconThemesInfo;
 
   /**
-   * This is the settings object which is used to store the configured menus in the user's
-   * home directory.
+   * Most of the initialization is done in the init() method. This constructor is only
+   * used to set up the hidden menu bar as this has to be done before the Electron app is
+   * ready.
+   *
+   * @param backend The backend which is used to interact with the system. It will not yet
+   *   been initialized at this point, but it will be initialized in the init() method.
+   * @param generalSettings The settings object which is used to store the general
+   *   settings in the user's home directory.
+   * @param menuSettings The settings object which is used to store the configured menus
+   *   in the user's home directory.
    */
-  private menuSettings: Settings<IMenuSettings>;
-
-  /** This contains the last IWMInfo which was received. */
-  private lastWMInfo?: IWMInfo;
+  constructor(
+    private backend: Backend,
+    private generalSettings: Settings<GeneralSettings>,
+    private menuSettings: Settings<MenuSettings>
+  ) {
+    // On macOS, we loose the copy and paste functionality when using no menu bar. So we
+    // add a hidden menu bar with some default actions. We also add a custom handler for
+    // closing the window, so that we can hide the menu window instead of closing it.
+    const template = [
+      {
+        label: 'Edit',
+        submenu: [
+          {
+            role: 'undo',
+          },
+          {
+            role: 'redo',
+          },
+          {
+            role: 'cut',
+          },
+          {
+            role: 'copy',
+          },
+          {
+            role: 'paste',
+          },
+          {
+            label: 'Close',
+            accelerator: process.platform === 'darwin' ? 'Cmd+W' : 'Alt+F4',
+            click: () => {
+              if (this.settingsWindow?.isFocused()) {
+                this.settingsWindow.close();
+              } else if (this.menuWindow?.isVisible()) {
+                this.menuWindow.hide();
+              }
+            },
+          },
+        ],
+      },
+    ];
+    const menu = Menu.buildFromTemplate(
+      template as Electron.MenuItemConstructorOptions[]
+    );
+    Menu.setApplicationMenu(menu);
+  }
 
   /** This is called when the app is started. It initializes the backend and the window. */
   public async init() {
-    // Bail out if the backend is not available.
-    if (this.backend === null) {
-      throw new Error('No backend found.');
-    }
+    this.backend.on('shortcutPressed', (trigger) => {
+      this.showMenu({ trigger });
 
-    await this.backend.init();
-
-    // We load the settings from the user's home directory. If the settings file does not
-    // exist, it will be created with the default values. The only special setting is the
-    // settingsWindowFlavor setting which is set to transparent only if the backend
-    // supports transparent windows.
-    this.generalSettings = new Settings<IGeneralSettings>({
-      file: 'config.json',
-      directory: app.getPath('userData'),
-      defaults: {
-        ...getDefaultGeneralSettings(),
-        settingsWindowFlavor: this.backend.getBackendInfo()
-          .shouldUseTransparentSettingsWindow
-          ? 'transparent-system'
-          : 'sakura-system',
-      },
+      // We use the opportunity to check for updates. If an update is available, we show
+      // a notification to the user. This notification is only shown once per session.
+      this.updateChecker.checkForUpdates();
     });
-
-    // We ensure that the themes directories exist. If they do not exist, we create them.
-    try {
-      const themeDirs = ['menu-themes', 'sound-themes', 'icon-themes'];
-      await Promise.all(
-        themeDirs.map((dir) =>
-          fs.promises.mkdir(path.join(app.getPath('userData'), dir), { recursive: true })
-        )
-      );
-    } catch (error) {
-      if (
-        (error.code === 'EROFS' || error.code === 'EACCES' || error.code === 'EPERM') &&
-        !this.generalSettings.get('ignoreWriteProtectedConfigFiles')
-      ) {
-        console.log('Failed to create the themes folders due to write-protected files.');
-      } else {
-        console.error(
-          'An unexpected error occurred while creating theme folders:',
-          error
-        );
-      }
-    }
-
-    // We load the settings from the user's home directory. If the settings file does
-    // not exist, it will be created with the default values.
-    this.menuSettings = new Settings<IMenuSettings>({
-      file: 'menus.json',
-      directory: app.getPath('userData'),
-      defaults: getDefaultMenuSettings(),
-    });
-
-    // Tell i18next to use a specific locale if it is set in the settings.
-    const locale = this.generalSettings.get('locale');
-    if (locale !== 'auto') {
-      i18next.changeLanguage(locale);
-    }
-
-    // Try migrating settings from an old version of Kando.
-    this.migrateSettings();
 
     // We ensure that there is always a menu available. If the user deletes all menus,
     // we create a new example menu when Kando is started the next time.
@@ -171,20 +188,6 @@ export class KandoApp {
       this.updateTrayMenu();
     });
 
-    // Check if we want to silently handle read-only config files
-    this.generalSettings.ignoreWriteProtectedConfigFiles = this.generalSettings.get(
-      'ignoreWriteProtectedConfigFiles'
-    );
-    this.menuSettings.ignoreWriteProtectedConfigFiles = this.generalSettings.get(
-      'ignoreWriteProtectedConfigFiles'
-    );
-
-    // When ignoreWriteProtectedConfigFiles becomes true we want to apply this immediately.
-    this.generalSettings.onChange('ignoreWriteProtectedConfigFiles', (newValue) => {
-      this.generalSettings.ignoreWriteProtectedConfigFiles = newValue;
-      this.menuSettings.ignoreWriteProtectedConfigFiles = newValue;
-    });
-
     // Update the tray icon if the tray icon flavor changes.
     this.generalSettings.onChange('trayIconFlavor', () => {
       this.updateTrayMenu(true);
@@ -196,14 +199,42 @@ export class KandoApp {
       app.setActivationPolicy('accessory');
     }
 
+    // Create the IPC server for opening menus from other applications or our own settings
+    // renderer.
+    this.ipcServer = new IPCServer(app.getPath('userData'));
+    await this.ipcServer.init();
+
+    // When a menu is requested via IPC, we show it.
+    this.ipcServer.on('show-menu', (menuItem) => {
+      const menu: MenuType = {
+        root: menuItem,
+        shortcut: '',
+        shortcutID: '',
+        centered: false,
+        anchored: false,
+        hoverMode: false,
+        tags: [],
+      };
+      this.showMenu({ menu });
+    });
+
+    // When a IPC client registers as observer, we store it.
+    this.ipcServer.on('start-observing', (observerID, callbacks) => {
+      this.ipcObservers.set(observerID, callbacks);
+    });
+
+    // When a IPC client stops observing, we remove it from the list.
+    this.ipcServer.on('stop-observing', (observerID) => {
+      this.ipcObservers.delete(observerID);
+    });
+
     // Initialize the common IPC communication to the renderer process. This will be
     // available in both the menu window and the settings window.
     this.initCommonRendererAPI();
 
     // Create and load the main window if it does not exist yet.
     if (!this.generalSettings.get('lazyInitialization')) {
-      this.menuWindow = new MenuWindow(this);
-      await this.menuWindow.load();
+      await this.createMenuWindow();
     }
 
     // Bind the shortcuts for all menus.
@@ -221,15 +252,42 @@ export class KandoApp {
     });
 
     this.updateChecker.on('update-available', () => {
-      Notification.show(
-        i18next.t('main.new-version-notification-header'),
-        i18next.t('main.new-version-notification-body', {
+      Notification.show({
+        title: i18next.t('main.new-version-notification-header'),
+        message: i18next.t('main.new-version-notification-body', {
           link: 'https://github.com/kando-menu/kando/releases',
           interpolation: { escapeValue: false },
         }),
-        () => {
+        onClick: () => {
           shell.openExternal('https://github.com/kando-menu/kando/releases');
-        }
+        },
+      });
+    });
+
+    // Initialize the achievement tracker.
+    this.achievementTracker = new AchievementTracker(this.generalSettings);
+
+    this.achievementTracker.on('completed', (achievement) => {
+      if (this.generalSettings.get('enableAchievementNotifications')) {
+        Notification.show({
+          title: i18next.t('achievements.completed-title'),
+          message: achievement.name,
+          onClick: () => {
+            this.showSettings();
+            this.settingsWindow.onWindowLoaded.then(() => {
+              this.settingsWindow.webContents.send(
+                'settings-window.show-achievements-dialog'
+              );
+            });
+          },
+        });
+      }
+    });
+
+    this.achievementTracker.on('progress-changed', () => {
+      this.settingsWindow?.webContents.send(
+        'settings-window.level-progress-changed',
+        this.achievementTracker.getProgress()
       );
     });
   }
@@ -237,11 +295,58 @@ export class KandoApp {
   /** This is called when the app is closed. It will unbind all shortcuts. */
   public async quit() {
     if (this.backend != null) {
-      await this.backend.unbindAllShortcuts();
+      await this.backend.deinit();
     }
 
     this.generalSettings.close();
     this.menuSettings.close();
+    this.ipcServer.close();
+  }
+
+  /**
+   * Performs actions based on the given command line arguments. It returns true if a
+   * option was passed that was handled by the app.
+   *
+   * @param options The command line options passed to the app.
+   * @returns True if a command line option was handled by the app.
+   */
+  public handleCommandLine(options: CommandlineOptions) {
+    if (options.menu) {
+      this.showMenu({ name: options.menu });
+      return true;
+    }
+
+    if (options.trigger) {
+      this.showMenu({ trigger: options.trigger });
+      return true;
+    }
+
+    if (options.settings) {
+      this.showSettings();
+      return true;
+    }
+
+    if (options.reloadMenuTheme) {
+      this.reloadMenuTheme();
+      return true;
+    }
+
+    if (options.reloadSoundTheme) {
+      this.reloadSoundTheme();
+      return true;
+    }
+
+    if (options.reloadIconThemes) {
+      this.reloadIconThemes();
+      return true;
+    }
+
+    if (options.closeMenu) {
+      this.menuWindow?.hide();
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -272,9 +377,9 @@ export class KandoApp {
   }
 
   /**
-   * Allow access to the last IWMInfo object.
+   * Allow access to the last WMInfo object.
    *
-   * @returns The last IWMInfo object.
+   * @returns The last WMInfo object.
    */
   public getLastWMInfo() {
     return this.lastWMInfo;
@@ -292,22 +397,38 @@ export class KandoApp {
    *
    * @param request Required information to select correct menu.
    */
-  public async showMenu(request: Partial<IShowMenuRequest>) {
+  public async showMenu(request: ShowMenuRequest) {
     // Create and load the main window if it does not exist yet.
     if (!this.menuWindow) {
-      this.menuWindow = new MenuWindow(this);
-      await this.menuWindow.load();
+      await this.createMenuWindow();
     }
 
-    this.backend
-      .getWMInfo()
-      .then((info) => {
-        this.lastWMInfo = info;
-        this.menuWindow.showMenu(request, info);
-      })
-      .catch((error) =>
-        Notification.showError('Failed to show menu', error.message || error)
-      );
+    const [wmInfo, systemIconsChanged] = await Promise.all([
+      this.backend.getWMInfo(),
+      this.backend.systemIconsChanged(),
+    ]);
+
+    // If a menu is already shown, we do not need the window information from the backend
+    // as now Kando will be in focus. We use the old information instead.
+    if (this.lastWMInfo && this.menuWindow.isVisible()) {
+      this.lastWMInfo = {
+        ...wmInfo,
+        appName: this.lastWMInfo.appName,
+        windowName: this.lastWMInfo.windowName,
+      };
+    } else {
+      this.lastWMInfo = wmInfo;
+    }
+
+    try {
+      await this.menuWindow.showMenu(request, this.lastWMInfo, systemIconsChanged);
+    } catch (error) {
+      Notification.show({
+        title: 'Failed to show menu',
+        message: error instanceof Error ? error.message : error,
+        type: 'error',
+      });
+    }
   }
 
   /**
@@ -333,6 +454,8 @@ export class KandoApp {
     this.settingsWindow.on('closed', () => {
       this.settingsWindow = undefined;
     });
+
+    this.achievementTracker.incrementStat('settingsOpened');
   }
 
   /**
@@ -352,6 +475,54 @@ export class KandoApp {
   }
 
   /**
+   * This is called when the --reload-icon-themes command line option is passed or when
+   * the respective button in the settings is pressed.
+   */
+  public async reloadIconThemes() {
+    delete this.iconThemesCache;
+
+    this.menuWindow?.webContents.send('menu-window.reload-icon-themes');
+    this.settingsWindow?.webContents.send('settings-window.reload-icon-themes');
+  }
+
+  /**
+   * Creates the menu window and initializes its event handlers. Whenever an interaction
+   * with the menu happens, the respective callbacks of all registered IPC observers will
+   * be called. IPC observers can be registered by other processes via websockets.
+   */
+  private async createMenuWindow() {
+    this.menuWindow = new MenuWindow(this, {
+      onSelect: (target, path) => {
+        for (const observer of this.ipcObservers.values()) {
+          observer.onSelect(target, path);
+        }
+      },
+      onHover: (target, path) => {
+        for (const observer of this.ipcObservers.values()) {
+          observer.onHover(target, path);
+        }
+      },
+      onCancel: () => {
+        for (const observer of this.ipcObservers.values()) {
+          observer.onCancel();
+        }
+      },
+      onOpen: () => {
+        for (const observer of this.ipcObservers.values()) {
+          observer.onOpen();
+        }
+      },
+    });
+    await this.menuWindow.load();
+
+    // Make sure that closing the menu window just hides it instead of actually closing it.
+    this.menuWindow.on('close', (event) => {
+      event.preventDefault();
+      this.menuWindow.hide();
+    });
+  }
+
+  /**
    * Setup IPC communication with the renderer process. See ../renderer/preload.ts for
    * more information on the exposed functionality.
    */
@@ -368,7 +539,7 @@ export class KandoApp {
         electronVersion: process.versions.electron,
         chromeVersion: process.versions.chrome,
         nodeVersion: process.versions.node,
-      };
+      } as VersionInfo;
     });
 
     // Allow the renderer to retrieve information about the current window manager state.
@@ -378,9 +549,13 @@ export class KandoApp {
 
     // Allow the renderer to retrieve information about the current system.
     ipcMain.handle('settings-window.get-system-info', () => {
+      const ipcPort = this.ipcServer.getPort();
+      const ipcApiVersion = this.ipcServer.getApiVersion();
       return {
         supportsIsolatedProcesses: supportsIsolatedProcesses(),
-      };
+        ipcPort,
+        ipcApiVersion,
+      } as SystemInfo;
     });
 
     // Allow the renderer to retrieve the position of the settings window.
@@ -410,18 +585,18 @@ export class KandoApp {
 
     // Allow the renderer to retrieve the path to the config directory.
     ipcMain.handle('settings-window.get-config-directory', () => {
-      return app.getPath('userData');
+      return getConfigDirectory();
     });
 
     // Allow the renderer to retrieve the path to the menu themes directory.
     ipcMain.handle('settings-window.get-menu-themes-directory', () => {
-      return path.join(app.getPath('userData'), 'menu-themes');
+      return path.join(getConfigDirectory(), 'menu-themes');
     });
 
     // Allow the renderer to retrieve all available menu themes.
     ipcMain.handle('settings-window.get-all-menu-themes', async () => {
       const themes = await this.listSubdirectories([
-        path.join(app.getPath('userData'), 'menu-themes'),
+        path.join(getConfigDirectory(), 'menu-themes'),
         path.join(__dirname, '../renderer/assets/menu-themes'),
       ]);
 
@@ -434,10 +609,119 @@ export class KandoApp {
       return descriptions.sort((a, b) => a.name.localeCompare(b.name));
     });
 
+    // Allow the renderer to retrieve all presets for a given menu theme.
+    ipcMain.handle(
+      'settings-window.get-menu-theme-presets',
+      async (event, themeId: string) => {
+        try {
+          // Load presets from both user directory and assets directory
+          const userPresetsDir = this.getUserThemePresetsDirectory(themeId);
+          const assetsPresetsDir = path.join(
+            __dirname,
+            `../renderer/assets/menu-themes/${themeId}/presets`
+          );
+
+          const userPresets = await this.loadPresetsFromDirectory(userPresetsDir);
+          const assetsPresets = await this.loadPresetsFromDirectory(assetsPresetsDir);
+
+          // Combine presets, giving priority to user presets (they can override built-in ones)
+          // Create a map with asset presets first
+          const presetsMap = new Map<
+            string,
+            { name: string; colors: Record<string, string> }
+          >();
+
+          // Add asset presets first
+          for (const preset of assetsPresets) {
+            presetsMap.set(preset.name, preset);
+          }
+
+          // Add user presets (overwrite assets if same name)
+          for (const preset of userPresets) {
+            presetsMap.set(preset.name, preset);
+          }
+
+          return Array.from(presetsMap.values());
+        } catch (e) {
+          console.error('Failed to load presets:', e);
+          return [];
+        }
+      }
+    );
+
+    // Allow the renderer to export the current menu theme colors as a preset.
+    ipcMain.handle(
+      'settings-window.export-menu-theme-preset',
+      async (
+        event,
+        themeId: string,
+        colors: Record<string, string>,
+        presetName: string
+      ) => {
+        try {
+          const presetsDir = this.getUserThemePresetsDirectory(themeId);
+
+          // Create the presets directory if it doesn't exist.
+          if (!fs.existsSync(presetsDir)) {
+            fs.mkdirSync(presetsDir, { recursive: true });
+          }
+
+          // Validate preset name (only allow letters, numbers, hyphens, underscores, and spaces)
+          if (!/^[a-zA-Z0-9_\-\s]+$/.test(presetName)) {
+            throw new Error(
+              'Invalid preset name. Only letters, numbers, hyphens, underscores, and spaces are allowed.'
+            );
+          }
+
+          // Save the preset file
+          const presetFilePath = path.join(presetsDir, `${presetName}.json`);
+          const presetData = { colors };
+          fs.writeFileSync(presetFilePath, JSON.stringify(presetData, null, 2), {
+            encoding: 'utf8',
+          });
+
+          // Reload the presets in the renderer.
+          this.settingsWindow.webContents.send('settings-window.presets-changed');
+        } catch (e) {
+          const errorMsg = e instanceof Error ? e.message : 'Failed to export preset';
+          console.error('Failed to export preset:', e);
+
+          // Show error dialog with localized title and message
+          dialog.showMessageBox(this.settingsWindow, {
+            type: 'error',
+            title: i18next.t('settings.menu-themes-dialog.save-preset-error-title'),
+            message: i18next.t('settings.menu-themes-dialog.save-preset-error-message', {
+              error: errorMsg,
+            }),
+          });
+        }
+      }
+    );
+
+    // Allow the renderer to open the presets directory for a given menu theme.
+    ipcMain.on(
+      'settings-window.open-menu-theme-presets-directory',
+      async (event, themeId: string) => {
+        try {
+          const presetsDir = this.getUserThemePresetsDirectory(themeId);
+
+          // Create the presets directory if it doesn't exist.
+          if (!fs.existsSync(presetsDir)) {
+            fs.mkdirSync(presetsDir, { recursive: true });
+          }
+
+          // Open the presets directory in the file manager.
+          shell.openPath(presetsDir);
+        } catch (e) {
+          console.error('Failed to open presets directory:', e);
+        }
+      }
+    );
+
     // Allow the renderer to retrieve all available sound themes.
     ipcMain.handle('settings-window.get-all-sound-themes', async () => {
       const themes = await this.listSubdirectories([
-        path.join(app.getPath('userData'), 'sound-themes'),
+        path.join(getConfigDirectory(), 'sound-themes'),
         path.join(__dirname, '../renderer/assets/sound-themes'),
       ]);
 
@@ -450,15 +734,61 @@ export class KandoApp {
       return descriptions.sort((a, b) => a.name.localeCompare(b.name));
     });
 
+    // Allow the renderer to retrieve all installed applications.
+    ipcMain.handle('settings-window.get-installed-apps', () => {
+      return this.backend.getInstalledApps();
+    });
+
+    // Allow the renderer to retrieve the current level progress.
+    ipcMain.handle('settings-window.get-level-progress', () => {
+      return this.achievementTracker.getProgress();
+    });
+
+    // This will be called when the completed achievements are viewed in the settings.
+    ipcMain.on('settings-window.mark-achievements-as-viewed', () => {
+      this.achievementTracker.onAchievementsViewed();
+    });
+
+    // This will be called when the achievements and level progress should be reset. We
+    // will show a confirmation dialog before doing this.
+    ipcMain.on('settings-window.reset-level-progress', async () => {
+      const response = await dialog.showMessageBox(this.settingsWindow, {
+        type: 'warning',
+        buttons: [
+          i18next.t('settings.cancel'),
+          i18next.t('settings.achievements-dialog.reset-button'),
+        ],
+        title: i18next.t('settings.achievements-dialog.reset-confirmation-title'),
+        message: i18next.t('settings.achievements-dialog.reset-confirmation-message'),
+      });
+
+      if (response.response === 0) {
+        return;
+      }
+
+      this.achievementTracker.resetProgress();
+    });
+
+    // Allow the renderer to open a specific menu. This is used for previewing menus.
+    ipcMain.on('settings-window.open-menu', (e, index: number) => {
+      this.showMenu({ menu: this.menuSettings.get('menus')[index] as MenuType });
+    });
+
     // Show the web developer tools if requested.
     ipcMain.on(
       'settings-window.show-dev-tools',
       (e, forWindow: 'menu-window' | 'settings-window') => {
         if (forWindow === 'menu-window') {
-          this.menuWindow?.webContents.openDevTools();
+          this.menuWindow?.webContents.openDevTools({
+            mode: 'undocked',
+            title: 'Menu-Window Inspector',
+          });
         }
         if (forWindow === 'settings-window') {
-          this.settingsWindow.webContents.openDevTools();
+          this.settingsWindow.webContents.openDevTools({
+            mode: 'detach',
+            title: 'Settings-Window Inspector',
+          });
         }
       }
     );
@@ -473,6 +803,11 @@ export class KandoApp {
       this.reloadSoundTheme();
     });
 
+    // Reload the current icon themes if requested.
+    ipcMain.on('settings-window.reload-icon-themes', async () => {
+      this.reloadIconThemes();
+    });
+
     // Allow showing open-file dialogs.
     ipcMain.handle('settings-window.open-file-picker', async (event, config) => {
       const result = await dialog.showOpenDialog(this.settingsWindow, config);
@@ -484,6 +819,118 @@ export class KandoApp {
       // We only want to return the first file. This is because the user can only select
       // one file at a time.
       return result.filePaths[0];
+    });
+
+    // Allow creating backups of the general settings.
+    ipcMain.on('settings-window.backup-general-settings', async () => {
+      const result = await dialog.showSaveDialog(this.settingsWindow, {
+        defaultPath: path.join(getConfigDirectory(), 'general-settings-backup.json'),
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      });
+
+      if (result.filePath != '') {
+        fs.copyFileSync(this.generalSettings.filePath, result.filePath);
+        this.achievementTracker.incrementStat('settingsBackedUp');
+      }
+    });
+
+    // Allow creating backups of the menu settings.
+    ipcMain.on('settings-window.backup-menu-settings', async () => {
+      const result = await dialog.showSaveDialog(this.settingsWindow, {
+        defaultPath: path.join(getConfigDirectory(), 'menu-settings-backup.json'),
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      });
+
+      if (result.filePath != '') {
+        fs.copyFileSync(this.menuSettings.filePath, result.filePath);
+        this.achievementTracker.incrementStat('settingsBackedUp');
+      }
+    });
+
+    // Allow restoring the general settings from a backup. We show a warning that this
+    // will overwrite the current settings.
+    ipcMain.on('settings-window.restore-general-settings', async () => {
+      const response = await dialog.showMessageBox(this.settingsWindow, {
+        type: 'warning',
+        buttons: [i18next.t('settings.cancel'), i18next.t('settings.restore-backup')],
+        title: i18next.t('settings.restore-general-settings-warning-title'),
+        message: i18next.t('settings.restore-general-settings-warning-message'),
+      });
+
+      if (response.response === 0) {
+        return;
+      }
+
+      const result = await dialog.showOpenDialog(this.settingsWindow, {
+        defaultPath: path.join(getConfigDirectory(), 'general-settings-backup.json'),
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      });
+
+      if (!result.canceled) {
+        try {
+          tryLoadGeneralSettingsFile(result.filePaths[0]);
+        } catch (error) {
+          dialog.showMessageBox(this.settingsWindow, {
+            type: 'error',
+            title: i18next.t('settings.restore-general-settings-error-title'),
+            message: error instanceof Error ? error.message : String(error),
+          });
+
+          return;
+        }
+
+        fs.copyFileSync(result.filePaths[0], this.generalSettings.filePath);
+        this.achievementTracker.incrementStat('settingsRestored');
+
+        dialog.showMessageBox(this.settingsWindow, {
+          type: 'info',
+          title: i18next.t('settings.restore-general-settings-success-title'),
+          message: i18next.t('settings.restore-general-settings-success-message'),
+        });
+      }
+    });
+
+    // Allow restoring the menu configuration from a backup. We show a warning that this
+    // will overwrite the current menus.
+    ipcMain.on('settings-window.restore-menu-settings', async () => {
+      const response = await dialog.showMessageBox(this.settingsWindow, {
+        type: 'warning',
+        buttons: [i18next.t('settings.cancel'), i18next.t('settings.restore-backup')],
+        title: i18next.t('settings.restore-menu-settings-warning-title'),
+        message: i18next.t('settings.restore-menu-settings-warning-message'),
+      });
+
+      if (response.response === 0) {
+        return;
+      }
+
+      const result = await dialog.showOpenDialog(this.settingsWindow, {
+        defaultPath: path.join(getConfigDirectory(), 'menu-settings-backup.json'),
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      });
+
+      if (!result.canceled) {
+        try {
+          tryLoadMenuSettingsFile(result.filePaths[0]);
+        } catch (error) {
+          dialog.showMessageBox(this.settingsWindow, {
+            type: 'error',
+            title: i18next.t('settings.restore-menu-settings-error-title'),
+            message: error instanceof Error ? error.message : String(error),
+          });
+
+          return;
+        }
+
+        fs.copyFileSync(result.filePaths[0], this.menuSettings.filePath);
+        this.achievementTracker.incrementStat('settingsRestored');
+
+        dialog.showMessageBox(this.settingsWindow, {
+          type: 'info',
+          title: i18next.t('settings.restore-menu-settings-success-title'),
+          message: i18next.t('settings.restore-menu-settings-success-message'),
+        });
+      }
     });
 
     // Print a message to the console of the host process.
@@ -543,6 +990,10 @@ export class KandoApp {
 
     // Tell the renderers when the menu settings change.
     this.menuSettings.onAnyChange((newSettings, oldSettings) => {
+      if (newSettings.menus.length === 0) {
+        this.achievementTracker.incrementStat('deletedAllMenus');
+      }
+
       this.menuWindow?.webContents.send(
         'common.menu-settings-changed',
         newSettings,
@@ -561,6 +1012,115 @@ export class KandoApp {
       );
     });
 
+    // Export a single menu to a JSON file. If no filePath is provided, show a save
+    // dialog.
+    ipcMain.handle('settings-window.export-menu', async (event, menuIndex: number) => {
+      const settings = this.menuSettings.get();
+
+      if (menuIndex < 0 || menuIndex >= settings.menus.length) {
+        console.error('Failed to export menu: Invalid menu index.');
+        return false;
+      }
+
+      // We only export the root menu item (so exported files stay compact and don't
+      // include local UI flags like centered/anchored/hoverMode). This also makes future
+      // extensions easier.
+      const menu = settings.menus[menuIndex];
+      const menuData: ExportedMenuV1 = {
+        version: settings.version,
+        menu: menu.root as MenuItem,
+      };
+
+      try {
+        const result = await dialog.showSaveDialog(this.settingsWindow, {
+          defaultPath: `${menu.root.name}.json`,
+          filters: [{ name: 'JSON', extensions: ['json'] }],
+        });
+
+        if (result.canceled || !result.filePath) {
+          return false;
+        }
+
+        fs.writeFileSync(result.filePath, JSON.stringify(menuData, null, 2), 'utf-8');
+        return true;
+      } catch (error) {
+        console.error('Failed to export menu:', error);
+        await dialog.showMessageBox(this.settingsWindow, {
+          type: 'error',
+          title: i18next.t('settings.export-menu-error-title', 'Failed to export menu'),
+          message: 'Failed to export menu.',
+          detail: error instanceof Error ? error.message : String(error),
+        });
+        return false;
+      }
+    });
+
+    // Import a menu from a JSON file
+    ipcMain.handle('settings-window.import-menu', async () => {
+      const result = await dialog.showOpenDialog(this.settingsWindow, {
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      });
+
+      if (result.canceled || !result.filePaths[0]) {
+        return false;
+      }
+
+      try {
+        const content = fsExtra.readJsonSync(result.filePaths[0], 'utf-8');
+
+        // Validate the exported file format first (version + root menu item)
+        const exported = EXPORTED_MENU_SCHEMA_V1.parse(content, { reportInput: true });
+
+        // Convert the exported root into a full MENU object so defaults (like
+        // centered/anchored/hoverMode and shortcut fields) are applied.
+        const validatedMenu = MENU_SCHEMA_V1.parse(
+          { root: exported.menu },
+          { reportInput: true }
+        );
+
+        // Add the menu to the settings
+        const settings = this.menuSettings.get();
+        const newMenus = [...settings.menus, validatedMenu];
+
+        // Update the settings
+        this.menuSettings.set({ menus: newMenus as Partial<MenuSettings>['menus'] });
+
+        return true;
+      } catch (error) {
+        console.error('Error importing menu:', error);
+
+        let detail = error instanceof Error ? error.message : String(error);
+
+        // If this is a schema/validation error, try to extract useful messages.
+        if (
+          error &&
+          (
+            error as unknown as {
+              issues?: { path?: (string | number)[]; message: string }[];
+            }
+          ).issues
+        ) {
+          const issues = (
+            error as unknown as {
+              issues: { path?: (string | number)[]; message: string }[];
+            }
+          ).issues;
+          detail = issues
+            .map((issue) => `${issue.path?.join('.') || '<root>'}: ${issue.message}`)
+            .join('\n');
+        }
+
+        await dialog.showMessageBox(this.settingsWindow, {
+          type: 'error',
+          title: i18next.t('settings.import-menu-error-title'),
+          message: i18next.t('settings.import-menu-error-message'),
+          detail,
+        });
+
+        return false;
+      }
+    });
+
     // Allow the renderer to retrieve the i18next locales.
     ipcMain.handle('common.get-locales', () => {
       return {
@@ -572,22 +1132,23 @@ export class KandoApp {
 
     // Allow the renderer to retrieve all icons of all file icon themes.
     ipcMain.handle('common.get-icon-themes', async () => {
-      const info: IIconThemesInfo = {
-        userIconDirectory: path.join(app.getPath('userData'), 'icon-themes'),
-        fileIconThemes: [],
-      };
+      if (this.iconThemesCache) {
+        return this.iconThemesCache;
+      }
 
       const themes = await this.listSubdirectories([
-        path.join(app.getPath('userData'), 'icon-themes'),
+        path.join(getConfigDirectory(), 'icon-themes'),
         path.join(__dirname, '../renderer/assets/icon-themes'),
       ]);
+
+      const fileIconThemes: FileIconThemeDescription[] = [];
 
       await Promise.all(
         themes.map(async (theme) => {
           const directory = await this.findIconThemePath(theme);
           const icons = await this.listIconsRecursively(directory);
 
-          info.fileIconThemes.push({
+          fileIconThemes.push({
             name: theme,
             directory,
             icons,
@@ -595,7 +1156,12 @@ export class KandoApp {
         })
       );
 
-      return info;
+      this.iconThemesCache = {
+        userIconDirectory: path.join(getConfigDirectory(), 'icon-themes'),
+        fileIconThemes,
+      };
+
+      return this.iconThemesCache;
     });
 
     // Allow the renderer to retrieve the description of the current menu theme. We also
@@ -646,6 +1212,28 @@ export class KandoApp {
     ipcMain.handle('common.get-sound-theme', async () => {
       return this.loadSoundThemeDescription(this.generalSettings.get('soundTheme'));
     });
+
+    // Allow the renderer to retrieve all system icons.
+    ipcMain.handle('common.get-system-icons', async () => {
+      return this.backend.getSystemIcons();
+    });
+
+    // Allow the renderer to create a new menu item for a file that was dropped onto the
+    // menu editor.
+    ipcMain.handle(
+      'common.create-menu-item-for-file',
+      async (event, name: string, path: string) => {
+        return this.backend.createItemForDroppedFile(name, path);
+      }
+    );
+
+    // Allow the renderer to increment achievement statistics.
+    ipcMain.on(
+      'common.increment-achievement-stats',
+      (event, keys: AchievementStatsNumberKeys[]) => {
+        this.achievementTracker.incrementStats(keys);
+      }
+    );
   }
 
   /**
@@ -740,21 +1328,20 @@ export class KandoApp {
     });
 
     // Add an entry to pause or unpause the shortcuts.
-    if (this.inhibitShortcuts) {
+    if (this.inhibitAllShortcutsID > 0) {
       template.push({
         label: i18next.t('main.un-inhibit-shortcuts'),
-        click: () => {
-          this.inhibitShortcuts = false;
-          this.bindShortcuts();
+        click: async () => {
+          await this.backend.releaseInhibition(this.inhibitAllShortcutsID);
+          this.inhibitAllShortcutsID = 0;
           this.updateTrayMenu();
         },
       });
     } else {
       template.push({
         label: i18next.t('main.inhibit-shortcuts'),
-        click: () => {
-          this.inhibitShortcuts = true;
-          this.backend.unbindAllShortcuts();
+        click: async () => {
+          this.inhibitAllShortcutsID = await this.backend.inhibitAllShortcuts();
           this.updateTrayMenu();
         },
       });
@@ -784,47 +1371,133 @@ export class KandoApp {
 
     this.bindingShortcuts = true;
 
-    // First, we unbind all shortcuts.
-    await this.backend.unbindAllShortcuts();
-
-    // Then, we collect all unique shortcuts and the corresponding menus.
-    const triggers = new Map<string, DeepReadonly<IMenu>[]>();
-    for (const menu of this.menuSettings.get('menus')) {
-      const trigger = this.backend.getBackendInfo().supportsShortcuts
+    // First, we collect all shortcuts / shortcut IDs of all menus.
+    let shortcuts = this.menuSettings.get('menus').map((menu) => {
+      const shortcut = this.backend.getBackendInfo().supportsShortcuts
         ? menu.shortcut
         : menu.shortcutID;
 
-      if (trigger) {
-        if (!triggers.has(trigger)) {
-          triggers.set(trigger, []);
-        }
-        triggers.get(trigger).push(menu);
-      }
-    }
+      return shortcut;
+    });
 
-    // Finally, we bind the shortcuts. If there are multiple menus with the same
-    // shortcut, the shortcut will open the first menu for now.
-    for (const [trigger] of triggers) {
-      try {
-        await this.backend.bindShortcut({
-          trigger,
-          action: () => {
-            this.showMenu({ trigger: trigger });
+    // Make them unique.
+    shortcuts = Array.from(new Set(shortcuts)).filter((trigger) => trigger !== '');
 
-            // We use the opportunity to check for updates. If an update is available, we show
-            // a notification to the user. This notification is only shown once per app start.
-            this.updateChecker.checkForUpdates();
-          },
-        });
-      } catch (error) {
-        Notification.showError(
-          'Failed to bind shortcut ' + trigger,
-          error.message || error
-        );
-      }
+    // Finally, we bind the shortcuts.
+    try {
+      await this.backend.bindShortcuts(shortcuts);
+    } catch (error) {
+      Notification.show({
+        title: 'Failed to bind shortcut',
+        message: error instanceof Error ? error.message : error,
+        type: 'error',
+      });
     }
 
     this.bindingShortcuts = false;
+  }
+
+  /**
+   * Gets the directory where presets for a specific menu theme are stored. All presets
+   * are stored in the user's config directory to ensure they persist even if the theme is
+   * updated or located in the app's bundled assets.
+   *
+   * @param themeId The ID of the theme.
+   * @returns The absolute path to the presets directory for the given theme.
+   */
+  private getUserThemePresetsDirectory(themeId: string): string {
+    return path.join(getConfigDirectory(), 'menu-themes', themeId, 'presets');
+  }
+
+  /**
+   * Loads all presets from a given directory.
+   *
+   * @param presetsDir The directory to load presets from.
+   * @returns An array of presets with their names and colors.
+   */
+  private async loadPresetsFromDirectory(presetsDir: string) {
+    const presets: Array<{
+      name: string;
+      colors: Record<string, string>;
+    }> = [];
+
+    try {
+      // Check if directory exists
+      const exists = await fs.promises
+        .access(presetsDir, fs.constants.F_OK)
+        .then(() => true)
+        .catch(() => false);
+
+      if (!exists) {
+        return presets;
+      }
+
+      const files = await fs.promises.readdir(presetsDir);
+
+      for (const file of files) {
+        const full = path.join(presetsDir, file);
+
+        try {
+          const stat = await fs.promises.stat(full);
+
+          // Only consider files (not subdirectories) and JSON files.
+          if (!stat.isFile() || path.extname(file).toLowerCase() !== '.json') {
+            continue;
+          }
+
+          const presetName = path.basename(file, '.json');
+
+          try {
+            const content = await fs.promises.readFile(full, { encoding: 'utf8' });
+            const data = json5.parse(content);
+
+            // Validate the structure: must be an object with a `colors` object.
+            if (
+              !data ||
+              typeof data !== 'object' ||
+              !data.colors ||
+              typeof data.colors !== 'object'
+            ) {
+              console.error(
+                `Failed to load preset "${presetName}": Invalid structure: missing or invalid colors object`
+              );
+              continue;
+            }
+
+            const colors: Record<string, string> = {};
+            let hasInvalidColor = false;
+
+            for (const [k, v] of Object.entries(data.colors)) {
+              if (typeof v !== 'string') {
+                hasInvalidColor = true;
+                break;
+              }
+              colors[k] = v;
+            }
+
+            if (hasInvalidColor) {
+              console.error(
+                `Failed to load preset "${presetName}": Invalid color value: colors must be strings`
+              );
+              continue;
+            }
+
+            presets.push({ name: presetName, colors });
+          } catch (e) {
+            const errorMsg = e instanceof Error ? e.message : String(e);
+            console.error(`Failed to parse preset "${presetName}":`, errorMsg);
+          }
+        } catch (e) {
+          const errorMsg = e instanceof Error ? e.message : String(e);
+          console.error(`Failed to read preset file "${file}":`, errorMsg);
+        }
+      }
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      console.error(`Failed to read presets directory "${presetsDir}":`, errorMsg);
+    }
+
+    return presets;
   }
 
   /**
@@ -842,7 +1515,7 @@ export class KandoApp {
    */
   private async findThemePath(directory: string, theme: string) {
     const testPaths = [
-      path.join(app.getPath('userData'), `${directory}/${theme}`),
+      path.join(getConfigDirectory(), `${directory}/${theme}`),
       path.join(__dirname, `../renderer/assets/${directory}/${theme}`),
     ];
 
@@ -876,7 +1549,7 @@ export class KandoApp {
    */
   private async findIconThemePath(theme: string) {
     const testPaths = [
-      path.join(app.getPath('userData'), 'icon-themes'),
+      path.join(getConfigDirectory(), 'icon-themes'),
       path.join(__dirname, '../renderer/assets/icon-themes'),
     ];
 
@@ -925,7 +1598,9 @@ export class KandoApp {
 
         // We return the relative path of the files to the icon theme directory.
         resolve(
-          files.map((file) => path.relative(directory, path.join(file.path, file.name)))
+          files.map((file) =>
+            path.relative(directory, path.join(file.parentPath, file.name))
+          )
         );
       });
     });
@@ -980,10 +1655,22 @@ export class KandoApp {
     }
 
     const content = await fs.promises.readFile(metaFile);
-    const description = json5.parse(content.toString()) as IMenuThemeDescription;
+    const parsed = json5.parse(content.toString());
     const directory = path.dirname(metaFile);
-    description.id = path.basename(directory);
-    description.directory = path.dirname(directory);
+
+    // Use defaults if some properties are not set.
+    const description: MenuThemeDescription = {
+      ...parsed,
+      id: path.basename(directory),
+      directory: path.dirname(directory),
+      maxMenuRadius: parsed.maxMenuRadius ?? 150,
+      centerTextWrapWidth: parsed.centerTextWrapWidth ?? 90,
+      drawChildrenBelow: parsed.drawChildrenBelow ?? true,
+      drawCenterText: parsed.drawCenterText ?? true,
+      drawSelectionWedges: parsed.drawSelectionWedges ?? false,
+      drawWedgeSeparators: parsed.drawWedgeSeparators ?? false,
+    };
+
     return description;
   }
 
@@ -1003,7 +1690,7 @@ export class KandoApp {
         console.error(`Sound theme "${theme}" not found. No sounds will be played.`);
       }
 
-      const description: ISoundThemeDescription = {
+      const description: SoundThemeDescription = {
         id: 'none',
         name: 'None',
         directory: '',
@@ -1011,14 +1698,14 @@ export class KandoApp {
         themeVersion: '',
         author: '',
         license: '',
-        sounds: {},
+        sounds: {} as Record<SoundType, SoundEffect>,
       };
 
       return description;
     }
 
     const content = await fs.promises.readFile(metaFile);
-    const description = json5.parse(content.toString()) as ISoundThemeDescription;
+    const description = json5.parse(content.toString()) as SoundThemeDescription;
     const directory = path.dirname(metaFile);
     description.id = path.basename(directory);
     description.directory = path.dirname(directory);
@@ -1032,7 +1719,7 @@ export class KandoApp {
    *
    * All menu configurations are stored in the `example-menus` directory.
    */
-  private createExampleMenu(): IMenu {
+  private createExampleMenu(): MenuType {
     // To enable localization of the example menus, we need to lookup the strings with
     // i18next after loading the menu structure from JSON. i18next-parser cannot extract
     // the strings from JSON files, therefore we have to specify all strings from the
@@ -1082,7 +1769,7 @@ export class KandoApp {
     i18next.t('example-menu.bookmarks.music')
     */
 
-    let menu: IMenu;
+    let menu: MenuType;
 
     if (process.platform === 'win32') {
       menu = require('./example-menus/windows.json');
@@ -1092,7 +1779,7 @@ export class KandoApp {
       menu = require('./example-menus/linux.json');
     }
 
-    const translate = (item: IMenuItem) => {
+    const translate = (item: MenuItem) => {
       item.name = i18next.t(item.name);
       if (item.children) {
         for (const child of item.children) {
@@ -1104,95 +1791,5 @@ export class KandoApp {
     translate(menu.root);
 
     return menu;
-  }
-
-  /**
-   * This migrates settings from an old version of Kando to the current version. This
-   * method is called when the app is started.
-   */
-  private migrateSettings() {
-    // Up to Kando 0.9.0, the `root` property of the menu was called `nodes`.
-    {
-      const menus = this.menuSettings.getMutable('menus');
-      for (const menu of menus) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const oldMenu = menu as any;
-        if (oldMenu.nodes) {
-          menu.root = oldMenu.nodes as IMenuItem;
-          delete oldMenu.nodes;
-        }
-      }
-    }
-
-    // Up to Kando 1.8.0, there was a `templates` property in the menu settings. This was
-    // removed. We we add all template menus as ordinary menus with a template tag. All
-    // template menu-items are removed.
-    {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const settings = this.menuSettings.getMutable() as any;
-      if (settings.templates) {
-        for (const itemOrMenu of settings.templates) {
-          // If there is a type property, it is a menu item.
-          // Else, it is a menu template. We add it as a menu with a template tag. Also
-          // remove any bindings, so that the menu is not opened by a shortcut.
-          if (!itemOrMenu.type) {
-            itemOrMenu.tags = ['template'];
-            itemOrMenu.shortcut = '';
-            itemOrMenu.shortcutID = '';
-            settings.menus.push(itemOrMenu);
-          }
-        }
-
-        delete settings.templates;
-      }
-    }
-
-    // Up to Kando 1.8.0, there was a settings.editorOptions.showEditorButtonVisible
-    // property. This was changed to settings.hideSettingsButton.
-    {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const settings = this.generalSettings.getMutable() as any;
-      if (settings.editorOptions?.showEditorButtonVisible === false) {
-        settings.hideSettingsButton = true;
-        delete settings.editorOptions;
-      }
-    }
-
-    // Up to Kando 1.8.0, there was a settings.sidebarVisible property. This was removed.
-    {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const settings = this.generalSettings.getMutable() as any;
-      if ('sidebarVisible' in settings) {
-        delete settings.sidebarVisible;
-      }
-    }
-
-    // Up to Kando 1.8.0, the following properties were stored in a settings.menuOptions
-    // object. Later they became top-level properties.
-    {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const settings = this.generalSettings.getMutable() as any;
-      if (settings.menuOptions) {
-        settings.centerDeadZone = settings.menuOptions.centerDeadZone;
-        settings.minParentDistance = settings.menuOptions.minParentDistance;
-        settings.dragThreshold = settings.menuOptions.dragThreshold;
-        settings.fadeInDuration = settings.menuOptions.fadeInDuration;
-        settings.fadeOutDuration = settings.menuOptions.fadeOutDuration;
-        settings.enableMarkingMode = settings.menuOptions.enableMarkingMode;
-        settings.enableTurboMode = settings.menuOptions.enableTurboMode;
-        settings.hoverModeNeedsConfirmation =
-          settings.menuOptions.hoverModeNeedsConfirmation;
-        settings.gestureMinStrokeLength = settings.menuOptions.gestureMinStrokeLength;
-        settings.gestureMinStrokeAngle = settings.menuOptions.gestureMinStrokeAngle;
-        settings.gestureJitterThreshold = settings.menuOptions.gestureJitterThreshold;
-        settings.gesturePauseTimeout = settings.menuOptions.gesturePauseTimeout;
-        settings.fixedStrokeLength = settings.menuOptions.fixedStrokeLength;
-        settings.rmbSelectsParent = settings.menuOptions.rmbSelectsParent;
-        settings.enableGamepad = settings.menuOptions.enableGamepad;
-        settings.gamepadBackButton = settings.menuOptions.gamepadBackButton;
-        settings.gamepadCloseButton = settings.menuOptions.gamepadCloseButton;
-        delete settings.menuOptions;
-      }
-    }
   }
 }

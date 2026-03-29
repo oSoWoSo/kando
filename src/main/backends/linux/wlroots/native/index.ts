@@ -8,7 +8,7 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
-export interface Native {
+export type Native = {
   /**
    * This simulates a mouse movement.
    *
@@ -24,7 +24,22 @@ export interface Native {
    * @param down If true, a key press is simulated. Otherwise, a key release is simulated.
    */
   simulateKey(keycode: number, down: boolean): void;
-}
+
+  /**
+   * This gets the pointer's position and work area size by spawning a temporary
+   * wlr_layer_shell overlay surface.
+   */
+  getPointerPositionAndWorkAreaSize(
+    mouseTimeout: number,
+    touchTimeout: number
+  ): {
+    pointerX: number;
+    pointerY: number;
+    pointerGetTimedOut: boolean;
+    workAreaWidth: number;
+    workAreaHeight: number;
+  };
+};
 
 const native: Native = require('./../../../../../../build/Release/NativeWLR.node');
 

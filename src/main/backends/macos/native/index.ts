@@ -8,7 +8,7 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
-export interface Native {
+export type Native = {
   /**
    * This simulates a mouse movement.
    *
@@ -31,7 +31,19 @@ export interface Native {
    * @returns The app and class of the currently focused window.
    */
   getActiveWindow(): { app: string; name: string };
-}
+
+  /**
+   * This lists all installed applications.
+   *
+   * @returns An array of objects containing the application's ID, name, and
+   *   base64-encoded icon.
+   */
+  listInstalledApplications(): {
+    name: string;
+    id: string;
+    base64Icon: string;
+  }[];
+};
 
 const native: Native = require('./../../../../../build/Release/NativeMacOS.node');
 

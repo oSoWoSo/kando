@@ -14,22 +14,25 @@ import SettingsRow from './SettingsRow';
 
 import * as classes from './Checkbox.module.scss';
 
-interface IProps {
+type Props = {
   /** Function to call when the checkbox is toggled. */
-  onChange?: (value: boolean) => void;
+  readonly onChange?: (value: boolean) => void;
 
   /** Initial value of the checkbox. Defaults to false. */
-  initialValue?: boolean;
+  readonly initialValue?: boolean;
 
   /** Optional label text to display next to the checkbox. */
-  label?: string;
+  readonly label?: string;
 
   /** Optional information to display next to the label. */
-  info?: string;
+  readonly info?: string;
 
   /** Whether the checkbox is disabled. Defaults to false. */
-  disabled?: boolean;
-}
+  readonly isDisabled?: boolean;
+
+  /** Whether to show the checkbox on the left side. Defaults to 'false'. */
+  readonly isFlipped?: boolean;
+};
 
 /**
  * A customizable checkbox component.
@@ -37,14 +40,19 @@ interface IProps {
  * @param props - The properties for the checkbox component.
  * @returns A checkbox element.
  */
-export default function Checkbox(props: IProps) {
+export default function Checkbox(props: Props) {
   return (
-    <SettingsRow label={props.label} info={props.info} labelClickable>
+    <SettingsRow
+      isLabelClickable
+      info={props.info}
+      isDisabled={props.isDisabled}
+      isFlipped={props.isFlipped}
+      label={props.label}>
       <input
-        type="checkbox"
-        className={classes.checkbox}
-        disabled={props.disabled}
         checked={props.initialValue || false}
+        className={classes.checkbox}
+        disabled={props.isDisabled}
+        type="checkbox"
         onChange={(event) => props.onChange && props.onChange(event.target.checked)}
       />
     </SettingsRow>

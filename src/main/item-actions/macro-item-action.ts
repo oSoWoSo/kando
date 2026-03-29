@@ -8,17 +8,17 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
-import { IMenuItem, IKeySequence } from '../../common/index';
-import { IItemAction } from './item-action-registry';
-import { DeepReadonly } from '../utils/settings';
-import { IItemData } from '../../common/item-types/macro-item-type';
+import { MenuItem, KeySequence } from '../../common/index';
+import { ItemAction } from './item-action-registry';
+import { DeepReadonly } from '../settings';
+import { ItemData } from '../../common/item-types/macro-item-type';
 import { KandoApp } from '../app';
 
 /**
  * This action simulates multiple key presses and releases. It can be used to simulate
  * more complex macros than the simple hotkey action.
  */
-export class MacroItemAction implements IItemAction {
+export class MacroItemAction implements ItemAction {
   /**
    * For macros, we can choose to execute them immediately or with a delay.
    *
@@ -26,8 +26,8 @@ export class MacroItemAction implements IItemAction {
    *   immediately or with a delay.
    * @returns True if the action should be executed with a delay.
    */
-  delayedExecution(item: DeepReadonly<IMenuItem>) {
-    return (item.data as IItemData).delayed;
+  delayedExecution(item: DeepReadonly<MenuItem>) {
+    return (item.data as ItemData).delayed;
   }
 
   /**
@@ -37,21 +37,21 @@ export class MacroItemAction implements IItemAction {
    * @param app The app which executed the action.
    * @returns A promise which resolves when the macro has been successfully simulated.
    */
-  async execute(item: DeepReadonly<IMenuItem>, app: KandoApp) {
-    return new Promise<void>((resolve, reject) => {
-      const data = item.data as IItemData;
+  async execute(item: DeepReadonly<MenuItem>, app: KandoApp) {
+    const data = item.data as ItemData;
 
-      const keys: IKeySequence = [];
+    const keys: KeySequence = [];
 
-      data.macro.forEach((event) => {
-        const delay = event.delay || 10;
-        const name = event.key;
-        const down = event.type === 'keyDown';
-        keys.push({ name, down, delay });
+    data.macro.forEach((event) => {
+      keys.push({
+        name: event.key,
+        down: event.type === 'keyDown',
+        delay: event.delay ?? 10,
       });
-
-      // Finally, we simulate the key presses using the backend.
-      app.getBackend().simulateKeys(keys).then(resolve, reject);
     });
+
+    const backend = app.getBackend();
+
+    await backend.simulateKeys(keys, data.inhibitShortcuts);
   }
 }

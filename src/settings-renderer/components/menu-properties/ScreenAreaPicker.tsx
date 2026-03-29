@@ -15,38 +15,37 @@ import React from 'react';
 import i18next from 'i18next';
 import { TbCheck, TbX } from 'react-icons/tb';
 import { BiTargetLock } from 'react-icons/bi';
-import { PiSelection } from 'react-icons/pi';
 
 import { Modal, Button } from '../common';
 
 import * as classes from './ScreenAreaPicker.module.scss';
 
-interface IProps {
+type Props = {
   /** Function to call when a new area is selected. */
-  onSelect: (top: number, left: number, bottom: number, right: number) => void;
+  readonly onSelect: (top: number, left: number, bottom: number, right: number) => void;
 
   /** Function to call when the dialog should be closed. */
-  onClose: () => void;
+  readonly onClose: () => void;
 
   /** Visibility of the modal. */
-  visible: boolean;
-}
+  readonly isVisible: boolean;
+};
 
 /**
  * This component allows the user to select a screen area by dragging two points on the
  * screen.
  */
-export default function ScreenAreaPicker(props: IProps) {
+export default function ScreenAreaPicker(props: Props) {
   const [leftTop, setLeftTop] = React.useState(null);
   const [rightBottom, setRightBottom] = React.useState(null);
 
   // Clear the area when the modal is shown.
   React.useEffect(() => {
-    if (props.visible) {
+    if (props.isVisible) {
       setLeftTop(null);
       setRightBottom(null);
     }
-  }, [props.visible]);
+  }, [props.isVisible]);
 
   const getTopLeftValue = () => {
     if (leftTop) {
@@ -94,12 +93,7 @@ export default function ScreenAreaPicker(props: IProps) {
   };
 
   return (
-    <Modal
-      title={i18next.t('settings.screen-area-picker.title')}
-      icon={<PiSelection />}
-      visible={props.visible}
-      onClose={props.onClose}
-      maxWidth={500}>
+    <Modal isVisible={props.isVisible} maxWidth={500} onClose={props.onClose}>
       <div className={classes.container}>
         <div className={classes.leftTopValue}>{getTopLeftValue()}</div>
         <div className={classes.area}>
@@ -107,8 +101,8 @@ export default function ScreenAreaPicker(props: IProps) {
           {isInvalid() && i18next.t('settings.screen-area-picker.invalid')}
           <div className={classes.leftTopPicker}>
             <div
-              className={classes.crosshair}
               draggable
+              className={classes.crosshair}
               onDragEnd={(event) => {
                 window.settingsAPI.getWindowPosition().then((position) => {
                   const x = event.clientX + position.x;
@@ -121,8 +115,8 @@ export default function ScreenAreaPicker(props: IProps) {
           </div>
           <div className={classes.rightBottomPicker}>
             <div
-              className={classes.crosshair}
               draggable
+              className={classes.crosshair}
               onDragEnd={(event) => {
                 window.settingsAPI.getWindowPosition().then((position) => {
                   const x = event.clientX + position.x;
@@ -137,19 +131,19 @@ export default function ScreenAreaPicker(props: IProps) {
         <div className={classes.rightBottomValue}>{getBottomRightValue()}</div>
         <div className={classes.buttons}>
           <Button
-            label={i18next.t('settings.cancel')}
+            isBlock
             icon={<TbX />}
-            block
+            label={i18next.t('settings.cancel')}
             onClick={() => {
               props.onClose();
             }}
           />
           <Button
+            isBlock
+            icon={<TbCheck />}
+            isDisabled={!isValid()}
             label={i18next.t('settings.screen-area-picker.confirm')}
             variant="primary"
-            disabled={!isValid()}
-            icon={<TbCheck />}
-            block
             onClick={() => {
               props.onSelect(leftTop.y, leftTop.x, rightBottom.y, rightBottom.x);
               props.onClose();

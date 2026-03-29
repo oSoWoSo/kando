@@ -15,8 +15,8 @@ import React from 'react';
 import i18next from 'i18next';
 
 import { TbReload, TbPointer, TbPointerCog, TbSettingsFilled } from 'react-icons/tb';
-
-import { useAppState } from '../../state';
+import { FaDownload } from 'react-icons/fa';
+import { useAppState, useGeneralSetting } from '../../state';
 
 import {
   Button,
@@ -26,7 +26,6 @@ import {
   Modal,
   Note,
   Scrollbox,
-  Swirl,
 } from '../common';
 
 /** This dialog allows the user to configure some general settings of Kando. */
@@ -34,6 +33,7 @@ export default function GeneralSettingsDialog() {
   const settingsDialogVisible = useAppState((state) => state.settingsDialogVisible);
   const setSettingsDialogVisible = useAppState((state) => state.setSettingsDialogVisible);
   const soundThemes = useAppState((state) => state.soundThemes);
+  const [keepInputFocus] = useGeneralSetting('keepInputFocus');
 
   const soundThemeOptions = soundThemes.map((theme) => ({
     value: theme.id,
@@ -47,18 +47,33 @@ export default function GeneralSettingsDialog() {
   // We make sure that some widgets have a consistent width.
   const spinbuttonWidth = 60;
 
+  const localeOptions = cLocales.map((code) => {
+    const display = new Intl.DisplayNames([code], { type: 'language' });
+    return {
+      value: code,
+      label: display.of(code),
+    };
+  });
+
+  localeOptions.unshift({
+    value: 'auto',
+    label: i18next.t('settings.general-settings-dialog.auto-language'),
+  });
+
+  const backend = useAppState((state) => state.backendInfo);
+
   return (
     <Modal
-      title={i18next.t('settings.general-settings-dialog.title')}
       icon={<TbSettingsFilled />}
-      visible={settingsDialogVisible}
-      onClose={() => setSettingsDialogVisible(false)}
+      isVisible={settingsDialogVisible}
       maxWidth={600}
-      paddingTop={0}
       paddingBottom={5}
       paddingLeft={5}
-      paddingRight={5}>
-      <Scrollbox maxHeight={'min(80vh, 800px)'}>
+      paddingRight={5}
+      paddingTop={0}
+      title={i18next.t('settings.general-settings-dialog.title')}
+      onClose={() => setSettingsDialogVisible(false)}>
+      <Scrollbox maxHeight="min(80vh, 800px)">
         <div
           style={{
             display: 'flex',
@@ -67,46 +82,42 @@ export default function GeneralSettingsDialog() {
             justifyContent: 'center',
             gap: 5,
           }}>
-          <Note
-            center
-            marginLeft="10%"
-            marginRight="10%"
-            marginTop={10}
-            markdown
-            onLinkClick={() => {
-              window.settingsAPI.getConfigDirectory().then((dir) => {
-                window.open('file://' + dir, '_blank');
-              });
-            }}>
-            {i18next.t('settings.general-settings-dialog.message', { link: '' })}
-          </Note>
-
-          <Swirl variant="2" width={350} marginBottom={10} />
-
-          <h1>{i18next.t('settings.general-settings-dialog.app-behavior')}</h1>
+          <SettingsDropdown
+            info={i18next.t('settings.general-settings-dialog.localization-info')}
+            label={i18next.t('settings.general-settings-dialog.localization-label')}
+            maxWidth={200}
+            options={localeOptions}
+            settingsKey="locale"
+          />
           <SettingsCheckbox
-            label={i18next.t('settings.general-settings-dialog.check-for-new-versions')}
+            info={i18next.t(
+              'settings.general-settings-dialog.hardware-acceleration-info'
+            )}
+            label={i18next.t('settings.general-settings-dialog.hardware-acceleration')}
+            settingsKey="hardwareAcceleration"
+          />
+          <SettingsCheckbox
             info={i18next.t(
               'settings.general-settings-dialog.check-for-new-versions-info'
             )}
+            label={i18next.t('settings.general-settings-dialog.check-for-new-versions')}
             settingsKey="enableVersionCheck"
           />
           <SettingsCheckbox
-            label={i18next.t(
-              'settings.general-settings-dialog.invisible-settings-button'
-            )}
             info={i18next.t(
               'settings.general-settings-dialog.invisible-settings-button-info'
+            )}
+            label={i18next.t(
+              'settings.general-settings-dialog.invisible-settings-button'
             )}
             settingsKey="hideSettingsButton"
           />
           <SettingsDropdown
-            maxWidth={200}
-            label={i18next.t('settings.general-settings-dialog.settings-button-position')}
             info={i18next.t(
               'settings.general-settings-dialog.settings-button-position-info'
             )}
-            settingsKey="settingsButtonPosition"
+            label={i18next.t('settings.general-settings-dialog.settings-button-position')}
+            maxWidth={200}
             options={[
               {
                 value: 'top-left',
@@ -125,16 +136,16 @@ export default function GeneralSettingsDialog() {
                 label: i18next.t('settings.general-settings-dialog.bottom-right'),
               },
             ]}
+            settingsKey="settingsButtonPosition"
           />
           <SettingsDropdown
-            maxWidth={200}
-            label={i18next.t(
-              'settings.general-settings-dialog.settings-window-color-scheme'
-            )}
             info={i18next.t(
               'settings.general-settings-dialog.settings-window-color-scheme-info'
             )}
-            settingsKey="settingsWindowColorScheme"
+            label={i18next.t(
+              'settings.general-settings-dialog.settings-window-color-scheme'
+            )}
+            maxWidth={200}
             options={[
               {
                 value: 'system',
@@ -149,14 +160,14 @@ export default function GeneralSettingsDialog() {
                 label: i18next.t('settings.general-settings-dialog.dark'),
               },
             ]}
+            settingsKey="settingsWindowColorScheme"
           />
           <SettingsDropdown
-            maxWidth={200}
-            label={i18next.t('settings.general-settings-dialog.settings-window-flavor')}
             info={i18next.t(
               'settings.general-settings-dialog.settings-window-flavor-info'
             )}
-            settingsKey="settingsWindowFlavor"
+            label={i18next.t('settings.general-settings-dialog.settings-window-flavor')}
+            maxWidth={200}
             options={[
               {
                 value: 'transparent-light',
@@ -183,12 +194,12 @@ export default function GeneralSettingsDialog() {
                 label: i18next.t('settings.general-settings-dialog.sakura-system'),
               },
             ]}
+            settingsKey="settingsWindowFlavor"
           />
           <SettingsDropdown
-            maxWidth={200}
-            label={i18next.t('settings.general-settings-dialog.tray-icon-flavor')}
             info={i18next.t('settings.general-settings-dialog.tray-icon-flavor-info')}
-            settingsKey="trayIconFlavor"
+            label={i18next.t('settings.general-settings-dialog.tray-icon-flavor')}
+            maxWidth={200}
             options={[
               {
                 value: 'none',
@@ -215,80 +226,136 @@ export default function GeneralSettingsDialog() {
                 label: i18next.t('settings.general-settings-dialog.black'),
               },
             ]}
+            settingsKey="trayIconFlavor"
           />
           <SettingsCheckbox
-            label={i18next.t('settings.general-settings-dialog.lazy-initialization')}
             info={i18next.t('settings.general-settings-dialog.lazy-initialization-info')}
+            label={i18next.t('settings.general-settings-dialog.lazy-initialization')}
             settingsKey="lazyInitialization"
+          />
+          <SettingsCheckbox
+            info={i18next.t('settings.general-settings-dialog.enable-achievements-info')}
+            label={i18next.t('settings.general-settings-dialog.enable-achievements')}
+            settingsKey="enableAchievements"
+          />
+          <SettingsCheckbox
+            info={i18next.t(
+              'settings.general-settings-dialog.enable-achievement-notifications-info'
+            )}
+            label={i18next.t(
+              'settings.general-settings-dialog.enable-achievement-notifications'
+            )}
+            settingsKey="enableAchievementNotifications"
           />
 
           <h1>{i18next.t('settings.general-settings-dialog.menu-behavior')}</h1>
+          {backend.name === 'Windows' ? (
+            <SettingsCheckbox
+              info={i18next.t(
+                'settings.general-settings-dialog.windows-ink-workaround-info'
+              )}
+              label={i18next.t('settings.general-settings-dialog.windows-ink-workaround')}
+              settingsKey="windowsInkWorkaround"
+            />
+          ) : (
+            ''
+          )}
           <SettingsCheckbox
-            label={i18next.t('settings.general-settings-dialog.enable-marking-mode')}
+            info={i18next.t('settings.general-settings-dialog.keep-input-focus-info')}
+            label={i18next.t('settings.general-settings-dialog.keep-input-focus')}
+            settingsKey="keepInputFocus"
+          />
+          <SettingsCheckbox
             info={i18next.t('settings.general-settings-dialog.enable-marking-mode-info')}
+            label={i18next.t('settings.general-settings-dialog.enable-marking-mode')}
             settingsKey="enableMarkingMode"
           />
           <SettingsCheckbox
-            label={i18next.t('settings.general-settings-dialog.enable-turbo-mode')}
             info={i18next.t('settings.general-settings-dialog.enable-turbo-mode-info')}
+            isDisabled={keepInputFocus}
+            label={i18next.t('settings.general-settings-dialog.enable-turbo-mode')}
             settingsKey="enableTurboMode"
           />
           <SettingsCheckbox
-            label={i18next.t(
-              'settings.general-settings-dialog.move-pointer-to-menu-center'
-            )}
             info={i18next.t(
               'settings.general-settings-dialog.move-pointer-to-menu-center-info'
+            )}
+            label={i18next.t(
+              'settings.general-settings-dialog.move-pointer-to-menu-center'
             )}
             settingsKey="warpMouse"
           />
           <SettingsCheckbox
-            label={i18next.t(
-              'settings.general-settings-dialog.require-click-for-hover-mode'
-            )}
             info={i18next.t(
               'settings.general-settings-dialog.require-click-for-hover-mode-info'
+            )}
+            label={i18next.t(
+              'settings.general-settings-dialog.require-click-for-hover-mode'
             )}
             settingsKey="hoverModeNeedsConfirmation"
           />
           <SettingsCheckbox
-            label={i18next.t(
-              'settings.general-settings-dialog.right-mouse-button-selects-parent'
-            )}
             info={i18next.t(
               'settings.general-settings-dialog.right-mouse-button-selects-parent-info'
+            )}
+            label={i18next.t(
+              'settings.general-settings-dialog.right-mouse-button-selects-parent'
             )}
             settingsKey="rmbSelectsParent"
           />
           <SettingsCheckbox
-            label={i18next.t('settings.general-settings-dialog.enable-gamepad-support')}
             info={i18next.t(
               'settings.general-settings-dialog.enable-gamepad-support-info'
             )}
+            label={i18next.t('settings.general-settings-dialog.enable-gamepad-support')}
             settingsKey="enableGamepad"
+          />
+          <SettingsDropdown
+            info={i18next.t('settings.general-settings-dialog.press-again-behavior-info')}
+            label={i18next.t('settings.general-settings-dialog.press-again-behavior')}
+            maxWidth={200}
+            options={[
+              {
+                value: 'nothing',
+                label: i18next.t('settings.general-settings-dialog.do-nothing'),
+              },
+              {
+                value: 'cycle-from-first',
+                label: i18next.t('settings.general-settings-dialog.cycle-from-first'),
+              },
+              {
+                value: 'cycle-from-recent',
+                label: i18next.t('settings.general-settings-dialog.cycle-from-recent'),
+              },
+              {
+                value: 'close',
+                label: i18next.t('settings.general-settings-dialog.close-menu'),
+              },
+            ]}
+            settingsKey="sameShortcutBehavior"
           />
 
           <h1>{i18next.t('settings.general-settings-dialog.menu-sounds')}</h1>
-          <Note marginTop={-5} markdown>
+          <Note useMarkdown marginTop={-5}>
             {i18next.t('settings.general-settings-dialog.learn-how-to-add-sound-themes', {
               link: 'https://kando.menu/sound-themes/',
             })}
           </Note>
           <SettingsDropdown
-            maxWidth={200}
-            label={i18next.t('settings.general-settings-dialog.sound-theme')}
             info={i18next.t('settings.general-settings-dialog.sound-theme-info')}
-            settingsKey="soundTheme"
+            label={i18next.t('settings.general-settings-dialog.sound-theme')}
+            maxWidth={200}
             options={soundThemeOptions}
+            settingsKey="soundTheme"
           />
           <SettingsSpinbutton
-            label={i18next.t('settings.general-settings-dialog.volume')}
             info={i18next.t('settings.general-settings-dialog.volume-info')}
-            settingsKey="soundVolume"
-            width={spinbuttonWidth}
-            min={0}
+            label={i18next.t('settings.general-settings-dialog.volume')}
             max={1}
+            min={0}
+            settingsKey="soundVolume"
             step={0.01}
+            width={spinbuttonWidth}
           />
 
           <h1>{i18next.t('settings.general-settings-dialog.advanced-menu-options')}</h1>
@@ -296,150 +363,268 @@ export default function GeneralSettingsDialog() {
             {i18next.t('settings.general-settings-dialog.advanced-menu-options-note')}
           </Note>
           <SettingsSpinbutton
-            label={i18next.t('settings.general-settings-dialog.center-click-zone-radius')}
+            info={i18next.t('settings.general-settings-dialog.max-selection-radius-info')}
+            label={i18next.t('settings.general-settings-dialog.max-selection-radius')}
+            max={9999}
+            min={0}
+            settingsKey="maxSelectionRadius"
+            step={50}
+            width={spinbuttonWidth}
+          />
+          <SettingsSpinbutton
             info={i18next.t(
               'settings.general-settings-dialog.center-click-zone-radius-info'
             )}
-            settingsKey="centerDeadZone"
-            width={spinbuttonWidth}
-            min={0}
+            label={i18next.t('settings.general-settings-dialog.center-click-zone-radius')}
             max={999}
+            min={0}
+            settingsKey="centerDeadZone"
             step={50}
+            width={spinbuttonWidth}
           />
           <SettingsSpinbutton
-            label={i18next.t('settings.general-settings-dialog.minimum-submenu-distance')}
             info={i18next.t(
               'settings.general-settings-dialog.minimum-submenu-distance-info'
             )}
+            label={i18next.t('settings.general-settings-dialog.minimum-submenu-distance')}
+            max={999}
+            min={0}
             settingsKey="minParentDistance"
-            width={spinbuttonWidth}
-            min={0}
-            max={999}
             step={50}
-          />
-          <SettingsSpinbutton
-            label={i18next.t('settings.general-settings-dialog.movement-threshold')}
-            info={i18next.t('settings.general-settings-dialog.movement-threshold-info')}
-            settingsKey="dragThreshold"
             width={spinbuttonWidth}
-            min={0}
-            max={999}
-            step={10}
           />
           <SettingsSpinbutton
-            label={i18next.t('settings.general-settings-dialog.minimum-gesture-length')}
+            info={i18next.t('settings.general-settings-dialog.movement-threshold-info')}
+            label={i18next.t('settings.general-settings-dialog.movement-threshold')}
+            max={999}
+            min={0}
+            settingsKey="dragThreshold"
+            step={10}
+            width={spinbuttonWidth}
+          />
+          <SettingsSpinbutton
             info={i18next.t(
               'settings.general-settings-dialog.minimum-gesture-length-info'
             )}
-            settingsKey="gestureMinStrokeLength"
-            width={spinbuttonWidth}
-            min={0}
+            label={i18next.t('settings.general-settings-dialog.minimum-gesture-length')}
             max={999}
+            min={0}
+            settingsKey="gestureMinStrokeLength"
             step={50}
+            width={spinbuttonWidth}
           />
           <SettingsSpinbutton
-            label={i18next.t('settings.general-settings-dialog.minimum-gesture-angle')}
             info={i18next.t(
               'settings.general-settings-dialog.minimum-gesture-angle-info'
             )}
-            settingsKey="gestureMinStrokeAngle"
-            width={spinbuttonWidth}
-            min={0}
+            label={i18next.t('settings.general-settings-dialog.minimum-gesture-angle')}
             max={30}
+            min={0}
+            settingsKey="gestureMinStrokeAngle"
             step={1}
+            width={spinbuttonWidth}
           />
           <SettingsSpinbutton
-            label={i18next.t('settings.general-settings-dialog.gesture-jitter-threshold')}
             info={i18next.t(
               'settings.general-settings-dialog.gesture-jitter-threshold-info'
             )}
-            settingsKey="gestureJitterThreshold"
-            width={spinbuttonWidth}
-            min={0}
+            label={i18next.t('settings.general-settings-dialog.gesture-jitter-threshold')}
             max={50}
+            min={0}
+            settingsKey="gestureJitterThreshold"
             step={1}
+            width={spinbuttonWidth}
           />
           <SettingsSpinbutton
-            label={i18next.t('settings.general-settings-dialog.gesture-pause-timeout')}
             info={i18next.t(
               'settings.general-settings-dialog.gesture-pause-timeout-info'
             )}
-            settingsKey="gesturePauseTimeout"
-            width={spinbuttonWidth}
-            min={0}
+            label={i18next.t('settings.general-settings-dialog.gesture-pause-timeout')}
             max={999}
+            min={0}
+            settingsKey="gesturePauseTimeout"
             step={50}
+            width={spinbuttonWidth}
           />
           <SettingsSpinbutton
-            label={i18next.t('settings.general-settings-dialog.fixed-stroke-length')}
             info={i18next.t('settings.general-settings-dialog.fixed-stroke-length-info')}
-            settingsKey="fixedStrokeLength"
-            width={spinbuttonWidth}
-            min={0}
+            label={i18next.t('settings.general-settings-dialog.fixed-stroke-length')}
             max={999}
+            min={0}
+            settingsKey="fixedStrokeLength"
             step={10}
+            width={spinbuttonWidth}
           />
-
-          <h1>{i18next.t('settings.general-settings-dialog.developer-options')}</h1>
-          <div
-            style={{ display: 'flex', gap: 15, alignItems: 'center', marginBottom: 10 }}>
-            <Note>{i18next.t('settings.general-settings-dialog.reload-note')}</Note>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-                minWidth: '40%',
-              }}>
-              <Button
-                label={i18next.t('settings.general-settings-dialog.reload-menu-theme')}
-                icon={<TbReload />}
-                block
-                onClick={() => {
-                  window.settingsAPI.reloadMenuTheme();
-                }}
+          {backend.name === 'Niri' ? (
+            <>
+              <h1>
+                {i18next.t('settings.general-settings-dialog.wlroots-specific-options')}
+              </h1>
+              <Note useMarkdown marginTop={-5}>
+                {i18next.t(
+                  'settings.general-settings-dialog.options-that-will-only-affect-the-wlroots-backend'
+                )}
+              </Note>
+              <SettingsSpinbutton
+                info={i18next.t(
+                  'settings.general-settings-dialog.wlroots-pointer-get-timeout-mouse-info'
+                )}
+                label={i18next.t(
+                  'settings.general-settings-dialog.wlroots-pointer-get-timeout-mouse'
+                )}
+                max={5000}
+                min={0}
+                settingsKey="wlrootsPointerGetTimeoutMouse"
+                step={100}
+                width={spinbuttonWidth}
               />
-              <Button
-                label={i18next.t('settings.general-settings-dialog.reload-sound-theme')}
-                icon={<TbReload />}
-                block
-                onClick={() => {
-                  window.settingsAPI.reloadSoundTheme();
-                }}
+              <SettingsSpinbutton
+                info={i18next.t(
+                  'settings.general-settings-dialog.wlroots-pointer-get-timeout-touch-info'
+                )}
+                label={i18next.t(
+                  'settings.general-settings-dialog.wlroots-pointer-get-timeout-touch'
+                )}
+                max={5000}
+                min={0}
+                settingsKey="wlrootsPointerGetTimeoutTouch"
+                step={100}
+                width={spinbuttonWidth}
               />
-            </div>
+              <SettingsDropdown
+                info={i18next.t(
+                  'settings.general-settings-dialog.wlroots-pointer-get-timeout-default-behavior-info'
+                )}
+                label={i18next.t(
+                  'settings.general-settings-dialog.wlroots-pointer-get-timeout-default-behavior'
+                )}
+                maxWidth={200}
+                options={[
+                  {
+                    value: 'top-left',
+                    label: i18next.t('settings.general-settings-dialog.top-left'),
+                  },
+                  {
+                    value: 'top-right',
+                    label: i18next.t('settings.general-settings-dialog.top-right'),
+                  },
+                  {
+                    value: 'bottom-left',
+                    label: i18next.t('settings.general-settings-dialog.bottom-left'),
+                  },
+                  {
+                    value: 'bottom-right',
+                    label: i18next.t('settings.general-settings-dialog.bottom-right'),
+                  },
+                  {
+                    value: 'center',
+                    label: i18next.t('settings.general-settings-dialog.center'),
+                  },
+                  {
+                    value: 'previously-reported-position',
+                    label: i18next.t(
+                      'settings.general-settings-dialog.previously-reported'
+                    ),
+                  },
+                ]}
+                settingsKey="wlrootsPointerGetTimeoutDefaultBehavior"
+              />
+            </>
+          ) : (
+            ''
+          )}
+          <h1>{i18next.t('settings.general-settings-dialog.backup-and-restore')}</h1>
+          <Note
+            useMarkdown
+            onLinkClick={() => {
+              window.settingsAPI.getConfigDirectory().then((dir) => {
+                window.open('file://' + dir, '_blank');
+              });
+            }}>
+            {i18next.t('settings.general-settings-dialog.message', { link: '' })}
+          </Note>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              isBlock
+              icon={<FaDownload />}
+              label={i18next.t('settings.general-settings-dialog.backup-menus')}
+              paddingBottom={16}
+              paddingTop={16}
+              onClick={() => {
+                window.settingsAPI.backupMenuSettings();
+              }}
+            />
+            <Button
+              isBlock
+              icon={<FaDownload />}
+              label={i18next.t('settings.general-settings-dialog.backup-settings')}
+              paddingBottom={16}
+              paddingTop={16}
+              onClick={() => {
+                window.settingsAPI.backupGeneralSettings();
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              isBlock
+              label={i18next.t('settings.general-settings-dialog.restore-menus')}
+              onClick={() => {
+                window.settingsAPI.restoreMenuSettings();
+              }}
+            />
+            <Button
+              isBlock
+              label={i18next.t('settings.general-settings-dialog.restore-settings')}
+              onClick={() => {
+                window.settingsAPI.restoreGeneralSettings();
+              }}
+            />
           </div>
 
-          <div style={{ display: 'flex', gap: 15, alignItems: 'center' }}>
-            <Note>{i18next.t('settings.general-settings-dialog.dev-tools-note')}</Note>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-                minWidth: '40%',
-              }}>
-              <Button
-                label={i18next.t(
-                  'settings.general-settings-dialog.menu-window-dev-tools'
-                )}
-                icon={<TbPointer />}
-                grow
-                onClick={() => {
-                  window.settingsAPI.showDevTools('menu-window');
-                }}
-              />
-              <Button
-                label={i18next.t(
-                  'settings.general-settings-dialog.settings-window-dev-tools'
-                )}
-                icon={<TbPointerCog />}
-                grow
-                onClick={() => {
-                  window.settingsAPI.showDevTools('settings-window');
-                }}
-              />
-            </div>
+          <h1>{i18next.t('settings.general-settings-dialog.developer-options')}</h1>
+          <Note>{i18next.t('settings.general-settings-dialog.reload-note')}</Note>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              isBlock
+              icon={<TbReload />}
+              label={i18next.t('settings.general-settings-dialog.reload-menu-theme')}
+              onClick={() => {
+                window.settingsAPI.reloadMenuTheme();
+              }}
+            />
+            <Button
+              isBlock
+              icon={<TbReload />}
+              label={i18next.t('settings.general-settings-dialog.reload-sound-theme')}
+              onClick={() => {
+                window.settingsAPI.reloadSoundTheme();
+              }}
+            />
+          </div>
+
+          <Note marginTop={8}>
+            {i18next.t('settings.general-settings-dialog.dev-tools-note')}
+          </Note>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              isBlock
+              icon={<TbPointer />}
+              label={i18next.t('settings.general-settings-dialog.menu-window-dev-tools')}
+              onClick={() => {
+                window.settingsAPI.showDevTools('menu-window');
+              }}
+            />
+            <Button
+              isBlock
+              icon={<TbPointerCog />}
+              label={i18next.t(
+                'settings.general-settings-dialog.settings-window-dev-tools'
+              )}
+              onClick={() => {
+                window.settingsAPI.showDevTools('settings-window');
+              }}
+            />
           </div>
         </div>
       </Scrollbox>

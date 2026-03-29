@@ -8,14 +8,16 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, webUtils } from 'electron';
 
 import {
-  IGeneralSettings,
-  IMenuThemeDescription,
-  ISoundThemeDescription,
-  IMenuSettings,
-  IIconThemesInfo,
+  MenuItem,
+  GeneralSettings,
+  MenuThemeDescription,
+  SoundThemeDescription,
+  MenuSettings,
+  IconThemesInfo,
+  AchievementStatsNumberKeys,
 } from '.';
 
 /**
@@ -48,19 +50,19 @@ export const COMMON_WINDOW_API = {
    * process will notify the renderer process.
    */
   generalSettings: {
-    get: function (): Promise<IGeneralSettings> {
+    get: function (): Promise<GeneralSettings> {
       return ipcRenderer.invoke('common.general-settings-get');
     },
-    set: function (settings: IGeneralSettings): void {
+    set: function (settings: GeneralSettings): void {
       ipcRenderer.send(`common.general-settings-set`, settings);
     },
     onChange: function (
-      callback: (newSettings: IGeneralSettings, oldSettings: IGeneralSettings) => void
+      callback: (newSettings: GeneralSettings, oldSettings: GeneralSettings) => void
     ): () => void {
       const wrappedCallback = (
         event: Electron.IpcRendererEvent,
-        newSettings: IGeneralSettings,
-        oldSettings: IGeneralSettings
+        newSettings: GeneralSettings,
+        oldSettings: GeneralSettings
       ) => {
         callback(newSettings, oldSettings);
       };
@@ -79,19 +81,19 @@ export const COMMON_WINDOW_API = {
    * the renderer process.
    */
   menuSettings: {
-    get: function (): Promise<IMenuSettings> {
+    get: function (): Promise<MenuSettings> {
       return ipcRenderer.invoke('common.menu-settings-get');
     },
-    set: function (data: IMenuSettings): void {
+    set: function (data: Partial<MenuSettings>): void {
       ipcRenderer.send('common.menu-settings-set', data);
     },
     onChange: function (
-      callback: (newSettings: IMenuSettings, oldSettings: IMenuSettings) => void
+      callback: (newSettings: MenuSettings, oldSettings: MenuSettings) => void
     ): () => void {
       const wrappedCallback = (
         event: Electron.IpcRendererEvent,
-        newSettings: IMenuSettings,
-        oldSettings: IMenuSettings
+        newSettings: MenuSettings,
+        oldSettings: MenuSettings
       ) => {
         callback(newSettings, oldSettings);
       };
@@ -104,13 +106,13 @@ export const COMMON_WINDOW_API = {
     },
   },
 
-  /** This will return a IIconThemesInfo describing all available icon themes. */
-  getIconThemes: (): Promise<IIconThemesInfo> => {
+  /** This will return a IconThemesInfo describing all available user icon themes. */
+  getIconThemes: (): Promise<IconThemesInfo> => {
     return ipcRenderer.invoke('common.get-icon-themes');
   },
 
   /** This will return the descriptions of the currently used menu theme. */
-  getMenuTheme: (): Promise<IMenuThemeDescription> => {
+  getMenuTheme: (): Promise<MenuThemeDescription> => {
     return ipcRenderer.invoke('common.get-menu-theme');
   },
 
@@ -144,17 +146,46 @@ export const COMMON_WINDOW_API = {
   },
 
   /** This will return the descriptions of the currently used sound theme. */
-  getSoundTheme: (): Promise<ISoundThemeDescription> => {
+  getSoundTheme: (): Promise<SoundThemeDescription> => {
     return ipcRenderer.invoke('common.get-sound-theme');
+  },
+
+  /** This lists all currently available system icons. */
+  getSystemIcons: (): Promise<Map<string, string>> => {
+    return ipcRenderer.invoke('common.get-system-icons');
+  },
+
+  /**
+   * This method creates a new menu item for a given file. Depending on the file type,
+   * different item types may be used. For example, if the file is a *.desktop file on
+   * Linux, it will create a run-command item. For most other files, it will create a file
+   * item. It may happen that no item could be created.
+   *
+   * @param file The file for which a menu item should be created.
+   * @returns A new menu item for the given file.
+   */
+  createItemForDroppedFile(file: File): Promise<MenuItem | null> {
+    const name = file.name;
+    const path = webUtils.getPathForFile(file);
+    return ipcRenderer.invoke('common.create-menu-item-for-file', name, path);
+  },
+
+  /**
+   * Increments the given achievement statistic by one.
+   *
+   * @param keys The keys of the statistics to increment.
+   */
+  incrementAchievementStats(keys: AchievementStatsNumberKeys[]): void {
+    ipcRenderer.send('common.increment-achievement-stats', keys);
   },
 };
 
 /**
- * This interface extends the global window object with the `commonAPI` object. This will
- * be available in both renderer processes. In the menu window's renderer process and in
- * the settings window's renderer process are some additional functions available. See
+ * This type extends the global window object with the `commonAPI` object. This will be
+ * available in both renderer processes. In the menu window's renderer process and in the
+ * settings window's renderer process are some additional functions available. See
  * `menu/menu-window-api.ts` and `settings/settings-window-api.ts` for more information.
  */
-export interface WindowWithAPIs extends Window {
-  commonAPI: typeof COMMON_WINDOW_API;
-}
+export type WindowWithAPIs = {
+  readonly commonAPI: typeof COMMON_WINDOW_API;
+} & Window;

@@ -9,20 +9,22 @@
 // SPDX-License-Identifier: MIT
 
 import DBus from 'dbus-final';
+import { EventEmitter } from 'events';
 
 /**
  * The type information of DBus.MessageBus does not expose the name of the bus, even if
- * the property is actually there. This interface is used to fix this.
+ * the property is actually there. This type is used to fix this.
  */
-interface NamedMessageBus extends DBus.MessageBus {
+type NamedMessageBus = {
   name: string;
-}
+} & DBus.MessageBus;
 
 /**
  * This is the base class for all portals. It provides some common functionality like
- * generating tokens and making requests.
+ * generating tokens and making requests. It extends the EventEmitter class so that
+ * derived classes can emit events.
  */
-export class DesktopPortal {
+export class DesktopPortal extends EventEmitter {
   private bus = DBus.sessionBus() as NamedMessageBus;
 
   /**

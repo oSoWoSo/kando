@@ -9,9 +9,10 @@
 // SPDX-License-Identifier: MIT
 
 import { native } from './native';
-import { Backend, Shortcut, IWMInfo } from '../../backend';
-import { IBackendInfo, IKeySequence } from '../../../../common';
+import { LinuxBackend } from '../backend';
+import { GeneralSettings, KeySequence } from '../../../../common';
 import { mapKeys } from '../../../../common/key-codes';
+import { Settings } from '../../../../main/settings';
 
 /**
  * This is a partial implementation of the Backend interface for wlroots-based Wayland
@@ -21,7 +22,21 @@ import { mapKeys } from '../../../../common/key-codes';
  * - Moving the mouse pointer using the wlr-virtual-pointer-unstable-v1 protocol.
  * - Sending key input using the virtual-keyboard-unstable-v1 protocol.
  */
-export abstract class WLRBackend implements Backend {
+
+type PointerTimeoutBehavior =
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'center'
+  | 'previously-reported-position';
+
+export abstract class WLRBackend extends LinuxBackend {
+  private previouslyReportedX = 0;
+  private previouslyReportedY = 0;
+  public generalSettings: Settings<GeneralSettings>;
+  public defaultBehavior: PointerTimeoutBehavior = 'center';
+
   /**
    * Moves the pointer by the given amount using the native module which uses the
    * wlr-virtual-pointer-unstable-v1 Wayland protocol.
@@ -44,7 +59,7 @@ export abstract class WLRBackend implements Backend {
    *
    * @param shortcut The keys to simulate.
    */
-  public async simulateKeys(keys: IKeySequence) {
+  protected override async simulateKeysImpl(keys: KeySequence) {
     // We first need to convert the given DOM key names to X11 key codes. If a key code is
     // not found, this throws an error.
     const keyCodes = mapKeys(keys, 'linux');
@@ -62,12 +77,51 @@ export abstract class WLRBackend implements Backend {
     }
   }
 
-  // These methods are abstract and need to be implemented by subclasses. See the docs
-  // of the methods in the Backend interface for more information.
-  abstract init(): Promise<void>;
-  abstract getBackendInfo(): IBackendInfo;
-  abstract getWMInfo(): Promise<IWMInfo>;
-  abstract bindShortcut(shortcut: Shortcut): Promise<void>;
-  abstract unbindShortcut(trigger: string): Promise<void>;
-  abstract unbindAllShortcuts(): Promise<void>;
+  /**
+   * This gets the pointer's position and work area size. Derived backends may use this in
+   * their getWMInfo() implementations.
+   *
+   * This is only supported on Wayland compositors implementing the wlr-layer-shell
+   * protocol. Also, it requires that the compositor automatically sends a pointer-enter
+   * event when the surface is created. It seems that for instance Niri does this, but
+   * Hyprland does not. Hence, on Hyprland, the method would block until the user moves
+   * the pointer.
+   */
+  protected getPointerPositionAndWorkAreaSize() {
+    const data = native.getPointerPositionAndWorkAreaSize(
+      this.generalSettings.get('wlrootsPointerGetTimeoutMouse'),
+      this.generalSettings.get('wlrootsPointerGetTimeoutTouch')
+    );
+    if (data.pointerGetTimedOut) {
+      console.error('Pointer get timed out');
+      switch (this.defaultBehavior) {
+        case 'top-left':
+          data.pointerX = 0;
+          data.pointerY = 0;
+          break;
+        case 'top-right':
+          data.pointerX = data.workAreaWidth;
+          data.pointerY = 0;
+          break;
+        case 'bottom-left':
+          data.pointerX = 0;
+          data.pointerY = data.workAreaHeight;
+          break;
+        case 'bottom-right':
+          data.pointerX = data.workAreaWidth;
+          data.pointerY = data.workAreaHeight;
+          break;
+        case 'center':
+          data.pointerX = data.workAreaWidth / 2;
+          data.pointerY = data.workAreaHeight / 2;
+          break;
+        case 'previously-reported-position':
+          data.pointerX = this.previouslyReportedX;
+          data.pointerY = this.previouslyReportedY;
+      }
+    }
+    this.previouslyReportedX = data.pointerX;
+    this.previouslyReportedY = data.pointerY;
+    return data;
+  }
 }

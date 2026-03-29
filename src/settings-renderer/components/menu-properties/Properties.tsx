@@ -21,11 +21,12 @@ import {
   IconChooserButton,
   TagInput,
   ShortcutPicker,
+  RandomTip,
   Swirl,
   Scrollbox,
   TextInput,
 } from '../common';
-import { getConfigComponent } from './item-configs';
+import { getConfigComponent, getItemTips } from './item-configs';
 import MenuConditions from './MenuConditions';
 import MenuBehavior from './MenuBehavior';
 
@@ -54,7 +55,7 @@ export default function Properties() {
     return (
       <>
         <Headerbar />
-        <div className={classes.properties}></div>
+        <div className={classes.properties} />
       </>
     );
   }
@@ -66,17 +67,22 @@ export default function Properties() {
     selectedChildPath
   );
 
+  const itemIndex =
+    selectedChildPath.length > 0 ? selectedChildPath[selectedChildPath.length - 1] : -1;
+
   // Returns a shortcut picker if the current backend supports shortcuts, else it will
   // return a text input for the shortcut ID.
   const getShortcutPicker = () => {
     if (backend.supportsShortcuts) {
       return (
         <ShortcutPicker
-          label={i18next.t('settings.shortcut-label')}
+          isGrowing
+          useModifiers
           info={i18next.t('settings.shortcut-info')}
-          recordingPlaceholder={i18next.t('settings.shortcut-recording')}
-          mode="key-names"
           initialValue={menus[selectedMenu].shortcut}
+          label={i18next.t('settings.shortcut-label')}
+          mode="key-names"
+          recordingPlaceholder={i18next.t('settings.shortcut-recording')}
           onChange={(shortcut) => {
             editMenu(selectedMenu, (menu) => {
               menu.shortcut = shortcut;
@@ -88,10 +94,10 @@ export default function Properties() {
     }
     return (
       <TextInput
+        info={backend.shortcutHint}
         initialValue={menus[selectedMenu].shortcutID}
         label={i18next.t('settings.shortcut-id-label')}
         placeholder={i18next.t('settings.not-bound')}
-        info={backend.shortcutHint}
         onChange={(shortcutID) => {
           editMenu(selectedMenu, (menu) => {
             menu.shortcutID = shortcutID;
@@ -108,11 +114,11 @@ export default function Properties() {
       <div className={classes.container}>
         <div className={classes.icon}>
           <IconChooserButton
-            iconSize="4em"
-            variant="flat"
             buttonSize="large"
             icon={selectedItem.icon}
+            iconSize="4em"
             theme={selectedItem.iconTheme}
+            variant="flat"
             onChange={(icon, theme) => {
               editMenuItem(selectedMenu, selectedChildPath, (item) => {
                 item.icon = icon;
@@ -134,19 +140,19 @@ export default function Properties() {
             }}
           />
         </div>
-        <Swirl variant="2" width="min(250px, 80%)" marginBottom={10} marginTop={10} />
+        <Swirl marginBottom={10} marginTop={10} variant="2" width="min(250px, 80%)" />
         <Scrollbox>
           <div className={classes.properties}>
             {
               // Show the hotkey selector for the root menu.
-              isRoot && getShortcutPicker()
+              isRoot ? getShortcutPicker() : null
             }
             {
               // If the selected item is the root of the menu, we show the tag editor.
-              isRoot && (
+              isRoot ? (
                 <TagInput
-                  label={i18next.t('settings.tags')}
                   info={i18next.t('settings.tags-info')}
+                  label={i18next.t('settings.tags')}
                   tags={menuTags}
                   onChange={(newTags) => {
                     editMenu(selectedMenu, (menu) => {
@@ -156,38 +162,71 @@ export default function Properties() {
                     setMenuTags(newTags);
                   }}
                 />
-              )
+              ) : null
             }
             {
               // We also show the sections for the menu behavior and conditions.
-              isRoot && (
+              isRoot ? (
                 <>
                   <MenuBehavior />
                   <MenuConditions />
                 </>
-              )
+              ) : null
             }
-            {!isRoot && selectedItem && getConfigComponent(selectedItem.type)}
+            {
+              // For all other items, we show the config component that is specific to the
+              // item type.
+              !isRoot && selectedItem ? getConfigComponent(selectedItem.type) : null
+            }
+            {
+              // Also, each menu item has the quick-select key. The default value for this
+              // is the menu item's number.
+              !isRoot && selectedItem ? (
+                <ShortcutPicker
+                  info={i18next.t('settings.quick-select-key-info')}
+                  initialValue={selectedItem.quickSelectKey || ''}
+                  label={i18next.t('settings.quick-select-key-label')}
+                  mode="key-names"
+                  placeholder={
+                    itemIndex < 9 ? `${itemIndex + 1}` : i18next.t('settings.not-bound')
+                  }
+                  recordingPlaceholder={i18next.t('settings.quick-select-key-recording')}
+                  useModifiers={false}
+                  onChange={(shortcut) => {
+                    editMenuItem(selectedMenu, selectedChildPath, (item) => {
+                      item.quickSelectKey = shortcut;
+                      return item;
+                    });
+                  }}
+                />
+              ) : null
+            }
+            {
+              // Finally, we show the tips for the currently selected item type.
+              !isRoot && selectedItem ? (
+                <RandomTip marginTop={50} tips={getItemTips(selectedItem.type)} />
+              ) : null
+            }
           </div>
         </Scrollbox>
         {!isRoot && (
           <div className={classes.floatingButton}>
             <Button
+              isGrouped
               icon={<TbCopy />}
+              size="large"
               tooltip={i18next.t('settings.duplicate-menu-item')}
               variant="floating"
-              size="large"
-              grouped
               onClick={() => {
                 duplicateMenuItem(selectedMenu, selectedChildPath);
               }}
             />
             <Button
+              isGrouped
               icon={<TbTrash />}
+              size="large"
               tooltip={i18next.t('settings.delete-menu-item')}
               variant="floating"
-              size="large"
-              grouped
               onClick={() => {
                 deleteMenuItem(selectedMenu, selectedChildPath);
                 selectParent();

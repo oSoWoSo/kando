@@ -44,23 +44,32 @@ class Native : public Napi::Addon<Native> {
   void simulateKey(const Napi::CallbackInfo& info);
 
   /**
-   * This function is called when the getActiveWindow function is called from JavaScript.
-   * It returns the app and class of the currently active window.
+   * This function is called when the getWMInfo function is called from JavaScript.
+   * It returns the app and class of the currently active window, as well as the
+   * current pointer position.
    *
-   * @param info The arguments passed to the getActiveWindow function. It should contain
+   * @param info The arguments passed to the getWMInfo function. It should contain
    *            no arguments.
    */
-  Napi::Value getActiveWindow(const Napi::CallbackInfo& info);
+  Napi::Value getWMInfo(const Napi::CallbackInfo& info);
 
   /**
    * After maximizing a window, the acrylic effect is sometimes broken. This function
    * is called after window creation to fix the acrylic effect. See here:
    * https://github.com/electron/electron/issues/42393
-   * 
+   *
    * @param info The arguments passed to the fixAcrylicEffect function. It should contain
    *           the window handle.
    */
   void fixAcrylicEffect(const Napi::CallbackInfo& info);
+
+  /**
+   * This function returns a list of all installed applications.
+   *
+   * @param info The arguments passed to the listInstalledApplications function. It should
+   * contain no arguments.
+   */
+  Napi::Value listInstalledApplications(const Napi::CallbackInfo& info);
 };
 
 #endif // NATIVE_HPP

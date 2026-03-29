@@ -13,16 +13,16 @@ import React from 'react';
 import * as classes from './ThemedIcon.module.scss';
 import { IconThemeRegistry } from '../../../common/icon-themes/icon-theme-registry';
 
-interface IProps {
+type Props = {
   /** The name of the icon. */
-  name: string;
+  readonly name: string;
 
   /** The name of the icon theme to take the icon from. */
-  theme: string;
+  readonly theme: string;
 
   /** The size of the icon. */
-  size?: number | string;
-}
+  readonly size?: number | string;
+};
 
 /**
  * A component which displays an icon from a Kando icon theme.
@@ -30,7 +30,7 @@ interface IProps {
  * @param props - The properties for the icon.
  * @returns An icon component.
  */
-export default function ThemedIcon(props: IProps) {
+export default function ThemedIcon(props: Props) {
   const iconRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -46,8 +46,9 @@ export default function ThemedIcon(props: IProps) {
 
   return (
     <div
-      style={{ width: props.size, height: props.size }}
+      ref={iconRef}
       className={classes.icon}
-      ref={iconRef}></div>
+      style={{ minWidth: props.size, minHeight: props.size }}
+    />
   );
 }

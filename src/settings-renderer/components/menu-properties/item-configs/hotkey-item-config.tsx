@@ -12,11 +12,11 @@ import React from 'react';
 import i18next from 'i18next';
 
 import { useAppState, useMenuSettings, getSelectedChild } from '../../../state';
-import { RandomTip, ShortcutPicker, Checkbox } from '../../common';
-import { IItemData } from '../../../../common/item-types/hotkey-item-type';
+import { ShortcutPicker, Checkbox } from '../../common';
+import { ItemData } from '../../../../common/item-types/hotkey-item-type';
 
 /** The configuration component for hotkey items is a shortcut picker. */
-export default () => {
+export function HotkeyItemConfig() {
   const menus = useMenuSettings((state) => state.menus);
   const selectedMenu = useAppState((state) => state.selectedMenu);
   const selectedChildPath = useAppState((state) => state.selectedChildPath);
@@ -25,47 +25,61 @@ export default () => {
 
   // Sanity check. Should never happen, but just in case.
   if (!selectedItem || selectedItem.type !== 'hotkey') {
-    return <></>;
+    return null;
   }
 
-  const data = selectedItem.data as IItemData;
+  const data = selectedItem.data as ItemData;
 
   return (
     <>
       <ShortcutPicker
-        label={i18next.t('menu-items.hotkey.hotkey')}
+        isGrowing
+        useModifiers
         info={i18next.t('menu-items.hotkey.hotkey-info')}
-        recordingPlaceholder={i18next.t('menu-items.hotkey.recording-placeholder')}
-        mode="key-codes"
         initialValue={data.hotkey}
+        label={i18next.t('menu-items.hotkey.hotkey')}
+        mode="key-codes"
+        recordingPlaceholder={i18next.t('menu-items.hotkey.recording-placeholder')}
         onChange={(value) => {
           editMenuItem(selectedMenu, selectedChildPath, (item) => {
-            (item.data as IItemData).hotkey = value;
+            (item.data as ItemData).hotkey = value;
             return item;
           });
         }}
       />
       <Checkbox
-        label={i18next.t('menu-items.common.delayed-option')}
         info={i18next.t('menu-items.common.delayed-option-info')}
         initialValue={data.delayed}
+        label={i18next.t('menu-items.common.delayed-option')}
         onChange={(value) => {
           editMenuItem(selectedMenu, selectedChildPath, (item) => {
-            (item.data as IItemData).delayed = value;
+            (item.data as ItemData).delayed = value;
             return item;
           });
         }}
       />
-      <RandomTip
-        marginTop={50}
-        tips={[
-          i18next.t('menu-items.hotkey.tip-1'),
-          i18next.t('menu-items.hotkey.tip-2'),
-          i18next.t('menu-items.hotkey.tip-3', {
-            link: 'https://kando.menu/valid-keynames/',
-          }),
-        ]}
+      <Checkbox
+        info={i18next.t('menu-items.common.inhibit-shortcuts-info')}
+        initialValue={data.inhibitShortcuts}
+        label={i18next.t('menu-items.common.inhibit-shortcuts')}
+        onChange={(value) => {
+          editMenuItem(selectedMenu, selectedChildPath, (item) => {
+            (item.data as ItemData).inhibitShortcuts = value;
+            return item;
+          });
+        }}
       />
     </>
   );
-};
+}
+
+/** The tips component for hotkey items shows a list of useful tips for hotkey items. */
+export function getHotkeyItemTips() {
+  return [
+    i18next.t('menu-items.hotkey.tip-1'),
+    i18next.t('menu-items.hotkey.tip-2'),
+    i18next.t('menu-items.hotkey.tip-3', {
+      link: 'https://kando.menu/valid-keynames/',
+    }),
+  ];
+}

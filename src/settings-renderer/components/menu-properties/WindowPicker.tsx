@@ -14,25 +14,24 @@ declare const window: WindowWithAPIs;
 import React from 'react';
 import i18next from 'i18next';
 import { TbCheck, TbX, TbStopwatch } from 'react-icons/tb';
-import { BiTargetLock } from 'react-icons/bi';
 
 import { Modal, Button } from '../common';
 
 import * as classes from './WindowPicker.module.scss';
 
-interface IProps {
+type Props = {
   /** Function to call when a new window is selected. */
-  onSelect: (value: string) => void;
+  readonly onSelect: (value: string) => void;
 
   /** Function to call when the dialog should be closed. */
-  onClose: () => void;
+  readonly onClose: () => void;
 
   /** The picking mode. */
-  mode: 'application' | 'title';
+  readonly mode: 'application' | 'title';
 
   /** Visibility of the modal. */
-  visible: boolean;
-}
+  readonly isVisible: boolean;
+};
 
 /**
  * This component allows the user to select an application name or a window title by
@@ -40,18 +39,18 @@ interface IProps {
  * application or window should be focused. After that, the application name or window
  * title is read and returned to the parent component.
  */
-export default function WindowPicker(props: IProps) {
+export default function WindowPicker(props: Props) {
   const timeout = 5;
   const [value, setValue] = React.useState(null);
   const [timer, setTimer] = React.useState(timeout + 1);
 
   // Clear the value when the modal is shown.
   React.useEffect(() => {
-    if (props.visible) {
+    if (props.isVisible) {
       setValue(null);
       setTimer(timeout + 1);
     }
-  }, [props.visible]);
+  }, [props.isVisible]);
 
   // Reduce the timer every second.
   React.useEffect(() => {
@@ -100,25 +99,16 @@ export default function WindowPicker(props: IProps) {
   };
 
   return (
-    <Modal
-      title={
-        props.mode === 'application'
-          ? i18next.t('settings.window-picker-dialog.pick-app-name-title')
-          : i18next.t('settings.window-picker-dialog.pick-window-title-title')
-      }
-      icon={<BiTargetLock />}
-      visible={props.visible}
-      onClose={props.onClose}
-      maxWidth={400}>
+    <Modal isVisible={props.isVisible} maxWidth={400} onClose={props.onClose}>
       <div className={classes.container}>
         <div className={classes.caption}>{getCaption()}</div>
         <div className={classes.recordButton}>
           <Button
-            label={getButtonLabel()}
             icon={<TbStopwatch />}
-            variant="primary"
+            isDisabled={timer <= timeout}
+            label={getButtonLabel()}
             size="large"
-            disabled={timer <= timeout}
+            variant="primary"
             onClick={() => {
               setTimer(5);
             }}
@@ -126,19 +116,19 @@ export default function WindowPicker(props: IProps) {
         </div>
         <div className={classes.buttons}>
           <Button
-            label={i18next.t('settings.cancel')}
+            isBlock
             icon={<TbX />}
-            block
+            label={i18next.t('settings.cancel')}
             onClick={() => {
               props.onClose();
             }}
           />
           <Button
+            isBlock
+            icon={<TbCheck />}
+            isDisabled={!value || value === ''}
             label={i18next.t('settings.window-picker-dialog.confirm')}
             variant="primary"
-            disabled={!value || value === ''}
-            icon={<TbCheck />}
-            block
             onClick={() => {
               props.onSelect(value);
               props.onClose();

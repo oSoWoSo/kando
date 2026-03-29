@@ -13,6 +13,7 @@
 
 .row {
   display: flex;
+  gap: 8px;
 
   color: $text-normal;
 
@@ -28,6 +29,11 @@
 
   &.clickable:active {
     transform: translateY(1px);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
   }
 
   .widget {

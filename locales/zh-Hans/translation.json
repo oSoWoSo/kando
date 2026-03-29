@@ -11,6 +11,9 @@
         },
         "kde-wayland": {
             "shortcut-info": "Kando 无法直接在 KDE/Wayland 上绑定全局快捷键。相反，请您在这里指定一个快捷键 ID，然后在 KDE 系统设置的全局快捷键的 KWin 部分中搜索它。您可以在那里分配将打开此菜单的快捷键。"
+        },
+        "niri": {
+            "shortcut-info": "Niri 尚不支持全局快捷键。但您可以通过命令行执行 'kando --menu \"菜单名称\"' 或在您的 Niri 配置文件中设定，以开启该菜单。"
         }
     },
     "example-menu": {
@@ -78,7 +81,8 @@
         "un-inhibit-shortcuts": "重新启用快捷键",
         "new-version-notification-body": "前往 {{link}} 获取吧。",
         "invalid-link-header": "链接无效",
-        "invalid-link-message": "此深度链接无法被解析。"
+        "invalid-link-message": "此深度链接无法被解析。",
+        "no-backend-found": "未找到合适后端。"
     },
     "menu-items": {
         "command": {
@@ -92,7 +96,12 @@
             "tip-4": "使用 {{window_name}} 变量代表打开菜单时正在使用的窗口标题。",
             "tip-5": "使用 {{pointer_x}} 和 {{pointer_y}} 变量代表打开菜单时的光标位置。",
             "tip-6": "点击[这里]({{link}})以了解如何查找启动应用程序的命令。",
-            "placeholder": "插入任何命令…"
+            "placeholder": "插入任何命令…",
+            "isolated": "隔离运行",
+            "detached": "分离运行",
+            "isolated-info": "将在一个干净的环境中运行命令，这意味着它不会从 Kando 继承任何环境变量。这应可以帮助处理某些无法正常启动的命令。",
+            "detached-info": "这将使命令与 Kando 断开连接，因此即使 Kando 关闭，它也将继续运行。禁用此项可能会解决某些命令未能正常启动的问题。",
+            "choose-app": "选取应用…"
         },
         "file": {
             "description": "打开一个文件或文件夹。",
@@ -146,7 +155,7 @@
             "tip-1": "此操作使用您的剪贴板粘贴文本。使用该操作后，剪贴板将包含文本。"
         },
         "uri": {
-            "description": "打开网页或调用其它URI方案。",
+            "description": "打开网页或调用其它链接方案。",
             "name": "打开 URI",
             "tip-1": "使用 http:// 协议来打开网站。",
             "tip-2": "您可以使用它来调用自定义URI方案，如 slack:// 或 zoommtg:// 。",
@@ -159,7 +168,9 @@
         },
         "common": {
             "delayed-option": "等待淡出动画结束",
-            "delayed-option-info": "如果此操作仅针对需要聚焦的窗口，勾选此项将很有用。"
+            "delayed-option-info": "如果此操作仅针对需要聚焦的窗口，勾选此项将很有用。",
+            "inhibit-shortcuts-info": "在快捷键或宏被模拟时禁用所有Kando快捷键。这可以防止模拟输入意外触发其他菜单快捷键。",
+            "inhibit-shortcuts": "禁用快捷键"
         }
     },
     "settings": {
@@ -226,7 +237,7 @@
             "menu-window-dev-tools": "检查菜单",
             "none": "无",
             "title": "通用设置",
-            "message": "Kando 的所有设置都存储在一个 JSON 文件中，您可以编辑、分享或备份该文件。点击[这里]({{link}})以打开存储 config.json 文件的目录。",
+            "message": "Kando 的菜单设置和应用程序设置分别存储在两个 JSON 文件中，您可以编辑、分享或备份这些文件。点击[这里]({{link}})以打开存储配置文件的目录。",
             "app-behavior": "应用行为",
             "check-for-new-versions": "检查新版本",
             "check-for-new-versions-info": "如果启用，Kando 将会在新版本可用时向您显示一条通知。",
@@ -263,7 +274,45 @@
             "movement-threshold-info": "在画笔或极速模式下，较小的鼠标移动将被忽略。默认值为 15 像素。",
             "minimum-gesture-length": "最小手势长度",
             "gesture-jitter-threshold": "手势抖动阈值",
-            "dev-tools-note": "Kando使用两个窗口：一个用于菜单，一个用于设置。您可以打开开发工具单独检查这两个窗口。"
+            "dev-tools-note": "Kando使用两个窗口：一个用于菜单，一个用于设置。您可以打开开发工具单独检查这两个窗口。",
+            "press-again-behavior": "再次按下快捷键的行为",
+            "do-nothing": "无动作",
+            "press-again-behavior-info": "此选项决定当菜单已显示时，再次按下快捷键会执行的行为。如果有多个菜单绑定到同一个快捷键，您可以用此功能来循环切换所有符合条件的菜单。若要将极速模式与 “无动作” 以外的选项搭配使用，请务必只按住修饰键。",
+            "cycle-menus": "循环切换符合条件的菜单",
+            "close-menu": "关闭菜单",
+            "localization-label": "语言",
+            "auto-language": "使用系统语言",
+            "app-settings": "应用程序设置",
+            "localization-info": "需要重新启动 Kando 使语言设置生效。",
+            "cycle-from-first": "显示下一个菜单（从第一个开始）",
+            "cycle-from-recent": "显示下一个菜单（从上一菜单接续）",
+            "keep-input-focus": "停留在活动应用窗口",
+            "keep-input-focus-info": "如果启用，菜单在打开时将不会接收键盘输入焦点。这会禁用极速模式，但如果您希望其他应用程序在菜单打开时保持聚焦，这可能会很有用。",
+            "hardware-acceleration": "启用硬件加速",
+            "hardware-acceleration-info": "此选项可提升应用程序的性能，但同时也可能导致渲染异常。您需要重新启动Kando以应用此设置。",
+            "backup-and-restore": "备份与恢复",
+            "backup-menus": "备份 menus.json…",
+            "backup-settings": "备份 config.json…",
+            "restore-menus": "恢复 menus.json…",
+            "restore-settings": "恢复 config.json…",
+            "enable-achievements-info": "启用后，Kando 将记录您的成就进度。",
+            "enable-achievements": "记录成就",
+            "enable-achievement-notifications-info": "如果启用，当成就解锁时会向您发送通知。",
+            "enable-achievement-notifications": "显示成就通知",
+            "wlroots-specific-options": "wlroots 后端选项",
+            "options-that-will-only-affect-the-wlroots-backend": "这些选项仅影响基于 wlroots 的后端，对其他后端无效。",
+            "wlroots-pointer-get-timeout-mouse-info": "等待 wlroots 后端回传鼠标指针位置的最长时间（毫秒）。若超过此时间将使用备选位置。默认为 500 毫秒。",
+            "wlroots-pointer-get-timeout-mouse": "获取指针位置超时时限",
+            "wlroots-pointer-get-timeout-touch-info": "等待 wlroots 后端回传触控点位置的最长时间（毫秒）。若超过此时间将使用备选位置。默认为 1000 毫秒。",
+            "wlroots-pointer-get-timeout-touch": "获取触控点位置的超时时限",
+            "wlroots-pointer-get-timeout-default-behavior-info": "决定若在设定时间内无法从 wlroots 后端取得位置时，指针应位于何处。",
+            "wlroots-pointer-get-timeout-default-behavior": "指针备选位置",
+            "center": "中心",
+            "previously-reported": "上次传回值",
+            "windows-ink-workaround-info": "此选项会启用一项兼容性修正，可以解决在 Windows Ink 启用时无法取得触控笔位置的问题。此项会在开启菜单前增加 100 毫秒的延迟，因此如果您不使用触控笔，可关闭此选项提升菜单开启速度。",
+            "windows-ink-workaround": "Windows Ink 兼容支持",
+            "max-selection-radius-info": "若设置为大于 0 的值，点击此半径外的区域将关闭菜单。默认值为 0，表示不限制最大选取半径。",
+            "max-selection-radius": "最大选取半径"
         },
         "hover-mode": "悬停模式",
         "hover-mode-info": "仅限高级用户使用！将鼠标悬停在项目上以选择项目。",
@@ -272,8 +321,9 @@
             "file-example": "file: URI 示例：",
             "search-placeholder": "搜索图标…",
             "url-example": "URL 示例：",
-            "base64-hint": "Base64 编码的图标提供了一种简单的方法将任何类型的图标包含到您的菜单中。您可以使用类似于 [www.base64-image.de]({{link}}) 的服务将任何图像转换为 Base64 编码字符串。这甚至适用于动画 GIF！",
-            "hint": "在 [这里]({{link}}) 了解如何添加或创建您自己的图标主题。"
+            "base64-hint": "Base64 编码的图标提供了一种简单的方法将任何类型的图标包含到您的菜单中。您可以使用类似于 [www.base64-image.de]({{link}}) 的服务将任何图像转换为 base64 编码字符串。这甚至适用于动画 GIF！",
+            "hint": "在 [这里]({{link}}) 了解如何添加或创建您自己的图标主题。",
+            "reload-button-tooltip": "重载所有图标主题"
         },
         "introduction-dialog": {
             "title": "欢迎使用 Kando！",
@@ -286,7 +336,7 @@
             "slide11-text": "**不用担心意外选择！** 在画笔模式或极速模式下按住键盘的键时，只有在释放鼠标按钮后动作才会被执行。请利用这一点来探索菜单吧！",
             "show-again": "再次显示此对话框",
             "slide2-title": "打开菜单！",
-            "slide1-title": "Kando 提供了一种独特且高效的与您的设备互动的方式",
+            "slide1-title": "Kando 提供了一种独特且高效的与您的设备互动的方式.",
             "slide1-text": "左右滑动这些幻灯片以了解 Kando 能为您做些什么！您可以使用左侧的章节标记快速跳转到介绍的特定部分。",
             "slide2-text-standard": "如果您是第一次启动 Kando 的话，您可以用 Ctrl+空格 快捷键打开示例菜单。而在屏幕任意位置点击鼠标右键或按下 Esc 键则可以关闭它。",
             "slide2-text-no-shortcuts": "如果您是第一次启动 Kando 的话，则您还[可能需要在 Linux 上执行一些额外步骤以使全局热键工作]({{link}})。处理好这项工作后，您就可以通过 Esc 键或右键单击关闭菜单了。",
@@ -329,7 +379,20 @@
             "menu-scale-info": "使用此选项可以增大或减小菜单的大小。默认值为 1.0。",
             "get-themes-online": "获取在线主题",
             "create-your-own-themes": "创造您自己的主题",
-            "open-theme-directory": "打开主题目录"
+            "open-theme-directory": "打开主题目录",
+            "selection-wedges-info": "如果启用且所选主题支持，则菜单项的可选区域将突出显示。",
+            "selection-wedges": "绘制项目选区",
+            "save-preset-error-title": "预设集保存失败",
+            "save-preset-error-message": "无法保存色彩预设集。请确认该目录是否具备写入权限。错误： {{error}}",
+            "default-colors": "默认色彩",
+            "choose-preset": "选择预设集…",
+            "reload-presets": "重载预设集",
+            "save-preset": "保存预设集",
+            "open-presets-directory": "打开预设集目录",
+            "preset-name-empty": "预设集名称不能为空！",
+            "preset-name-invalid": "预设集名称只能包含英文字母、数字、连字符、下划线和空格！",
+            "preset-name-exists": "已存在相同名称的预设集。",
+            "preset-name-placeholder": "例：My Custom Colors"
         },
         "not-bound": "未绑定快捷键",
         "shortcut-id-label": "快捷键 ID",
@@ -386,11 +449,144 @@
         "tags": "标签",
         "duplicate-menu": "复制菜单",
         "tags-info": "标签可以用于在菜单合集中对菜单进行分组。",
-        "no-menus": "暂无可以展示的菜单",
-        "no-menus-note": "如果你不小心删除了仅剩的菜单，你可以通过撤销操作来恢复被删除的菜单",
-        "no-matching-menus": "暂无菜单",
-        "empty-collection": "这是个空的菜单合集",
+        "no-menus": "暂无可以展示的菜单.",
+        "no-menus-note": "如果你不小心删除了仅剩的菜单，你可以通过撤销操作来恢复被删除的菜单.",
+        "no-matching-menus": "暂无菜单.",
+        "empty-collection": "这是个空的菜单合集.",
         "no-matching-menus-note": "试试搜点别的？",
-        "empty-collection-note": "编辑上面的标签或使用下面的按钮向此集合添加一个全新的菜单"
+        "empty-collection-note": "编辑上面的标签或使用下面的按钮向此集合添加一个全新的菜单.",
+        "add-menu-item-hint": "将此项目拖拽到上方的菜单即可新增！",
+        "app-picker": {
+            "hint": "您也可以从您的开始菜单直接拖放应用到 Kando 的菜单编辑器！",
+            "search-placeholder": "搜索应用…",
+            "use-selected": "使用此项"
+        },
+        "backup-general-settings-title": "备份通用设置…",
+        "restore-backup": "从备份恢复…",
+        "restore-general-settings-warning-title": "您确定要恢复通用设置吗？",
+        "restore-general-settings-warning-message": "这将用所选备份文件的内容覆盖您当前的应用程序设置！您的菜单和菜单合集不会受到影响。",
+        "restore-general-settings-error-title": "载入备份设置失败！",
+        "restore-general-settings-success-title": "成功！",
+        "restore-general-settings-success-message": "您的通用设置项已从备份文件恢复。",
+        "restore-menu-settings-warning-title": "您确定要重置菜单设置吗？",
+        "restore-menu-settings-warning-message": "这将用所选备份文件的内容覆盖您当前的菜单和菜单合集！",
+        "restore-menu-settings-error-title": "载入菜单备份文件失败！",
+        "restore-menu-settings-success-title": "成功！",
+        "restore-menu-settings-success-message": "您的菜单和菜单合集项已从备份文件恢复。",
+        "achievements-dialog": {
+            "reset-button": "重置进度",
+            "reset-confirmation-title": "您确定要重置所有进度吗？",
+            "reset-confirmation-message": "所有成就和等级进度将会丢失。此操作无法复原。",
+            "title": "成就",
+            "xp": "XP",
+            "no-in-progress-achievements": "恭喜！您已达成所有成就。",
+            "no-completed-achievements": "您尚未完成任何成就。",
+            "in-progress-button": "进行中",
+            "completed-button": "已完成",
+            "reset-button-tooltip": "重置所有成就与等级进度"
+        },
+        "export-menu-error-title": "导出菜单失败",
+        "import-menu-error-title": "导入菜单失败",
+        "import-menu-error-message": "无法导入所选的文件。该文件不是从 Kando 导出的有效菜单。",
+        "export-menu": "导出菜单",
+        "import-menu": "导入菜单",
+        "quick-select-key-info": "此按键可让您快速选择菜单项。",
+        "quick-select-key-label": "快速选择键",
+        "quick-select-key-recording": "按下按键…"
+    },
+    "achievements": {
+        "attributes": {
+            "novice": "新手",
+            "capable": "熟手",
+            "skilled": "高手",
+            "expert": "专家",
+            "master": "大师"
+        },
+        "tier": {
+            "I": "I",
+            "II": "II",
+            "III": "III",
+            "IV": "IV",
+            "V": "V"
+        },
+        "cancelor": {
+            "name": "虚空长路 {{tier}}",
+            "description": "取消选择 {{n}} 次。"
+        },
+        "selector": {
+            "name": "{{attribute}} 武士",
+            "description": "选择 {{n}} 个菜单项目。"
+        },
+        "depth-selector": {
+            "name1": "{{attribute}} 刀客",
+            "name2": "{{attribute}} 双层刀客",
+            "name3": "{{attribute}} 深渊刀客",
+            "description": "在 {{time}} 毫秒内，于第 {{depth}} 层选取 {{n}} 个项目。"
+        },
+        "click-selector": {
+            "name": "{{attribute}} 点击圣手",
+            "description": "用鼠标点击选取 {{n}} 个项目。"
+        },
+        "keyboard-selector": {
+            "name": "{{attribute}} 热键侠",
+            "description": "使用键盘选取 {{n}} 个项目。"
+        },
+        "gamepad-selector": {
+            "name": "{{attribute}} 头号玩家",
+            "description": "使用游戏手柄选取 {{n}} 个项目。"
+        },
+        "gesture-selector": {
+            "name": "{{attribute}} 疾风忍者",
+            "description": "使用极速模式或画笔模式选取 {{n}} 个项目。"
+        },
+        "settings-opened": {
+            "name": "旅程即是奖赏 {{tier}}",
+            "description": "打开设置窗口 {{n}} 次。"
+        },
+        "backup": {
+            "name": "先见之明 {{tier}}",
+            "description": "备份您的菜单或设置项 {{n}} 次。"
+        },
+        "restore": {
+            "name": "再起之机 {{tier}}",
+            "description": "还原备份 {{n}} 次。"
+        },
+        "added-items": {
+            "name": "Kando 之道 {{tier}}",
+            "description": "在菜单编辑器中创建 {{n}} 个菜单项。"
+        },
+        "deleted-all-menus": {
+            "name": "归零之境",
+            "description": "删除您所有的菜单。"
+        },
+        "full-menu": {
+            "name": "海纳百川",
+            "description": "创建一个包含超过十二个项目的菜单。"
+        },
+        "deep-menu": {
+            "name": "根深蒂固",
+            "description": "将一个菜单项添加到深度达四层的子菜单中。"
+        },
+        "sponsors-viewed": {
+            "name": "Kando 守护者",
+            "description": "考虑成为 Kando 的赞助者。"
+        },
+        "menu-themes-selected": {
+            "name": "臻美之道",
+            "description": "更换菜单主题 {{n}} 次。"
+        },
+        "tutorial-viewed": {
+            "name": "旅途的起点",
+            "description": "完成 Kando 的导览教程。"
+        },
+        "many-selections-streak": {
+            "name": "秒开仙人 {{tier}}",
+            "description": "在 {{time}} 秒内选取 {{n}} 个菜单项。"
+        },
+        "speedy-selections-streak": {
+            "name": "零帧起手 {{tier}}",
+            "description": "连续选取 {{n}} 次，且平均时间少于 {{time}} 毫秒。"
+        },
+        "completed-title": "获得成就！"
     }
 }

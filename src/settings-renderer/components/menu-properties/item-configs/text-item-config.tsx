@@ -12,11 +12,11 @@ import React from 'react';
 import i18next from 'i18next';
 
 import { useAppState, useMenuSettings, getSelectedChild } from '../../../state';
-import { RandomTip, TextInput } from '../../common';
-import { IItemData } from '../../../../common/item-types/text-item-type';
+import { TextInput } from '../../common';
+import { ItemData } from '../../../../common/item-types/text-item-type';
 
 /** The configuration component for text items is primarily a text area. */
-export default () => {
+export function TextItemConfig() {
   const menus = useMenuSettings((state) => state.menus);
   const selectedMenu = useAppState((state) => state.selectedMenu);
   const selectedChildPath = useAppState((state) => state.selectedChildPath);
@@ -25,25 +25,27 @@ export default () => {
 
   // Sanity check. Should never happen, but just in case.
   if (!selectedItem || selectedItem.type !== 'text') {
-    return <></>;
+    return null;
   }
 
-  const data = selectedItem.data as IItemData;
+  const data = selectedItem.data as ItemData;
 
   return (
-    <>
-      <TextInput
-        placeholder={i18next.t('menu-items.text.placeholder')}
-        multiline
-        initialValue={data.text}
-        onChange={(value) => {
-          editMenuItem(selectedMenu, selectedChildPath, (item) => {
-            (item.data as IItemData).text = value;
-            return item;
-          });
-        }}
-      />
-      <RandomTip marginTop={50} tips={[i18next.t('menu-items.text.tip-1')]} />
-    </>
+    <TextInput
+      isMultiline
+      initialValue={data.text}
+      placeholder={i18next.t('menu-items.text.placeholder')}
+      onChange={(value) => {
+        editMenuItem(selectedMenu, selectedChildPath, (item) => {
+          (item.data as ItemData).text = value;
+          return item;
+        });
+      }}
+    />
   );
-};
+}
+
+/** The tips component for text items shows a list of useful tips for text items. */
+export function getTextItemTips() {
+  return [i18next.t('menu-items.text.tip-1')];
+}

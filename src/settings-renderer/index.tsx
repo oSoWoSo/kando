@@ -20,6 +20,8 @@ import { enableDragDropTouch } from 'drag-drop-touch';
 
 import App from './components/App';
 import { useAppState, useGeneralSettings, useMenuSettings } from './state';
+import { IconThemeRegistry } from '../common/icon-themes/icon-theme-registry';
+import { IPCMenuManager } from './utils/ipc-menu-manager';
 
 /**
  * This file is the main entry point for Kando's settings renderer process. It is
@@ -39,9 +41,11 @@ Promise.all([
   window.settingsAPI.getBackendInfo(),
   window.settingsAPI.getVersionInfo(),
   window.settingsAPI.getSystemInfo(),
+  window.settingsAPI.getInstalledApps(),
   window.settingsAPI.getAllMenuThemes(),
   window.settingsAPI.getAllSoundThemes(),
   window.settingsAPI.getCurrentMenu(),
+  window.settingsAPI.getLevelProgress(),
 ]).then(
   async ([
     locales,
@@ -51,12 +55,15 @@ Promise.all([
     backendInfo,
     versionInfo,
     systemInfo,
+    installedApps,
     menuThemes,
     soundThemes,
     selectedMenu,
+    levelProgress,
   ]) => {
     // Initialize i18next with the current locale and the english fallback locale.
     await i18next.init({
+      showSupportNotice: false,
       lng: locales.current,
       fallbackLng: locales.fallbackLng,
     });
@@ -70,6 +77,14 @@ Promise.all([
         true
       );
     });
+
+    // This will be called whenever the icons should be reloaded.
+    window.settingsAPI.onReloadIconThemes(async () => {
+      await IconThemeRegistry.getInstance().init();
+    });
+
+    // Initialize the icon theme registry.
+    await IconThemeRegistry.getInstance().init();
 
     // Validate State --------------------------------------------------------------------
 
@@ -117,6 +132,15 @@ Promise.all([
     useAppState.subscribe(validateState);
     useMenuSettings.subscribe(validateState);
 
+    // Initialize IPCMenuManager globally and attach to window ---------------------------
+
+    try {
+      window.ipcAPI = new IPCMenuManager(systemInfo.ipcPort, systemInfo.ipcApiVersion);
+      await window.ipcAPI.init();
+    } catch (e) {
+      console.error('Failed to initialize IPCMenuManager:', e);
+    }
+
     // Initialize the global state objects -----------------------------------------------
 
     // Make sure to not record the initial state of the menu settings in the undo history.
@@ -130,10 +154,12 @@ Promise.all([
       backendInfo,
       versionInfo,
       systemInfo,
+      installedApps,
       darkMode,
       menuThemes,
       soundThemes,
       selectedMenu,
+      levelProgress,
     });
 
     // Update the state whenever the settings change in the main process.
@@ -147,6 +173,15 @@ Promise.all([
 
     window.commonAPI.darkModeChanged((darkMode) => {
       useAppState.setState({ darkMode });
+    });
+
+    window.settingsAPI.onLevelProgressChanged((levelProgress) => {
+      useAppState.setState({ levelProgress });
+    });
+
+    window.settingsAPI.onShowAchievementsDialog(() => {
+      console.log('Showing achievements dialog');
+      useAppState.setState({ achievementsDialogVisible: true });
     });
 
     useGeneralSettings.subscribe((newSettings) => {
@@ -168,6 +203,11 @@ Promise.all([
       forceListen: true,
       allowDragScroll: false,
     });
+
+    // Make sure to never open files or links by accident when dragging them over the
+    // settings window.
+    window.addEventListener('dragover', (e) => e.preventDefault(), false);
+    window.addEventListener('drop', (e) => e.preventDefault(), false);
 
     // Create the settings dialog app object.
     const root = createRoot(document.body);

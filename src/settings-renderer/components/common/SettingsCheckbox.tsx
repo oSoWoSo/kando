@@ -12,21 +12,24 @@ import React from 'react';
 
 import Checkbox from './Checkbox';
 import { useGeneralSetting } from '../../state';
-import { IGeneralSettings } from '../../../common';
+import { GeneralSettings } from '../../../common';
 
-interface IProps<K extends keyof IGeneralSettings> {
+type Props<K extends keyof GeneralSettings> = {
   /** The key in the general settings to manage. */
-  settingsKey: K;
+  readonly settingsKey: K;
 
   /** Optional label text to display next to the checkbox. */
-  label?: string;
+  readonly label?: string;
 
   /** Optional information to display next to the label. */
-  info?: string;
+  readonly info?: string;
 
   /** Whether the checkbox is disabled. Defaults to false. */
-  disabled?: boolean;
-}
+  readonly isDisabled?: boolean;
+
+  /** Whether to show the checkbox on the left side. Defaults to 'false'. */
+  readonly isFlipped?: boolean;
+};
 
 /**
  * Used to ensure that the settings key K used for the GeneralSettingsCheckbox component
@@ -43,18 +46,19 @@ type BooleanKeys<T> = {
  * @param props - The properties for the managed checkbox component.
  * @returns A managed checkbox element.
  */
-export default function SettingsCheckbox<K extends BooleanKeys<IGeneralSettings>>(
-  props: IProps<K>
+export default function SettingsCheckbox<K extends BooleanKeys<GeneralSettings>>(
+  props: Props<K>
 ) {
   const [state, setState] = useGeneralSetting(props.settingsKey);
 
   return (
     <Checkbox
-      label={props.label}
       info={props.info}
       initialValue={state}
+      isDisabled={props.isDisabled}
+      isFlipped={props.isFlipped}
+      label={props.label}
       onChange={setState}
-      disabled={props.disabled}
     />
   );
 }

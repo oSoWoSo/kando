@@ -9,8 +9,8 @@
 // SPDX-License-Identifier: MIT
 
 import * as math from '../../common/math';
-import { IVec2 } from '../../common';
-import { InputMethod, ButtonState, IInputState, SelectionType } from './input-method';
+import { Vec2, SelectionSource } from '../../common';
+import { InputMethod, ButtonState, InputState, SelectionType } from './input-method';
 import { GestureDetector } from './gesture-detector';
 
 /**
@@ -55,7 +55,7 @@ export class PointerInput extends InputMethod {
   public gestureDetector: GestureDetector = new GestureDetector();
 
   /** The current pointer position. */
-  private pointerPosition: IVec2 = { x: 0, y: 0 };
+  private pointerPosition: Vec2 = { x: 0, y: 0 };
 
   /** The current input state. */
   private buttonState = ButtonState.eReleased;
@@ -67,13 +67,13 @@ export class PointerInput extends InputMethod {
   private deferredTurboMode = false;
 
   /** The position where the mouse was when the user pressed a mouse button the last time. */
-  private clickPosition: IVec2 = { x: 0, y: 0 };
+  private clickPosition: Vec2 = { x: 0, y: 0 };
 
   /** The position where the mouse was when the user pressed a keyboard key the last time. */
-  private keydownPosition: IVec2 = { x: 0, y: 0 };
+  private keydownPosition: Vec2 = { x: 0, y: 0 };
 
   /** The position of the currently selected submenu. */
-  private centerPosition: IVec2 = { x: 0, y: 0 };
+  private centerPosition: Vec2 = { x: 0, y: 0 };
 
   /** The interactive radius of the currently selected item. */
   private centerRadius = 0;
@@ -91,6 +91,12 @@ export class PointerInput extends InputMethod {
    */
   private ignoreMotionEvents = 0;
 
+  /**
+   * Motion events come in very frequently. To avoid performance issues, we throttle them
+   * to the screen refresh rate.
+   */
+  private throttledMotionEvent: boolean = false;
+
   /** Creates a new PointerInput instance. */
   constructor() {
     super();
@@ -98,18 +104,19 @@ export class PointerInput extends InputMethod {
     // Forward selection events from the gesture detector. In hover mode, we select any
     // item that is hovered over. In marking and turbo mode, we only select submenus via
     // gestures, final lactions need to be selected by pointer-up events.
-    this.gestureDetector.on('selection', (position: IVec2) => {
+    this.gestureDetector.on('selection', (position: Vec2) => {
       this.selectCallback(
         position,
         this.enableHoverMode && !this.hoverModeNeedsConfirmation
           ? SelectionType.eActiveItem
-          : SelectionType.eSubmenuOnly
+          : SelectionType.eSubmenuOnly,
+        SelectionSource.eGesture
       );
     });
   }
 
   /** @inheritdoc */
-  public setCurrentCenter(center: IVec2, radius: number) {
+  public setCurrentCenter(center: Vec2, radius: number) {
     this.update(center, center, this.buttonState);
     this.gestureDetector.reset();
     this.gestureDetector.onMotionEvent(center);
@@ -124,16 +131,11 @@ export class PointerInput extends InputMethod {
    * We simply ignore these events. This code is currently used on all platforms but I
    * think it's not an issue.
    */
-  public ignoreNextMotionEvents() {
+  public onShowMenu(deferTurboMode: boolean) {
     this.ignoreMotionEvents = 2;
-  }
-
-  /**
-   * If set to true, the turbo mode can only be activated after a key is released. This is
-   * useful if the menu is not opened under the mouse pointer.
-   */
-  public deferTurboMode() {
-    this.deferredTurboMode = true;
+    this.buttonState = ButtonState.eReleased;
+    this.anyKeyPressed = false;
+    this.deferredTurboMode = deferTurboMode;
   }
 
   /*
@@ -150,6 +152,15 @@ export class PointerInput extends InputMethod {
       this.ignoreMotionEvents--;
       return;
     }
+
+    // Throttle mouse motion events to avoid performance issues.
+    if (this.throttledMotionEvent) {
+      return;
+    }
+    this.throttledMotionEvent = true;
+    requestAnimationFrame(() => {
+      this.throttledMotionEvent = false;
+    });
 
     // If the mouse moved too much, the current mousedown - mouseup event is not
     // considered to be a click anymore. Instead, we are in marking mode.
@@ -221,7 +232,11 @@ export class PointerInput extends InputMethod {
 
     // Go back using the mouse back button.
     if ((event as MouseEvent).button === 3) {
-      this.selectCallback(this.pointerPosition, SelectionType.eParent);
+      this.selectCallback(
+        this.pointerPosition,
+        SelectionType.eParent,
+        SelectionSource.eClick
+      );
       return;
     }
 
@@ -261,7 +276,11 @@ export class PointerInput extends InputMethod {
       this.buttonState === ButtonState.eDragged &&
       math.getDistance(this.pointerPosition, this.centerPosition) > this.centerRadius;
     if (clickSelection || markingModeSelection) {
-      this.selectCallback(this.pointerPosition, SelectionType.eActiveItem);
+      this.selectCallback(
+        this.pointerPosition,
+        SelectionType.eActiveItem,
+        SelectionSource.eClick
+      );
     }
 
     this.clickPosition = null;
@@ -288,6 +307,11 @@ export class PointerInput extends InputMethod {
    * @param event The keyboard event.
    */
   public onKeyUpEvent(event: KeyboardEvent) {
+    // Key-up events only matter if turbo mode is enabled.
+    if (!this.enableTurboMode) {
+      return;
+    }
+
     // On some (all?) Linux environments, event.metaKey is not false even if the key has
     // been released with this event. Therefore, we explicitly check if the key was
     // released: https://github.com/kando-menu/kando/issues/788
@@ -308,7 +332,11 @@ export class PointerInput extends InputMethod {
         math.getDistance(this.pointerPosition, this.centerPosition) > this.centerRadius
       ) {
         this.gestureDetector.reset();
-        this.selectCallback(this.pointerPosition, SelectionType.eActiveItem);
+        this.selectCallback(
+          this.pointerPosition,
+          SelectionType.eActiveItem,
+          SelectionSource.eGesture
+        );
       }
 
       this.update(this.pointerPosition, this.centerPosition, ButtonState.eReleased);
@@ -322,22 +350,23 @@ export class PointerInput extends InputMethod {
    * current button state. If either of these values changed, a new state will be
    * emitted.
    *
-   * @param pointer Either a mouse or touch event or an IVec2.
+   * @param pointer Either a mouse or touch event or an Vec2.
    * @param center The current center of the menu.
    * @param button The current button state.
    */
   private update(
-    pointer: MouseEvent | TouchEvent | IVec2,
-    center: IVec2,
+    pointer: MouseEvent | TouchEvent | Vec2,
+    center: Vec2,
     button: ButtonState
   ) {
     if (pointer instanceof MouseEvent) {
       this.update({ x: pointer.clientX, y: pointer.clientY }, center, button);
     } else if (pointer instanceof TouchEvent) {
+      const hasTouches = pointer.touches && pointer.touches.length > 0;
       this.update(
         {
-          x: pointer.touches[0].clientX,
-          y: pointer.touches[0].clientY,
+          x: hasTouches ? pointer.touches[0].clientX : this.pointerPosition.x,
+          y: hasTouches ? pointer.touches[0].clientY : this.pointerPosition.y,
         },
         center,
         button
@@ -354,7 +383,7 @@ export class PointerInput extends InputMethod {
         this.buttonState = button;
         this.pointerPosition = pointer;
 
-        const state: IInputState = {
+        const state: InputState = {
           button,
           absolutePosition: pointer,
           relativePosition: math.subtract(pointer, this.centerPosition),

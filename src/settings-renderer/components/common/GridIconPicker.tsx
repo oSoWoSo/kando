@@ -20,28 +20,28 @@ import ThemedIcon from './ThemedIcon';
 import * as classes from './GridIconPicker.module.scss';
 const cx = classNames.bind(classes);
 
-interface IProps {
+type Props = {
   /** Function to call whenever a new icon is selected. */
-  onChange?: (icon: string) => void;
+  readonly onChange?: (icon: string) => void;
 
   /**
    * Function to call when the picker should be closed. This is emitted if the user
    * double-clicks an icon.
    */
-  onClose?: () => void;
+  readonly onClose?: () => void;
 
   /**
    * Initially selected icon. If this is not in the given theme, nothing will be selected.
    * If it is in the theme, it will be selected and the grid will scroll to the icon.
    */
-  selectedIcon: string;
+  readonly selectedIcon: string;
 
   /** The icon theme. */
-  theme: string;
+  readonly theme: string;
 
   /** The current filter term. Only icons matching this will be shown. */
-  filterTerm: string;
-}
+  readonly filterTerm: string;
+};
 
 /**
  * An icon picker which shows a virtualized grid of icons. Icons are only shown when they
@@ -53,7 +53,7 @@ interface IProps {
  * @param props - The properties for the icon picker component.
  * @returns A grid icon picker element.
  */
-export default function GridIconPicker(props: IProps) {
+export default function GridIconPicker(props: Props) {
   const [gridInstance, setGridInstance] = React.useState<Grid | null>(null);
 
   // Listing the icons is expensive, so we only do it when the theme or filter term
@@ -69,13 +69,13 @@ export default function GridIconPicker(props: IProps) {
     (icon) => icon === props.selectedIcon
   );
 
-  interface ICellProps {
+  type CellProps = {
     style: React.CSSProperties;
     rowIndex: number;
     columnIndex: number;
-  }
+  };
 
-  const cell: React.FC<ICellProps> = ({ style, columnIndex, rowIndex }) => {
+  const cell: React.FC<CellProps> = ({ style, columnIndex, rowIndex }) => {
     const index = rowIndex * columns + columnIndex;
 
     if (index >= fetchedIcons.icons.length) {
@@ -90,8 +90,6 @@ export default function GridIconPicker(props: IProps) {
           pickerIcon: true,
           selected: index === selectedIndex,
         })}
-        style={style}
-        data-tooltip-id="main-tooltip"
         data-tooltip-content={
           // If the theme is a SimpleIconsTheme, we can use its getTitle method to
           // get a more descriptive title for the icon. Otherwise, we just use the
@@ -100,9 +98,12 @@ export default function GridIconPicker(props: IProps) {
             ? fetchedIcons.theme.getTitle(icon)
             : icon
         }
+        data-tooltip-id="main-tooltip"
+        style={style}
+        type="button"
         onClick={() => props.onChange(icon)}
         onDoubleClick={props.onClose}>
-        <ThemedIcon name={icon} theme={props.theme} size={'80%'} />
+        <ThemedIcon name={icon} size="80%" theme={props.theme} />
       </button>
     );
   };
@@ -120,15 +121,16 @@ export default function GridIconPicker(props: IProps) {
   return (
     <div style={{ flexGrow: 1, minHeight: 0 }}>
       <AutoSizer>
-        {({ width, height }: { width: number; height: number }) => (
+        {/* eslint-disable-next-line react/no-unused-prop-types */}
+        {({ width, height }: { readonly width: number; readonly height: number }) => (
           <Grid
             ref={setGridInstance}
             columnCount={columns}
-            rowCount={rows}
-            overscanRowCount={10}
             columnWidth={width / columns - 1}
-            rowHeight={width / columns - 1}
             height={height}
+            overscanRowCount={10}
+            rowCount={rows}
+            rowHeight={width / columns - 1}
             width={width}>
             {cell}
           </Grid>

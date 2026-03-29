@@ -11,9 +11,10 @@
 import i18next from 'i18next';
 import DBus from 'dbus-final';
 
-import { Backend, Shortcut } from '../../../backend';
-import { IKeySequence } from '../../../../../common';
+import { LinuxBackend } from '../../backend';
+import { KeySequence } from '../../../../../common';
 import { mapKeys } from '../../../../../common/key-codes';
+import { screen } from 'electron';
 
 /**
  * This backend uses the DBus interface of the Kando GNOME Shell integration extension to
@@ -21,9 +22,14 @@ import { mapKeys } from '../../../../../common/key-codes';
  * extension installed. It would also work on X11, but the generic X11 backend is
  * preferred on X11 as it does not require any extensions.
  */
-export class GnomeBackend implements Backend {
-  /** This maps GDK shortcut strings to the registered shortcuts. */
-  private callbacks: { [shortcut: string]: () => void } = {};
+export class GnomeBackend extends LinuxBackend {
+  /**
+   * This maps GDK shortcut strings to the registered shortcuts. This is required because
+   * we want to emit the 'shortcutPressed' event with the original shortcut string, but
+   * the DBus interface of the Kando GNOME Shell integration extension only accepts GDK
+   * shortcuts.
+   */
+  private shortcutMap: { [gdkShortcut: string]: string } = {};
 
   /** This is the DBus interface of the Kando GNOME Shell integration extension. */
   private interface: DBus.ClientInterface;
@@ -60,10 +66,13 @@ export class GnomeBackend implements Backend {
       );
 
       this.interface = obj.getInterface('org.gnome.Shell.Extensions.KandoIntegration');
-
-      this.interface.on('ShortcutPressed', (shortcut: string) => {
-        this.callbacks[shortcut]();
+      this.interface.on('ShortcutPressed', (gdkShortcut: string) => {
+        this.onShortcutPressed(this.shortcutMap[gdkShortcut]);
       });
+
+      // There shouldn't be any shortcuts bound yet, but the GNOME Shell extension will
+      // remember the shortcuts that were. If Kando crashed, some might still be bound.
+      await this.interface.UnbindAllShortcuts();
     } catch (e) {
       throw new Error(
         i18next.t('backends.gnome.error', {
@@ -72,6 +81,11 @@ export class GnomeBackend implements Backend {
         })
       );
     }
+  }
+
+  /** We only need to unbind all shortcuts when the backend is destroyed. */
+  public async deinit(): Promise<void> {
+    await this.bindShortcuts([]);
   }
 
   /**
@@ -84,11 +98,34 @@ export class GnomeBackend implements Backend {
    */
   public async getWMInfo() {
     const info = await this.interface.GetWMInfo();
+
+    let workArea: Electron.Rectangle;
+
+    // Newer versions of the extension return work area info directly. Else we query
+    // Electron for it, but this will be wrong on some multi-monitor setups.
+    if (info.length === 8) {
+      workArea = {
+        x: info[4],
+        y: info[5],
+        width: info[6],
+        height: info[7],
+      };
+    } else {
+      console.warn(
+        'The Kando GNOME Shell integration extension is outdated. Please update to the latest version to improve multi-monitor support.'
+      );
+      workArea = screen.getDisplayNearestPoint({
+        x: info[2],
+        y: info[3],
+      }).workArea;
+    }
+
     return {
       windowName: info[0],
       appName: info[1],
       pointerX: info[2],
       pointerY: info[3],
+      workArea,
     };
   }
 
@@ -108,7 +145,7 @@ export class GnomeBackend implements Backend {
    *
    * @param shortcut The keys to simulate.
    */
-  public async simulateKeys(keys: IKeySequence) {
+  protected override async simulateKeysImpl(keys: KeySequence) {
     // We first need to convert the given DOM key names to X11 key codes. If a key code is
     // not found, this throws an error.
     const keyCodes = mapKeys(keys, 'linux');
@@ -124,39 +161,56 @@ export class GnomeBackend implements Backend {
   }
 
   /**
-   * This binds a shortcut. The action callback of the shortcut is called when the
-   * shortcut is pressed. On GNOME Wayland, this uses the DBus interface of the Kando
-   * GNOME Shell integration.
+   * On GNOME Wayland, the globalShortcuts module from Electron does not work. Instead, we
+   * use the DBus interface of the Kando GNOME Shell integration extension to bind and
+   * unbind shortcuts.
    *
-   * @param shortcut The shortcut to bind.
-   * @returns A promise which resolves when the shortcut has been bound.
+   * @param currentShortcuts The shortcuts that should be bound now. Some of these may be
+   *   inhibited and should therefore not lead to emitting the 'shortcutPressed' event.
+   * @param previousShortcuts The shortcuts that were bound before this call.
+   * @param currentEffectiveShortcuts The list of currently effectively bound shortcuts.
+   *   That is the list of all currently bound shortcuts minus the ones which are
+   *   currently inhibited by any active inhibition.
+   * @param previousEffectiveShortcuts The list of shortcuts which were effectively bound
+   *   before this call.
+   * @returns A promise which resolves when the shortcuts have been updated.
    */
-  public async bindShortcut(shortcut: Shortcut) {
-    const gdkShortcut = this.toGdkShortcut(shortcut.trigger);
+  protected async onShortcutsChanged(
+    currentShortcuts: string[],
+    previousShortcuts: string[],
+    currentEffectiveShortcuts: string[],
+    previousEffectiveShortcuts: string[]
+  ): Promise<void> {
+    // Use a shortcut if we unbind all shortcuts :)
+    if (currentEffectiveShortcuts.length === 0) {
+      await this.interface.UnbindAllShortcuts();
+      return;
+    }
 
-    const success = await this.interface.BindShortcut(gdkShortcut);
+    const shortcutsToUnbind = previousEffectiveShortcuts.filter(
+      (s) => !currentEffectiveShortcuts.includes(s)
+    );
+    const shortcutsToBind = currentEffectiveShortcuts.filter(
+      (s) => !previousEffectiveShortcuts.includes(s)
+    );
 
+    // Unbind the obsolete shortcuts.
+    for (const shortcut of shortcutsToUnbind) {
+      await this.interface.UnbindShortcut(this.toGdkShortcut(shortcut));
+    }
+
+    // Bind the new shortcuts.
+    let success = true;
+    for (const shortcut of shortcutsToBind) {
+      if (!(await this.interface.BindShortcut(this.toGdkShortcut(shortcut)))) {
+        success = false;
+      }
+    }
+
+    // If any of the shortcuts could not be bound, we throw an error.
     if (!success) {
       throw new Error('Invalid shortcut or it is already in use.');
     }
-
-    this.callbacks[gdkShortcut] = shortcut.action;
-  }
-
-  /**
-   * This unbinds a previously bound shortcut.
-   *
-   * @param trigger The trigger of a previously bound.
-   */
-  public async unbindShortcut(trigger: string) {
-    const gdkShortcut = this.toGdkShortcut(trigger);
-    await this.interface.UnbindShortcut(gdkShortcut);
-    delete this.callbacks[gdkShortcut];
-  }
-
-  /** This unbinds all previously bound shortcuts. */
-  public async unbindAllShortcuts() {
-    await this.interface.UnbindAllShortcuts();
   }
 
   /**
@@ -255,6 +309,8 @@ export class GnomeBackend implements Backend {
       ['numdiv', 'KP_Divide'],
     ]);
 
-    return parts.map((part) => replacements.get(part) || part).join('');
+    const gdkShortcut = parts.map((part) => replacements.get(part) || part).join('');
+    this.shortcutMap[gdkShortcut] = shortcut;
+    return gdkShortcut;
   }
 }

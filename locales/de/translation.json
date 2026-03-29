@@ -8,6 +8,9 @@
         },
         "kde-wayland": {
             "shortcut-info": "Kando kann nicht direkt globale Shortcuts in KDE/Wayland binden. Stattdessen geben Sie hier eine Shortcut-ID an und suchen Sie danach im KWin-Bereich der globalen Shortcuts in den Systemeinstellungen von KDE. Dort können Sie die Tastenkombination wählen, die dieses Menü öffnet."
+        },
+        "niri": {
+            "shortcut-info": "Niri unterstützt noch keine globalen Shortcuts. Aber Sie können dieses Menü mit 'kando --menu \"Menu Name\" aus der Befehlszeile oder aus Ihrer Niri-Config öffnen."
         }
     },
     "example-menu": {
@@ -66,6 +69,101 @@
             "toggle-maximize": "Maximieren"
         }
     },
+    "achievements": {
+        "attributes": {
+            "novice": "Anfänger-",
+            "capable": "Fähiger",
+            "skilled": "Erfahrener",
+            "expert": "Experten-",
+            "master": "Meister-"
+        },
+        "tier": {
+            "I": "I",
+            "II": "II",
+            "III": "III",
+            "IV": "IV",
+            "V": "V"
+        },
+        "cancelor": {
+            "name": "Weg der Leere {{tier}}",
+            "description": "Brich eine Auswahl {{n}}-mal ab."
+        },
+        "selector": {
+            "name": "{{attribute}}Samurai",
+            "description": "Wähle {{n}} Elemente aus."
+        },
+        "depth-selector": {
+            "name1": "{{attribute}}Schlitzer",
+            "name2": "{{attribute}}Assassine",
+            "name3": "{{attribute}}Ninja",
+            "description": "Wähle {{n}} Elemente auf Ebene {{depth}} in weniger als {{time}} ms aus."
+        },
+        "click-selector": {
+            "name": "{{attribute}}Klick-Klick-Champion",
+            "description": "Wähle {{n}} Elemente mit Mausklicks aus."
+        },
+        "keyboard-selector": {
+            "name": "{{attribute}}Hotkey-Held",
+            "description": "Wähle {{n}} Elemente mit der Tastatur aus."
+        },
+        "gamepad-selector": {
+            "name": "{{attribute}}Gamepad-Krieger",
+            "description": "Wähle {{n}} Elemente mit einem Gamepad aus."
+        },
+        "gesture-selector": {
+            "name": "{{attribute}}Power-Ninja",
+            "description": "Wähle {{n}} Elemente im Turbo- oder Markierungsmodus aus."
+        },
+        "settings-opened": {
+            "name": "Der Weg ist das Ziel {{tier}}",
+            "description": "Öffne den Einstellungsdialog {{n}}-mal."
+        },
+        "backup": {
+            "name": "Pfad der Voraussicht {{tier}}",
+            "description": "Sichere deine Menüs oder Einstellungen {{n}}-mal."
+        },
+        "restore": {
+            "name": "Zweite Chance {{tier}}",
+            "description": "Stelle ein Backup {{n}}-mal wieder her."
+        },
+        "added-items": {
+            "name": "Kandos Weg {{tier}}",
+            "description": "Erstelle {{n}} Elemente im Menü-Editor."
+        },
+        "deleted-all-menus": {
+            "name": "Das Dojo leeren",
+            "description": "Lösche alle deine Menüs."
+        },
+        "full-menu": {
+            "name": "Breite vor Tiefe",
+            "description": "Erstelle ein Menü mit mehr als zwölf Elementen."
+        },
+        "deep-menu": {
+            "name": "Meister der Tiefe",
+            "description": "Füge ein Menüelement zu einem vier Ebenen tiefen Untermenü hinzu."
+        },
+        "sponsors-viewed": {
+            "name": "Wächter von Kando",
+            "description": "Ziehe in Betracht, Kando zu unterstützen."
+        },
+        "menu-themes-selected": {
+            "name": "Weg des Ästheten",
+            "description": "Wechsle das Menü-Design {{n}}-mal."
+        },
+        "tutorial-viewed": {
+            "name": "Die Reise beginnt",
+            "description": "Schließe das Kando-Einführungstutorial ab."
+        },
+        "completed-title": "Errungenschaft freigeschaltet!",
+        "many-selections-streak": {
+            "name": "Hand der Blitze {{tier}}",
+            "description": "Wählen Sie {{n}} Elemente innerhalb von {{time}} s."
+        },
+        "speedy-selections-streak": {
+            "name": "Schneller als gedacht {{tier}}",
+            "description": "Wählen Sie {{n}} Einträge nacheinander durchschnittlich schneller als {{time}} ms aus."
+        }
+    },
     "main": {
         "failed-to-start-header": "Kando konnte nicht gestartet werden",
         "inhibit-shortcuts": "Deaktiviere vorübergehend alle Tastenkombos",
@@ -75,7 +173,8 @@
         "new-version-notification-header": "Eine neue Version von Kando ist verfügbar!",
         "quit": "Beenden",
         "show-settings": "Einstellungen öffnen",
-        "un-inhibit-shortcuts": "Tastenkombos wieder aktivieren"
+        "un-inhibit-shortcuts": "Tastenkombos wieder aktivieren",
+        "no-backend-found": "Kein passendes Backend gefunden."
     },
     "menu-items": {
         "command": {
@@ -89,11 +188,18 @@
             "tip-4": "Verwenden Sie {{window_name}}, um den Namen des Fensters einzufügen, das beim Öffnen des Menüs fokussiert war.",
             "tip-5": "Verwenden Sie {{pointer_x}} und {{pointer_y}}, um die Mausposition einzufügen, an der das Menü geöffnet wurde.",
             "placeholder": "Kommando einfügen…",
-            "tip-6": "Klicken Sie [hier]({{link}}), um zu erfahren, wie Sie die Befehle für das Starten Ihrer Apps finden."
+            "tip-6": "Klicken Sie [hier]({{link}}), um zu erfahren, wie Sie die Befehle für das Starten Ihrer Apps finden.",
+            "detached": "Entkoppelt starten",
+            "isolated": "Isoliert ausführen",
+            "detached-info": "Dies wird den Prozess von Kando trennen, sodass er weiterläuft, wenn Kando geschlossen ist. Deaktivieren dieser Option kann Probleme mit Befehlen lösen, die nicht richtig starten.",
+            "isolated-info": "Dies wird den Befehl in einer sauberen Umgebung ausführen, was bedeutet, dass er keine Umgebungsvariablen von Kando erben wird. Dies kann bei Befehlen helfen, die nicht richtig starten.",
+            "choose-app": "Wählen Sie eine App…"
         },
         "common": {
             "delayed-option-info": "Nützlich, wenn die Aktion ein Fenster anvisiert, das fokussiert werden muss.",
-            "delayed-option": "Auf Schließen des Menüs warten"
+            "delayed-option": "Auf Schließen des Menüs warten",
+            "inhibit-shortcuts-info": "Deaktiviert alle Kando Shortcuts, während die Tasten simuliert werden. Dadurch wird verhindert, dass die simulierte Eingabe versehentlich andere Menüs aktiviert.",
+            "inhibit-shortcuts": "Deaktivieren von Shortcuts"
         },
         "file": {
             "description": "Öffnet eine Datei oder einen Ordner.",
@@ -234,7 +340,7 @@
             "top-right": "Oben rechts",
             "bottom-left": "Unten links",
             "bottom-right": "Unten rechts",
-            "message": "Alle Einstellungen von Kando werden in einer JSON-Datei gespeichert, die Sie auch bearbeiten, teilen oder sichern können. Klicken Sie [hier]({{link}}), um das Verzeichnis zu öffnen, in dem die config.json gespeichert ist.",
+            "message": "Alle Einstellungen von Kando werden in zwei JSON-Dateien gespeichert, die Sie auch bearbeiten, teilen oder sichern können. Klicken Sie [hier]({{link}}), um das Verzeichnis zu öffnen, in dem die Dateien gespeichert sind.",
             "app-behavior": "App-Verhalten",
             "settings-window-color-scheme": "Farbschema des Einstellungsfensters",
             "settings-window-color-scheme-info": "Wenn Sie 'System' wählen, verwendet das Einstellungsfenster dasselbe Farbschema wie Ihr Betriebssystem.",
@@ -298,7 +404,45 @@
             "menu-window-dev-tools": "Menü inspizieren",
             "settings-window-dev-tools": "Einstellungen inspizieren",
             "reload-note": "Wenn Sie das Design neu laden, werden CSS-Änderungen angewendet, auch wenn ein Menü aktuell angezeigt wird. Für Änderungen an der theme.json-Datei, müssen Sie das Menü neu öffnen.",
-            "dev-tools-note": "Kando verwendet zwei Fenster: Eins für das Menü und ein anderes für die Einstellungen. Sie können die Entwicklungswerkzeuge öffnen, um beide Fenster zu inspizieren."
+            "dev-tools-note": "Kando verwendet zwei Fenster: Eins für das Menü und ein anderes für die Einstellungen. Sie können die Entwicklungswerkzeuge öffnen, um beide Fenster zu inspizieren.",
+            "press-again-behavior": "Verhalten bei erneutem Tastendruck",
+            "press-again-behavior-info": "Dies bestimmt, was passiert, wenn die Tastenkombination erneut gedrückt wird, während ein Menü noch angezeigt wird. Wenn mehrere Menüs der gleichen Kombination zugeordnet sind, können Sie das nutzen, um durch alle passenden Menüs durchzuschalten. Beachten Sie, dass wenn Sie eine andere Option als 'Nichts tun' auswählen, im Turbo-Modus nur eine Zusatztaste wie Strg gedrückt halten dürfen.",
+            "cycle-menus": "Durch passende Menüs durchschalten",
+            "close-menu": "Menü schließen",
+            "do-nothing": "Nichts tun",
+            "localization-label": "Sprache",
+            "app-settings": "Anwendungseinstellungen",
+            "localization-info": "Starten Sie Kando neu, um die Sprachänderung anzuwenden.",
+            "auto-language": "Systemsprache verwenden",
+            "keep-input-focus": "Aktive Anwendung fokussiert lassen",
+            "cycle-from-recent": "Nächstes Menü anzeigen (weiter nach Vorherigem)",
+            "cycle-from-first": "Nächstes Menü anzeigen (am Anfang starten)",
+            "keep-input-focus-info": "Wenn aktiviert, erhält das Menü beim Öffnen keinen Tastatureingabefokus. Das deaktiviert den Turbo-Modus, kann aber nützlich sein, wenn andere Anwendungen fokussiert bleiben sollen, während das Menü geöffnet ist.",
+            "hardware-acceleration": "Hardwarebeschleunigung aktivieren",
+            "hardware-acceleration-info": "Diese Option kann die Leistung der App erhöhen, kann aber auch zu Darstellungsfehlern führen. Sie müssen Kando neu starten, um diese Einstellung anzuwenden.",
+            "enable-achievements-info": "Wenn aktiviert, wird Kando den Fortschritt Ihrer Errungenschaften aufzeichnen.",
+            "enable-achievements": "Errungenschaften verfolgen",
+            "backup-and-restore": "Backup und Wiederherstellung",
+            "backup-menus": "menus.json sichern…",
+            "backup-settings": "config.json sichern…",
+            "restore-menus": "menus.json wiederherstellen…",
+            "restore-settings": "config.json wiederherstellen…",
+            "enable-achievement-notifications-info": "Wenn aktiviert, werden Meldungen angezeigt, wenn Erfolge abgeschlossen werden.",
+            "enable-achievement-notifications": "Erfolgsbenachrichtigungen anzeigen",
+            "windows-ink-workaround-info": "Dies aktiviert einen Workaround für das Problem, dass die Stiftposition nicht ermittelt werden kann, wenn Windows Ink aktiviert ist. Dies führt allerdings zu einer Verzögerung von bis zu 100ms vor dem Öffnen des Menüs.",
+            "windows-ink-workaround": "Windows-Ink-Workaround",
+            "max-selection-radius-info": "Wenn auf einen Wert größer als 0 gesetzt, schließen Klicks außerhalb dieses Radius das Menü. Standard ist 0, was bedeutet, dass es keinen maximalen Auswahlradius gibt.",
+            "max-selection-radius": "Maximaler Auswahlradius",
+            "wlroots-specific-options": "Optionen für wlroots-basierte Backends",
+            "options-that-will-only-affect-the-wlroots-backend": "Diese Optionen beeinflussen nur wlroots-basierte Backends und haben keine Auswirkungen auf andere Backends.",
+            "wlroots-pointer-get-timeout-mouse-info": "Die maximale Zeit in Millisekunden, um auf eine Mauszeigerposition von wlroots-basierten Backends zu warten. Wird der Timeout erreicht, wird eine Standardposition verwendet. Standard ist 500ms.",
+            "wlroots-pointer-get-timeout-mouse": "Timeout für die Mauspositionserfassung",
+            "wlroots-pointer-get-timeout-touch-info": "Die maximale Zeit in Millisekunden, um auf eine Touchpointer-Position von wlroots-basierten Backends zu warten. Wird der Timeout erreicht, wird eine Standardposition verwendet. Standard ist 1500ms.",
+            "wlroots-pointer-get-timeout-touch": "Timeout für die Touch-Positionserfassung",
+            "wlroots-pointer-get-timeout-default-behavior-info": "Bestimmt die Standardposition, wenn keine Position aus den wlroots-basierten Backends innerhalb der konfigurierten Timeouts erhalten werden konnte.",
+            "wlroots-pointer-get-timeout-default-behavior": "Zeiger-Timeout-Position",
+            "center": "Mitte",
+            "previously-reported": "Letzte Position"
         },
         "hover-mode-info": "Nur für Power User! Wählen Sie Elemente, indem Sie sie mit der Maus berühren.",
         "hover-mode": "Hover-Modus",
@@ -308,7 +452,8 @@
             "file-example": "file: URI-Beispiel:",
             "search-placeholder": "Symbole suchen…",
             "url-example": "URL-Beispiel:",
-            "hint": "Erfahren Sie [hier]({{link}}), wie Sie eigene Symbolthemen hinzufügen oder erstellen können."
+            "hint": "Erfahren Sie [hier]({{link}}), wie Sie eigene Symbolthemen hinzufügen oder erstellen können.",
+            "reload-button-tooltip": "Alle Icon-Sets neu laden"
         },
         "introduction-dialog": {
             "slide1-title": "Kando bietet eine einzigartige und effiziente Möglichkeit, mit Ihrem Computer zu interagieren.",
@@ -366,7 +511,20 @@
             "no-accent-colors": "Dieses Design unterstützt keine Akzentfarben.",
             "get-themes-online": "Designs online abrufen",
             "create-your-own-themes": "Erstellen Sie Ihre eigenen Designs",
-            "open-theme-directory": "Design-Verzeichnis öffnen"
+            "open-theme-directory": "Design-Verzeichnis öffnen",
+            "selection-wedges-info": "Wenn aktiviert und vom aktiven Menü-Design unterstützt, werden die auswählbaren Bereich der Menüeinträge hervorgehoben.",
+            "selection-wedges": "Klickbereiche hervorheben",
+            "save-preset-error-title": "Voreinstellung konnte nicht gespeichert werden",
+            "save-preset-error-message": "Die Farbvoreinstellung konnte nicht gespeichert werden. Bitte prüfen Sie, ob das Verzeichnis schreibbar ist. Fehler: {{error}}",
+            "default-colors": "Standardfarben",
+            "choose-preset": "Wählen Sie eine Voreinstellung…",
+            "reload-presets": "Voreinstellungen neuladen",
+            "save-preset": "Voreinstellung speichern",
+            "open-presets-directory": "Voreinstellungsverzeichnis öffnen",
+            "preset-name-empty": "Der Name der Voreinstellung darf nicht leer sein!",
+            "preset-name-invalid": "Der Name kann nur Buchstaben, Zahlen, Bindestriche, Unterstriche und Leerzeichen enthalten!",
+            "preset-name-exists": "Eine Voreinstellung mit diesem Namen existiert bereits.",
+            "preset-name-placeholder": "z.B. Meine Lieblingsfarben"
         },
         "not-bound": "Nicht gebunden",
         "redo": "Wiederholen",
@@ -395,6 +553,43 @@
         "no-matching-menus": "Keine Menüs gefunden.",
         "empty-collection": "Diese Sammlung ist leer.",
         "empty-collection-note": "Bearbeiten Sie die Tags oben oder erstellen Sie ein neues Menü für diese Sammlung mit der Schaltfläche unten.",
-        "no-matching-menus-note": "Vielleicht versuchen Sie einen anderen Suchbegriff?"
+        "no-matching-menus-note": "Vielleicht versuchen Sie einen anderen Suchbegriff?",
+        "add-menu-item-hint": "Ziehen Sie dieses Menüelement, um es oben einzufügen!",
+        "app-picker": {
+            "hint": "Sie können auch Anwendungen direkt aus Ihrem Startmenü in den Menü Editor ziehen!",
+            "search-placeholder": "Anwendungen durchsuchen…",
+            "use-selected": "Auswählen"
+        },
+        "achievements-dialog": {
+            "reset-button": "Fortschritt Zurücksetzen",
+            "reset-confirmation-title": "Wollen Sie wirklich allen Fortschritt zurücksetzen?",
+            "reset-confirmation-message": "Alle Errungenschaften und Levelfortschritte werden verloren gehen. Diese Aktion kann nicht rückgängig gemacht werden.",
+            "title": "Errungenschaften",
+            "xp": "XP",
+            "in-progress-button": "Aktiv",
+            "completed-button": "Abgeschlossen",
+            "reset-button-tooltip": "Alle Errungenschaften und Levelfortschritte zurücksetzen",
+            "no-in-progress-achievements": "Glückwunsch! Sie haben alle Erfolge erreicht.",
+            "no-completed-achievements": "Sie haben noch keine Erfolge abgeschlossen."
+        },
+        "backup-general-settings-title": "Einstellungen sichern…",
+        "restore-backup": "Einstellungen Wiederherstellen…",
+        "restore-general-settings-warning-title": "Möchten Sie wirklich die Einstellungen wiederherstellen?",
+        "restore-general-settings-warning-message": "Dies wird Ihre aktuellen Einstellungen mit den Inhalten der ausgewählten Backup-Datei überschreiben! Ihre Menüs und Menüsammlungen werden nicht überschrieben.",
+        "restore-general-settings-error-title": "Das Laden der Sicherungsdatei ist fehlgeschlagen!",
+        "restore-general-settings-success-title": "Erfolg!",
+        "restore-general-settings-success-message": "Ihre allgemeinen Einstellungen wurden aus der Sicherungsdatei wiederhergestellt.",
+        "restore-menu-settings-warning-title": "Möchten Sie wirklich die Menüeinstellungen wiederherstellen?",
+        "restore-menu-settings-warning-message": "Dies wird Ihre aktuellen Menüs und Menüsammlungen mit den Inhalten der ausgewählten Backup-Datei überschreiben!",
+        "restore-menu-settings-error-title": "Das Laden der Sicherungsdatei ist fehlgeschlagen!",
+        "restore-menu-settings-success-title": "Erfolg!",
+        "restore-menu-settings-success-message": "Ihre Menüs und Menüsammlungen wurden aus der Backup-Datei wiederhergestellt.",
+        "export-menu-error-title": "Export des Menüs fehlgeschlagen",
+        "import-menu-error-title": "Import des Menüs fehlgeschlagen",
+        "import-menu-error-message": "Die ausgewählte Datei konnte nicht importiert werden. Sie enthält kein gültiges Kando-Menü.",
+        "import-menu": "Menü importieren",
+        "quick-select-key-info": "Mit dieser Taste können Sie schnell den Menüeintrag auswählen.",
+        "quick-select-key-label": "Schnellwahltaste",
+        "quick-select-key-recording": "Taste wählen…"
     }
 }

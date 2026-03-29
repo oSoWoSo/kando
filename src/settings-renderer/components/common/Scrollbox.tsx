@@ -12,12 +12,14 @@ import React from 'react';
 
 import * as classes from './Scrollbox.module.scss';
 
-interface IProps {
-  children: React.ReactNode;
-  maxHeight?: string | number;
-  width?: string | number;
-  hideScrollbar?: boolean;
-}
+type Props = {
+  readonly children: React.ReactNode;
+  readonly maxHeight?: string | number;
+  readonly width?: string | number;
+  readonly hideScrollbar?: boolean;
+  readonly paddingLeft?: string | number;
+  readonly paddingRight?: string | number;
+};
 
 /**
  * Wraps its children in a scrollable box. The scrollbox has a maximum height and a fixed
@@ -26,14 +28,18 @@ interface IProps {
  * @param props - The properties for the scrollbox component.
  * @returns A scrollbox element.
  */
-export default function Scrollbox(props: IProps) {
+export default function Scrollbox(props: Props) {
   return (
     <div
       className={
         classes.scrollbox + (props.hideScrollbar ? ' ' + classes.hideScrollbar : '')
       }
       style={{ maxHeight: props.maxHeight, height: '100%', width: props.width }}>
-      <div className={classes.content}>{props.children}</div>
+      <div
+        className={classes.content}
+        style={{ paddingLeft: props.paddingLeft, paddingRight: props.paddingRight }}>
+        {props.children}
+      </div>
     </div>
   );
 }

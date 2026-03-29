@@ -15,37 +15,37 @@ import classNames from 'classnames/bind';
 import * as classes from './Note.module.scss';
 const cx = classNames.bind(classes);
 
-interface IProps {
+type Props = {
   /** Content to display inside the note. */
-  children: React.ReactNode | string;
+  readonly children: React.ReactNode | string;
 
   /** How the note should be styled. Default is 'small'. */
-  style?: 'hero' | 'big' | 'normal' | 'small';
+  readonly noteStyle?: 'hero' | 'big' | 'normal' | 'small';
 
   /** Whether the text should be centered. Defaults to false. */
-  center?: boolean;
+  readonly isCentered?: boolean;
 
   /** Margin to apply to the top of the note. Defaults to 0. */
-  marginTop?: number | string;
+  readonly marginTop?: number | string;
 
   /** Margin to apply to the bottom of the note. Defaults to 0. */
-  marginBottom?: number | string;
+  readonly marginBottom?: number | string;
 
   /** Margin to apply to the left of the note. Defaults to 0. */
-  marginLeft?: number | string;
+  readonly marginLeft?: number | string;
 
   /** Margin to apply to the right of the note. Defaults to 0. */
-  marginRight?: number | string;
+  readonly marginRight?: number | string;
 
   /** Whether to use markdown formatting. Defaults to false. */
-  markdown?: boolean;
+  readonly useMarkdown?: boolean;
 
   /**
-   * Callback function to execute when a link is clicked. IF not given, the link will be
+   * Callback function to execute when a link is clicked. If not given, the link will be
    * opened in the browser.
    */
-  onLinkClick?: (href: string) => void;
-}
+  readonly onLinkClick?: (href: string) => void;
+};
 
 /**
  * Shows some text in a smaller font size and with a muted color.
@@ -53,7 +53,7 @@ interface IProps {
  * @param props - The properties for the note component.
  * @returns A note element.
  */
-export default function Note(props: IProps) {
+export default function Note(props: Props) {
   const handleLinkClick = (href: string) => {
     if (props.onLinkClick) {
       props.onLinkClick(href); // Execute the callback with the link's href
@@ -66,11 +66,11 @@ export default function Note(props: IProps) {
     <div
       className={cx({
         note: true,
-        hero: props.style === 'hero',
-        big: props.style === 'big',
-        normal: props.style === 'normal',
-        small: !props.style || props.style === 'small',
-        center: props.center,
+        hero: props.noteStyle === 'hero',
+        big: props.noteStyle === 'big',
+        normal: props.noteStyle === 'normal',
+        small: !props.noteStyle || props.noteStyle === 'small',
+        center: props.isCentered,
       })}
       style={{
         marginTop: props.marginTop || 0,
@@ -78,7 +78,7 @@ export default function Note(props: IProps) {
         marginLeft: props.marginLeft || 0,
         marginRight: props.marginRight || 0,
       }}>
-      {props.markdown ? (
+      {props.useMarkdown ? (
         <Markdown
           components={{
             a: ({ href, children }) => (
@@ -95,7 +95,7 @@ export default function Note(props: IProps) {
           {props.children as string}
         </Markdown>
       ) : (
-        <>{props.children}</>
+        props.children
       )}
     </div>
   );

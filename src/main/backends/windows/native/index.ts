@@ -8,12 +8,12 @@
 // SPDX-FileCopyrightText: Simon Schneegans <code@simonschneegans.de>
 // SPDX-License-Identifier: MIT
 
-export interface Native {
+export type Native = {
   /**
    * This uses Win32 API calls to get the name and the class of the currently focused
-   * application window.
+   * application window, as well as the current pointer position.
    */
-  getActiveWindow(): { app: string; name: string };
+  getWMInfo(): { app: string; window: string; pointerX: number; pointerY: number };
 
   /**
    * This simulates a mouse movement.
@@ -38,7 +38,19 @@ export interface Native {
    * @param hwnd The window handle.
    */
   fixAcrylicEffect(hwnd: number): void;
-}
+
+  /**
+   * This lists all installed applications.
+   *
+   * @returns An array of objects containing the application's ID, name, and
+   *   base64-encoded icon.
+   */
+  listInstalledApplications(): {
+    id: string;
+    name: string;
+    base64Icon: string;
+  }[];
+};
 
 const native: Native = require('./../../../../../build/Release/NativeWin32.node');
 

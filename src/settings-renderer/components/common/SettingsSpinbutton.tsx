@@ -12,33 +12,33 @@ import React from 'react';
 
 import Spinbutton from './Spinbutton';
 import { useGeneralSetting } from '../../state';
-import { IGeneralSettings } from '../../../common';
+import { GeneralSettings } from '../../../common';
 
-interface IProps<K extends keyof IGeneralSettings> {
+type Props<K extends keyof GeneralSettings> = {
   /** The key in the general settings to manage. */
-  settingsKey: K;
+  readonly settingsKey: K;
 
   /** Optional label text to display next to the spinbutton. */
-  label?: string;
+  readonly label?: string;
 
   /** Optional information to display next to the label. */
-  info?: string;
+  readonly info?: string;
 
   /** Whether the spinbutton is disabled. Defaults to false. */
-  disabled?: boolean;
+  readonly isDisabled?: boolean;
 
   /** Optional minimum width of the spinbutton. Useful to align multiple spinbuttons. */
-  width?: number;
+  readonly width?: number;
 
   /** Optional minimum value of the spinbutton. */
-  min?: number;
+  readonly min?: number;
 
   /** Optional maximum value of the spinbutton. */
-  max?: number;
+  readonly max?: number;
 
   /** Step size for the spinbutton. Defaults to 1. */
-  step?: number;
-}
+  readonly step?: number;
+};
 
 /**
  * Used to ensure that the settings key K used for the GeneralSettingsSpinbutton component
@@ -55,22 +55,22 @@ type NumberKeys<T> = {
  * @param props - The properties for the managed spinbutton component.
  * @returns A managed spinbutton element.
  */
-export default function SettingsSpinbutton<K extends NumberKeys<IGeneralSettings>>(
-  props: IProps<K>
+export default function SettingsSpinbutton<K extends NumberKeys<GeneralSettings>>(
+  props: Props<K>
 ) {
   const [state, setState] = useGeneralSetting(props.settingsKey);
 
   return (
     <Spinbutton
-      label={props.label}
       info={props.info}
       initialValue={state}
+      isDisabled={props.isDisabled}
+      label={props.label}
+      max={props.max}
+      min={props.min}
+      step={props.step}
       width={props.width}
       onChange={setState}
-      disabled={props.disabled}
-      min={props.min}
-      max={props.max}
-      step={props.step}
     />
   );
 }

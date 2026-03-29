@@ -16,25 +16,25 @@ import { FocusTrapManager } from '../../utils';
 
 import * as classes from './Popover.module.scss';
 
-interface IProps {
+type Props = {
   /** Whether the modal is visible. */
-  visible: boolean;
+  readonly isVisible: boolean;
 
   /**
    * Called when the popover should be closed. This is the case when the user clicks
    * outside the popover area or presses ESC.
    */
-  onClose: () => void;
+  readonly onClose: () => void;
 
   /** Content to display inside the popover. */
-  content: React.ReactNode;
+  readonly content: React.ReactNode;
 
   /** Where the popover should be positioned. Defaults to 'top'. */
-  position?: 'top' | 'bottom';
+  readonly position?: 'top' | 'bottom';
 
   /** The popover target. It will be used to position the popover relative to it. */
-  children: React.ReactNode;
-}
+  readonly children: React.ReactNode;
+};
 
 /**
  * A simple popover component. When props.visible becomes true, the popover will be faded
@@ -46,7 +46,7 @@ interface IProps {
  * @param props - The properties for the modal component.
  * @returns A popover element.
  */
-export default function Popover(props: IProps) {
+export default function Popover(props: Props) {
   const popoverContent = React.useRef(null);
   const popoverTriangle = React.useRef(null);
   const popoverTarget = React.useRef(null);
@@ -54,7 +54,7 @@ export default function Popover(props: IProps) {
 
   // Show the popover if props.visible is true.
   React.useEffect(() => {
-    if (!props.visible || !popoverContent.current) {
+    if (!props.isVisible || !popoverContent.current) {
       return;
     }
 
@@ -147,23 +147,23 @@ export default function Popover(props: IProps) {
       document.removeEventListener('focusin', handleFocusIn);
       FocusTrapManager.remove(popoverContent.current);
     };
-  }, [props.onClose, props.visible]);
+  }, [props.onClose, props.isVisible]);
 
   return (
     <>
       <div ref={popoverTarget}>{props.children}</div>
       {createPortal(
         <CSSTransition
-          in={props.visible}
-          nodeRef={popoverContent}
+          unmountOnExit
           // The modal CSS class uses a 200ms transition when fading in and out, so we set the
           // timeout to 200ms to match this.
-          timeout={200}
           classNames={{
             enter: classes.fadeEnter,
             enterDone: classes.fadeEnterDone,
           }}
-          unmountOnExit>
+          in={props.isVisible}
+          nodeRef={popoverContent}
+          timeout={200}>
           <div ref={popoverContent} className={classes.popover}>
             <div ref={popoverTriangle} className={classes.popoverTriangle} />
             {props.content}

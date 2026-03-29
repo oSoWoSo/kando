@@ -37,7 +37,10 @@ export function getBackend(): Backend | null {
     desktop = desktop.toLowerCase();
     session = session.toLowerCase();
 
-    if ((desktop === 'gnome' || desktop === 'unity') && session === 'wayland') {
+    if (
+      (desktop === 'gnome' || desktop === 'unity' || desktop.includes(':gnome')) &&
+      session === 'wayland'
+    ) {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const { GnomeBackend } = require('./linux/gnome/wayland/backend');
       return new GnomeBackend();
@@ -59,6 +62,12 @@ export function getBackend(): Backend | null {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const { HyprBackend } = require('./linux/hyprland/backend');
       return new HyprBackend();
+    }
+
+    if (desktop === 'niri') {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { NiriBackend } = require('./linux/niri/backend');
+      return new NiriBackend();
     }
 
     if (desktop === 'x-cinnamon' && session === 'x11') {
