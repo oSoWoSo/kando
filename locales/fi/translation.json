@@ -70,19 +70,17 @@
         }
     },
     "main": {
-        "failed-to-start-header": "Kandon käynnistäminen epäonnistui",
         "new-version-notification-header": "Uusi Kando-versio on saatavilla!",
         "quit": "Lopeta",
         "show-settings": "Näytä asetukset",
         "new-version-notification-body": "Hanki se osoitteesta {{link}}.",
         "un-inhibit-shortcuts": "Ota pikanäppäimet uudelleen käyttöön",
         "inhibit-shortcuts": "Poista kaikki pikanäppäimet käytöstä väliaikaisesti",
-        "invalid-link-header": "Virheellinen linkki"
+        "invalid-link-header": "Virheellinen linkki",
+        "invalid-link-message": "The deep link could not be parsed."
     },
     "menu-items": {
         "command": {
-            "command": "Komento",
-            "command-info": "Tämä suoritetaan.",
             "description": "Suorittaa komentorivikomennon.",
             "name": "Suorita komento",
             "placeholder": "Lisää mikä tahansa komento…",
@@ -92,11 +90,14 @@
             "detached-info": "Tämä irrottaa komennon Kandosta, joten se jatkaa toimintaansa, vaikka Kando olisi suljettu. Tämän poistaminen käytöstä saattaa ratkaista ongelmat komennoilla, jotka eivät käynnisty kunnolla.",
             "choose-app": "Valitse sovellus…",
             "tip-1": "Voit käyttää Komento-kohdetyyppiä käynnistääksesi sovelluksia tai komentosarjoja.",
-            "tip-2": "Jos polku suoritettavaan tiedostoon sisältää välilyöntejä, anna polku \"lainausmerkkien kera\"."
+            "tip-2": "Jos polku suoritettavaan tiedostoon sisältää välilyöntejä, anna polku \"lainausmerkkien kera\".",
+            "tip-3": "Use {{app_name}} to insert the name of the application which was focused when you opened the menu.",
+            "tip-4": "Use {{window_name}} to insert the name of the window which was focused when you opened the menu.",
+            "tip-5": "Use {{pointer_x}} and {{pointer_y}} to insert the pointer position where the menu was opened.",
+            "tip-6": "Click [here]({{link}}) to learn how to to find the commands for launching your apps."
         },
         "file": {
             "description": "Avaa tiedoston tai kansion.",
-            "file": "Tiedostopolku",
             "name": "Avaa tiedosto",
             "placeholder": "Valitse tiedosto tai kansio…",
             "tip-1": "Voit käyttää tätä kohdetyyppiä avaamaan tiedostoja tai kansioita."
@@ -105,7 +106,9 @@
             "name": "Suorita makro",
             "recording-placeholder": "Paina näppäimiä…",
             "tip-1": "Oletusarvon mukaan Kando lisää kymmenen millisekunnin viiveen ennen jokaista näppäintapahtumaa. Voit muuttaa tätä \"viive\"-ominaisuudella.",
-            "description": "Kirjoittaa näppäimistömakron."
+            "description": "Kirjoittaa näppäimistömakron.",
+            "placeholder": "Hit the record button to start recording!",
+            "tip-2": "You can edit the macro also by hand. This is useful if you want to adjust the timing of the keys."
         },
         "redirect": {
             "description": "Avaa toisen valikon.",
@@ -136,7 +139,13 @@
         "uri": {
             "description": "Avaa tiedostoja tai verkkosivuja.",
             "name": "Avaa URI",
-            "placeholder": "Syötä mikä tahansa URI…"
+            "placeholder": "Syötä mikä tahansa URI…",
+            "tip-1": "You can use the URI item type to open a website using the http:// protocol.",
+            "tip-2": "You can use this to call custom URI schemes like slack:// or zoommtg://.",
+            "tip-3": "You can use the URI item type to open a mailto: link.",
+            "tip-4": "Use {{app_name}} to insert the name of the application which was focused when you opened the menu.",
+            "tip-5": "Use {{window_name}} to insert the name of the window which was focused when you opened the menu.",
+            "tip-6": "Use {{pointer_x}} and {{pointer_y}} to insert the pointer position where the menu was opened."
         },
         "hotkey": {
             "name": "Simuloi pikanäppäin",
@@ -147,6 +156,12 @@
             "tip-1": "Tallentaessasi pikanäppäintä, sinun ei tarvitse painaa kaikkia näppäimiä kerralla. Voit painaa niitä yksitellen.",
             "tip-2": "Jos et voi tallentaa näppäintä koska järjestelmä käyttää sitä jo, yritä kirjoittamalla sen nimi suoraan.",
             "tip-3": "Paina [tästä linkistä]({{link}}) nähdäksesi kaikkien hyväksyttyjen näppäinten nimet."
+        },
+        "common": {
+            "delayed-option-info": "Useful if the action targets a window that needs to be focused.",
+            "delayed-option": "Wait for fade-out animation",
+            "inhibit-shortcuts-info": "Disables all Kando shortcuts while the hotkey or macro is being simulated. This prevents the simulated input from accidentally triggering other menu shortcuts.",
+            "inhibit-shortcuts": "Disable shortcuts"
         }
     },
     "settings": {
@@ -172,13 +187,11 @@
         "centered-mode-info": "Avaa valikko näytön keskelle osoittimen sijainnin sijaan.",
         "general-settings-dialog": {
             "reload-menu-theme": "Lataa valikkoteema uudelleen",
-            "reload-menu-theme-tooltip": "CSS-muutokset tulevat voimaan välittömästi, mutta theme.json-tiedostoon tehtyjen muutosten osalta valikko tulee avata uudelleen.",
             "reload-sound-theme": "Lataa ääniteema uudelleen",
             "none": "Ei mitään",
             "auto-language": "Käytä järjestelmän kieltä",
             "title": "Yleiset asetukset",
             "message": "Kaikki valikot ja Kandon asetukset on tallennettu kahteen JSON-tiedostoon, joita voi muokata, jakaa ja varmuuskopioida. Napsauta [tästä]({{link}}) avataksesi kansion, johon tiedostot on tallennettu.",
-            "app-settings": "Sovelluksen asetukset",
             "localization-label": "Kieli",
             "localization-info": "Käynnistä Kando uudelleen vahvistaaksesi kielivalinnan.",
             "check-for-new-versions": "Tarkista päivitykset",
@@ -260,7 +273,33 @@
             "restore-settings": "Palauta config.json…",
             "reload-note": "Kun lataat uudelleen valikkoteeman, CSS-muutokset toteutetaan vaikka valikko olisi avoinna. Muutokset, jotka on tehty theme.json-tiedostoon, vaativat valikon avaamisen uudelleen.",
             "dev-tools-note": "Kando käyttää kahta ikkunaa: yksi valikkoa varten, toinen asetuksia varten. Voit avata kehitystyökalut ja tutkia molempia ikkunoita toisistaan erillään.",
-            "menu-window-dev-tools": "Tutki valikkoa"
+            "menu-window-dev-tools": "Tutki valikkoa",
+            "gesture-jitter-threshold-info": "Smaller movements will not be considered in the gesture detection. Default is 10px.",
+            "gesture-jitter-threshold": "Gesture Jitter Threshold",
+            "gesture-pause-timeout-info": "Stop your gesture for this long to trigger a selection. Default is 100ms.",
+            "fixed-stroke-length-info": "Usually, items are selected when you stop the movement or make a turn. If you set this to a value greater than 0, this behavior will change: Now items will only be selected if you dragged an item this far away from the center. Default is 0px.",
+            "fixed-stroke-length": "Fixed Stroke Length",
+            "wlroots-specific-options": "Options for wlroots-based Backends",
+            "options-that-will-only-affect-the-wlroots-backend": "These options only affect wlroots-based backends and have no effect on other backends.",
+            "wlroots-pointer-get-timeout-mouse-info": "The maximum time in milliseconds to wait for a mouse pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 500ms.",
+            "wlroots-pointer-get-timeout-mouse": "Get-pointer-position timeout",
+            "wlroots-pointer-get-timeout-touch-info": "The maximum time in milliseconds to wait for a touch pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 1500ms.",
+            "wlroots-pointer-get-timeout-touch": "Get-touch-position timeout",
+            "wlroots-pointer-get-timeout-default-behavior-info": "Determines where the pointer should be assumed to be if no position could be obtained from the wlroots-based backends within the configured timeout.",
+            "wlroots-pointer-get-timeout-default-behavior": "Pointer fallback position",
+            "previously-reported": "Previously reported",
+            "enable-achievement-notifications-info": "If enabled, notifications are shown when achievements are unlocked.",
+            "enable-achievement-notifications": "Show achievement notifications",
+            "windows-ink-workaround-info": "This enables a workaround for the issue where getting the stylus position is not possible with Windows Ink enabled. This introduces a delay of 100ms before opening the menu, so if you don't use a stylus, you can disable it to make the menu open faster.",
+            "windows-ink-workaround": "Windows-Ink workaround",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "max-selection-radius": "Maximum selection radius",
+            "center-click-zone-radius-info": "The size of the area in the middle of the menu which will either close or navigate a level up when clicked. Default is 50px.",
+            "center-click-zone-radius": "Center click zone radius",
+            "minimum-submenu-distance-info": "If a submenu is opened close to the parent menu, the parent will be moved away to this distance. Default is 150px.",
+            "movement-threshold-info": "Smaller mouse movements will not be considered in Marking or Turbo mode. Default is 15px.",
+            "minimum-gesture-length-info": "Straight movements must be at least this long to trigger a selection. Default is 150px.",
+            "minimum-gesture-angle-info": "Smaller deviations from straight movements will not trigger selections. Default is 20°."
         },
         "hover-mode": "Kohdistustila",
         "hover-mode-info": "Vain edistyneille käyttäjille! Valitsee kohteita hiiren osoittimen kohdistamisella.",
@@ -297,18 +336,21 @@
             "chapter2": "Merkintätila",
             "chapter3": "Turbotila",
             "chapter4": "Seuraavat askeleet",
-            "chapter5": "Tuki"
+            "chapter5": "Tuki",
+            "slide5-text": "To **navigate back**, either click in the parent's wedge or in the center of the menu.",
+            "slide7-title": "Become faster: Marking Mode",
+            "slide7-text": "Click and drag over an item to enter Marking Mode. **If you pause the pointer movement or make a turn, the currently dragged submenu will open!** Remember the path to an item and draw it with expressive zig-zag movements.",
+            "slide9-text": "If you **keep a key pressed** (such as _Ctrl_, _Shift_, or _Alt_) after opening the menu, you can perform selections by just moving the pointer. No clicking or dragging is necessary.",
+            "slide11-text": "**Don't be afraid of accidental selections!** Actions are only executed as soon as you release your mouse button in Marking Mode or a keyboard key in Turbo Mode. Use this to explore the menu!"
         },
         "menu-behavior": "Valikon toiminta",
         "menu-conditions": "Valikon ehdollisuudet",
         "menu-themes-dialog": {
             "author": "tekijä {{author}}",
-            "reset-color-picker": "Palauta värien oletusarvot",
             "title": "Valikkoteemat",
             "accent-colors": "Korostusvärit",
             "dark": "Tumma teema",
             "light": "Vaalea teema",
-            "accent-colors-info": "Jokaisella teemalla voi olla erilainen tarjonta korostusvärejä.",
             "no-accent-colors": "Tämä teema ei tue korostusvärejä.",
             "fade-in-time": "Ilmaantumisaika",
             "fade-in-time-info": "Aika joka valikolla kestää ilmaantua. Oletus on 150ms.",
@@ -320,7 +362,20 @@
             "light-dark-mode-info": "Jos käytössä, voit valita eri teeman ja väriasetukset kuin järjestelmässäsi oletuksena.",
             "get-themes-online": "Hae teemoja verkosta",
             "create-your-own-themes": "Luo omia teemoja",
-            "open-theme-directory": "Lataa teema tietokoneelta"
+            "open-theme-directory": "Lataa teema tietokoneelta",
+            "save-preset-error-title": "Failed to save preset",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "default-colors": "Default colors",
+            "choose-preset": "Choose preset…",
+            "reload-presets": "Reload presets",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory",
+            "selection-wedges-info": "If enabled and supported by the selected theme, the selectable area of menu items will be highlighted.",
+            "selection-wedges": "Draw item wedges",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "preset-name-placeholder": "e.g. My Custom Colors"
         },
         "shortcut-label": "Pikanäppäin",
         "shortcut-recording": "Paina pikanäppäintä…",
@@ -355,7 +410,6 @@
         "app-condition-placeholder": "Sovelluksen nimi",
         "area-condition-tooltip": "Valitse näytön alue",
         "screen-area-picker": {
-            "title": "Valitse näytön alue",
             "confirm": "Käytä tätä aluetta",
             "valid": "Hienoa! Olet valinnut hyväksyttävän alueen.",
             "top-left-value": "Vasen: {{x}}, Ylä: {{y}}",
@@ -371,8 +425,6 @@
             "start-countdown": "Aloita laskenta",
             "countdown_one": "Valitaan {{count}} sekunnissa…",
             "countdown_other": "Valitaan {{count}} sekunnissa…",
-            "pick-app-name-title": "Valitse sovelluksen nimi",
-            "pick-window-title-title": "Valitse ikkunan otsikko",
             "confirm": "Käytä tätä"
         },
         "area-condition-info": "Näytä valikko vain, jos osoitin on tietyllä alueella näytöllä. Alue on annettu pikseleinä suhteessa päänäyttösi vasempaan yläkulmaan. Jos jätät kentän tyhjäksi, alue on rajaton.",
@@ -394,7 +446,8 @@
             "no-completed-achievements": "Et ole saanut vielä yhtäkään saavutusta.",
             "in-progress-button": "Kesken",
             "completed-button": "Valmis",
-            "reset-button-tooltip": "Nollaa kaikki saavutukset ja tasoedistyminen"
+            "reset-button-tooltip": "Nollaa kaikki saavutukset ja tasoedistyminen",
+            "xp": "XP"
         },
         "restore-backup": "Palauta varmuuskopio…",
         "restore-general-settings-warning-title": "Haluatko varmasti palauttaa yleiset asetukset?",
@@ -409,8 +462,17 @@
         "restore-menu-settings-success-message": "Valikot ja valikkokokoelmat on palautettu varmuuskopiotiedostosta.",
         "app-picker": {
             "search-placeholder": "Etsi sovellusta…",
-            "use-selected": "Käytä valittua"
-        }
+            "use-selected": "Käytä valittua",
+            "hint": "You can also drag and drop an app from your start menu to Kando's menu editor!"
+        },
+        "export-menu-error-title": "Failed to export menu",
+        "import-menu-error-title": "Failed to import menu",
+        "import-menu-error-message": "The selected file could not be imported. It does not contain a valid Kando exported menu.",
+        "not-bound": "Not Bound",
+        "import-menu": "Import menu",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "quick-select-key-recording": "Select key…"
     },
     "achievements": {
         "attributes": {
@@ -432,19 +494,24 @@
             "description": "Keskeytä valinta {{n}} kertaa."
         },
         "selector": {
-            "description": "Valitse {{n}} kohdetta."
+            "description": "Valitse {{n}} kohdetta.",
+            "name": "{{attribute}} Samurai"
         },
         "click-selector": {
-            "description": "Valitse {{n}} kohdetta hiiren napsautuksella."
+            "description": "Valitse {{n}} kohdetta hiiren napsautuksella.",
+            "name": "{{attribute}} Click-Click Champion"
         },
         "keyboard-selector": {
-            "description": "Valitse {{n}} kohdetta näppäimistöllä."
+            "description": "Valitse {{n}} kohdetta näppäimistöllä.",
+            "name": "{{attribute}} Hotkey Hero"
         },
         "gamepad-selector": {
-            "description": "Valitse {{n}} kohdetta peliohjaimella."
+            "description": "Valitse {{n}} kohdetta peliohjaimella.",
+            "name": "{{attribute}} Gamepad Warrior"
         },
         "gesture-selector": {
-            "description": "Valitse {{n}} kohdetta käyttäen turbo- tai merkintätilaa."
+            "description": "Valitse {{n}} kohdetta käyttäen turbo- tai merkintätilaa.",
+            "name": "{{attribute}} Power Ninja"
         },
         "settings-opened": {
             "name": "Matka on palkkio {{tier}}",
@@ -463,7 +530,8 @@
             "description": "Luo {{n}} kohdetta valikkomuokkaimella."
         },
         "deleted-all-menus": {
-            "description": "Poista kaikki valikot."
+            "description": "Poista kaikki valikot.",
+            "name": "Clear the Dojo"
         },
         "full-menu": {
             "name": "Leveyttä syvyyden sijaan",
@@ -490,8 +558,15 @@
             "name": "Salamannopeat kädet {{tier}}"
         },
         "speedy-selections-streak": {
-            "name": "Ajatusta nopeampi {{tier}}"
+            "name": "Ajatusta nopeampi {{tier}}",
+            "description": "Make {{n}} consecutive selections on average faster than {{time}} ms."
         },
-        "completed-title": "Saavutus avattu!"
+        "completed-title": "Saavutus avattu!",
+        "depth-selector": {
+            "name1": "{{attribute}} Slicer",
+            "name2": "{{attribute}} Two-Layer Slicer",
+            "name3": "{{attribute}} Deep Slicer",
+            "description": "Select {{n}} items at depth {{depth}} in less than {{time}} ms."
+        }
     }
 }

@@ -9,7 +9,6 @@
             "search-placeholder": "Biểu tượng tìm kiếm…",
             "hint": "Tìm hiểu [tại đây]({{link}}) cách thêm hoặc tạo chủ đề biểu tượng của riêng bạn."
         },
-        "backup-general-settings-title": "Sao lưu cài đặt chung…",
         "cancel": "Hủy",
         "restore-backup": "KhôI phục bản sao lưu…",
         "restore-general-settings-warning-title": "Bạn có thực sự muốn khôi phục cài đặt chung không?",
@@ -149,7 +148,11 @@
             "wlroots-pointer-get-timeout-default-behavior-info": "Xác định vị trí của con trỏ nếu không thể lấy được vị trí nào từ wlroots-based backends trong thời gian chờ đã định cấu hình.",
             "wlroots-pointer-get-timeout-default-behavior": "Vị trí dự phòng con trỏ",
             "center": "Trung tâm",
-            "previously-reported": "Đã báo cáo trước đây"
+            "previously-reported": "Đã báo cáo trước đây",
+            "windows-ink-workaround": "Windows-Ink workaround",
+            "windows-ink-workaround-info": "This enables a workaround for the issue where getting the stylus position is not possible with Windows Ink enabled. This introduces a delay of 100ms before opening the menu, so if you don't use a stylus, you can disable it to make the menu open faster.",
+            "max-selection-radius": "Maximum selection radius",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius."
         },
         "introduction-dialog": {
             "slide1-title": "Kando cung cấp một cách độc đáo và hiệu quả để tương tác với máy tính của bạn.",
@@ -186,8 +189,6 @@
             "accent-colors": "Màu nhấn",
             "dark": "Chế độ tối",
             "light": "Chế độ sáng",
-            "accent-colors-info": "Mỗi chủ đề có thể có một bộ màu nhấn khác nhau.",
-            "reset-color-picker": "Đặt lại về mặc định",
             "no-accent-colors": "Chủ đề này không hỗ trợ màu nhấn.",
             "title": "Chủ đề menu",
             "fade-in-time-info": "Thời gian để menu mờ dần. Mặc định là 150ms.",
@@ -203,7 +204,18 @@
             "get-themes-online": "Tải chủ đề trực tuyến",
             "create-your-own-themes": "Tạo chủ đề của riêng bạn",
             "open-theme-directory": "Mở thư mục chủ đề",
-            "author": "bởi {{author}}"
+            "author": "bởi {{author}}",
+            "default-colors": "Default colors",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "save-preset-error-title": "Failed to save preset",
+            "reload-presets": "Reload presets",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "preset-name-placeholder": "e.g. My Custom Colors",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "choose-preset": "Choose preset…"
         },
         "all-menus": "Tất cả menu",
         "search-menus-placeholder": "Tìm kiếm menu…",
@@ -291,8 +303,10 @@
         "export-menu-error-title": "Không xuất được menu",
         "import-menu-error-title": "Không thể nhập menu",
         "import-menu-error-message": "Không thể nhập tệp đã chọn. Nó không chứa menu xuất Kando hợp lệ.",
-        "export-menu": "Xuất menu",
-        "import-menu": "Nhập menu"
+        "import-menu": "Nhập menu",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "quick-select-key-recording": "Select key…"
     },
     "menu-items": {
         "command": {

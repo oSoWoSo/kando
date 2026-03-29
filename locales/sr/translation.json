@@ -31,7 +31,6 @@
             "auto-language": "Користи системски језик",
             "title": "Општа подешавања",
             "message": "Сва подешавања Kando-а се чувају у JSON датотеци коју можете уређивати, делити или архивирати. Кликните [овде]({{link}}) да бисте отворили фасциклу где се налази датотека config.json.",
-            "app-settings": "Подешавања апликације",
             "localization-label": "Језик",
             "localization-info": "Рестартујте Kando да бисте применили нови језик.",
             "check-for-new-versions": "Проверите да ли постоје нове верзије",
@@ -125,7 +124,23 @@
             "backup-menus": "Сачувај менус.јсон…",
             "backup-settings": "Сачувај цонфиг.јсон…",
             "restore-menus": "Поврати менус.јсон…",
-            "restore-settings": "Поврати цонфиг.јсон…"
+            "restore-settings": "Поврати цонфиг.јсон…",
+            "enable-achievement-notifications-info": "If enabled, notifications are shown when achievements are unlocked.",
+            "enable-achievement-notifications": "Show achievement notifications",
+            "windows-ink-workaround-info": "This enables a workaround for the issue where getting the stylus position is not possible with Windows Ink enabled. This introduces a delay of 100ms before opening the menu, so if you don't use a stylus, you can disable it to make the menu open faster.",
+            "windows-ink-workaround": "Windows-Ink workaround",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "max-selection-radius": "Maximum selection radius",
+            "wlroots-specific-options": "Options for wlroots-based Backends",
+            "options-that-will-only-affect-the-wlroots-backend": "These options only affect wlroots-based backends and have no effect on other backends.",
+            "wlroots-pointer-get-timeout-mouse-info": "The maximum time in milliseconds to wait for a mouse pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 500ms.",
+            "wlroots-pointer-get-timeout-mouse": "Get-pointer-position timeout",
+            "wlroots-pointer-get-timeout-touch-info": "The maximum time in milliseconds to wait for a touch pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 1500ms.",
+            "wlroots-pointer-get-timeout-touch": "Get-touch-position timeout",
+            "wlroots-pointer-get-timeout-default-behavior-info": "Determines where the pointer should be assumed to be if no position could be obtained from the wlroots-based backends within the configured timeout.",
+            "wlroots-pointer-get-timeout-default-behavior": "Pointer fallback position",
+            "center": "Center",
+            "previously-reported": "Previously reported"
         },
         "introduction-dialog": {
             "slide1-title": "Kando нуди јединствен и ефикасан начин интеракције са рачунаром.",
@@ -162,8 +177,6 @@
             "accent-colors": "Боје нагласка",
             "dark": "Тамни режим",
             "light": "Светли режим",
-            "accent-colors-info": "Свака тема може имати другачији скуп истакнутих боја.",
-            "reset-color-picker": "Врати на подразумеване вредности",
             "no-accent-colors": "Ова тема не подржава истакнуте боје.",
             "title": "Теме менија",
             "fade-in-time": "Вreme појављивања",
@@ -179,7 +192,18 @@
             "open-theme-directory": "Отвори фасциклу са темама",
             "author": "од {{author}}",
             "selection-wedges": "Користи означавање елемената",
-            "selection-wedges-info": "Уколико је укључено и доступно у активној теми, зона селекције менија ће бити означена."
+            "selection-wedges-info": "Уколико је укључено и доступно у активној теми, зона селекције менија ће бити означена.",
+            "save-preset-error-title": "Failed to save preset",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "default-colors": "Default colors",
+            "choose-preset": "Choose preset…",
+            "reload-presets": "Reload presets",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "preset-name-placeholder": "e.g. My Custom Colors"
         },
         "all-menus": "Сви менији",
         "search-menus-placeholder": "Претражи меније…",
@@ -263,7 +287,9 @@
             "completed-button": "Завршени",
             "reset-button-tooltip": "Поништи сва достигнућа и нивое напредовања",
             "reset-button": "Ресетуј напредак",
-            "reset-confirmation-title": "Да ли заиста желиш да ресетујеш сав напредак?"
+            "reset-confirmation-title": "Да ли заиста желиш да ресетујеш сав напредак?",
+            "no-in-progress-achievements": "Congratulations! You have completed all achievements.",
+            "no-completed-achievements": "You have not completed any achievements yet."
         },
         "restore-backup": "Врати сачувана подешавања…",
         "restore-general-settings-warning-title": "Да ли заиста желите да вратите генерална подешавања?",
@@ -275,7 +301,14 @@
         "restore-menu-settings-warning-message": "Ово ће преписати ваше тренутне меније и колекције менија садржајем одабране резервне датотеке!",
         "restore-menu-settings-error-title": "Неуспешно учитавање резерве менија!",
         "restore-menu-settings-success-title": "Успешно!",
-        "restore-menu-settings-success-message": "Ваши менији и колекције менија су успешно учитани из резервне датотеке."
+        "restore-menu-settings-success-message": "Ваши менији и колекције менија су успешно учитани из резервне датотеке.",
+        "import-menu": "Import menu",
+        "export-menu-error-title": "Failed to export menu",
+        "import-menu-error-title": "Failed to import menu",
+        "import-menu-error-message": "The selected file could not be imported. It does not contain a valid Kando exported menu.",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "quick-select-key-recording": "Select key…"
     },
     "menu-items": {
         "command": {
@@ -357,7 +390,9 @@
         },
         "common": {
             "delayed-option": "Сачекај анимацију нестајања",
-            "delayed-option-info": "Корисно ако акција циља прозор који мора бити активан."
+            "delayed-option-info": "Корисно ако акција циља прозор који мора бити активан.",
+            "inhibit-shortcuts-info": "Disables all Kando shortcuts while the hotkey or macro is being simulated. This prevents the simulated input from accidentally triggering other menu shortcuts.",
+            "inhibit-shortcuts": "Disable shortcuts"
         }
     },
     "main": {
@@ -367,8 +402,6 @@
         "un-inhibit-shortcuts": "Поново омогући пречице",
         "inhibit-shortcuts": "Привремено онемогући све пречице",
         "quit": "Затвори",
-        "failed-to-start-header": "Kando није успео да се покрене",
-        "no-backend-found": "Није пронађен погодан бекенд.",
         "invalid-link-header": "Погрешан линк",
         "invalid-link-message": "Дубоки линк није могуће разрешити."
     },
@@ -441,5 +474,100 @@
         "niri": {
             "shortcut-info": "Niri још увек не подржава глобалне пречице, али можеш отворити овај мени преко 'kando --menu \"ImeMenija\"' из командне линије или из Niri конфигурације."
         }
+    },
+    "achievements": {
+        "attributes": {
+            "capable": "Capable",
+            "skilled": "Skilled",
+            "expert": "Expert",
+            "master": "Sensei",
+            "novice": "Novice"
+        },
+        "tier": {
+            "I": "I",
+            "II": "II",
+            "III": "III",
+            "IV": "IV",
+            "V": "V"
+        },
+        "cancelor": {
+            "name": "Road of Emptiness {{tier}}",
+            "description": "Abort a selection {{n}} times."
+        },
+        "selector": {
+            "name": "{{attribute}} Samurai",
+            "description": "Select {{n}} items."
+        },
+        "depth-selector": {
+            "name1": "{{attribute}} Slicer",
+            "name2": "{{attribute}} Two-Layer Slicer",
+            "name3": "{{attribute}} Deep Slicer",
+            "description": "Select {{n}} items at depth {{depth}} in less than {{time}} ms."
+        },
+        "click-selector": {
+            "name": "{{attribute}} Click-Click Champion",
+            "description": "Select {{n}} items using mouse clicks."
+        },
+        "keyboard-selector": {
+            "name": "{{attribute}} Hotkey Hero",
+            "description": "Select {{n}} items using your keyboard."
+        },
+        "gamepad-selector": {
+            "name": "{{attribute}} Gamepad Warrior",
+            "description": "Select {{n}} items using a gamepad."
+        },
+        "gesture-selector": {
+            "name": "{{attribute}} Power Ninja",
+            "description": "Select {{n}} items using turbo or marking mode."
+        },
+        "settings-opened": {
+            "name": "The Journey is the Reward {{tier}}",
+            "description": "Open the settings dialog {{n}} times."
+        },
+        "backup": {
+            "name": "Path of Foresight {{tier}}",
+            "description": "Backup your menus or settings {{n}} times."
+        },
+        "restore": {
+            "name": "Second Chance {{tier}}",
+            "description": "Restore a backup {{n}} times."
+        },
+        "added-items": {
+            "name": "Way of Kando {{tier}}",
+            "description": "Create {{n}} items in the menu editor."
+        },
+        "deleted-all-menus": {
+            "name": "Clear the Dojo",
+            "description": "Delete all of your menus."
+        },
+        "full-menu": {
+            "name": "Breadth over Depth",
+            "description": "Create a menu with more than twelve items."
+        },
+        "deep-menu": {
+            "name": "Master of Depth",
+            "description": "Add a menu item to a four-level deep submenu."
+        },
+        "sponsors-viewed": {
+            "name": "Guardian of Kando",
+            "description": "Consider becoming a sponsor of Kando."
+        },
+        "menu-themes-selected": {
+            "name": "Way of the Aesthete",
+            "description": "Switch the menu theme {{n}} times."
+        },
+        "tutorial-viewed": {
+            "name": "The Journey Begins",
+            "description": "Complete the Kando introduction tutorial."
+        },
+        "many-selections-streak": {
+            "name": "Hands of Lightning {{tier}}",
+            "description": "Select {{n}} items within {{time}} s."
+        },
+        "speedy-selections-streak": {
+            "name": "Faster than Thought {{tier}}",
+            "description": "Make {{n}} consecutive selections on average faster than {{time}} ms."
+        },
+        "completed-title": "Achievement unlocked!"
     }
 }

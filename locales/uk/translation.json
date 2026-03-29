@@ -70,7 +70,6 @@
         }
     },
     "main": {
-        "failed-to-start-header": "Kando не зміг запуститися",
         "inhibit-shortcuts": "Тимчасово вимкнути всі комбінації клавіш",
         "new-version-notification-header": "Доступна нова версія Kando!",
         "quit": "Вийти",
@@ -78,13 +77,10 @@
         "un-inhibit-shortcuts": "Знову ввімкнути комбінації клавіш",
         "new-version-notification-body": "Отримати це з {{link}}.",
         "invalid-link-header": "Недійсне посилання",
-        "invalid-link-message": "Не вдалося проаналізувати пряме посилання.",
-        "no-backend-found": "Не знайдено відповідного бекенду."
+        "invalid-link-message": "Не вдалося проаналізувати пряме посилання."
     },
     "menu-items": {
         "command": {
-            "command": "Команда",
-            "command-info": "Це буде виконано.",
             "description": "Запускає програму або команду оболонки.",
             "name": "Запустити команду",
             "tip-1": "Ви можете використовувати тип елемента Команда для запуску програм або скриптів.",
@@ -102,7 +98,6 @@
         },
         "file": {
             "description": "Відкриває файл або папку.",
-            "file": "Шлях до файлу",
             "name": "Відкрити Файл",
             "tip-1": "Ви можете використовувати цей тип елемента для відкриття файлів або папок.",
             "placeholder": "Виберіть файл або папку…"
@@ -136,9 +131,6 @@
         },
         "submenu": {
             "description": "Містить інші пункти меню.",
-            "detailed-description_one": "",
-            "detailed-description_few": "Містить {{count}} пункт(-ів) меню.",
-            "detailed-description_many": "Містить {{count}} пункт(-ів) меню.",
             "name": "Підменю",
             "tip-1": "Підменю можна використовувати для групування елементів.",
             "tip-2": "Ви також можете вкладати підменю у підменю.",
@@ -163,7 +155,6 @@
             "tip-4": "Використовуйте {{app_name}}, щоб вставити назву програми, яка була сфокусована під час відкриття меню.",
             "tip-5": "Використовуйте {{window_name}}, щоб вставити назву вікна, на якому було сфокусовано увагу під час відкриття меню.",
             "tip-6": "Використовуйте {{pointer_x}} та {{pointer_y}}, щоб вставити позицію вказівника, де було відкрито меню.",
-            "uri": "посилання",
             "placeholder": "Вставте будь-який URI…"
         },
         "common": {
@@ -196,9 +187,7 @@
         "centered-mode-info": "Відкривайте меню в центрі екрана, а не за курсором.",
         "general-settings-dialog": {
             "reload-menu-theme": "Перезавантажити тему меню",
-            "reload-menu-theme-tooltip": "Зміни CSS будуть застосовані негайно, для внесення змін у файл theme.json потрібно перевідкрити меню.",
             "reload-sound-theme": "Перезавантажити звукову тему",
-            "app-behavior": "Поведінка програми",
             "localization-label": "Мова",
             "localization-info": "Перезапустіть Kando, щоб застосувати нову мову.",
             "auto-language": "Використовувати системну мову",
@@ -276,16 +265,12 @@
             "settings-window-flavor": "Стиль вікна налаштувань",
             "menu-window-dev-tools": "Інспекція вікна меню",
             "settings-window-dev-tools": "Інспекція вікна налаштувань",
-            "dev-tools": "Відкриті інструменти розробки",
             "dev-tools-note": "Kando використовує два вікна: одне для меню, а інше для налаштувань. Ви можете відкрити інструменти розробки для обох вікон окремо.",
-            "developer-options-note": "Після перезавантаження теми меню зміни CSS будуть застосовані негайно. Щоб внести зміни до файлу theme.json, потрібно повторно відкрити меню.",
             "reload-note": "Під час перезавантаження теми меню зміни CSS будуть застосовані, навіть якщо меню наразі відображається. Щоб внести зміни до файлу theme.json, потрібно повторно відкрити меню.",
             "press-again-behavior": "Поведінка при повторному натисканні комбінації клавіш",
             "close-menu": "Закрити меню",
             "press-again-behavior-info": "Це визначає, що відбувається, коли комбінацію клавіш натискають знову, коли відображається меню. Якщо одній комбінації клавіш призначено кілька меню, ви можете використовувати це для циклічного переходу між усіма відповідними меню. Переконайтеся, що ви утримуєте клавішу-модифікатор, лише якщо хочете використовувати Турбо-режим разом з опцією, відмінною від «Нічого не робити».",
             "do-nothing": "Нічого не робити",
-            "cycle-menus": "Циклічний перехід між відповідними меню",
-            "app-settings": "Налаштування програми",
             "cycle-from-recent": "Показати наступне меню (продовжити з останнього)",
             "keep-input-focus": "Збереження фокусу активної програми",
             "cycle-from-first": "Показати наступне меню (почати з першого)",
@@ -312,7 +297,9 @@
             "enable-achievement-notifications-info": "Якщо ввімкнено, сповіщення відображатимуться, коли розблоковано досягнення.",
             "enable-achievement-notifications": "Показувати сповіщення про досягнення",
             "windows-ink-workaround-info": "Це дозволяє вирішити проблему, коли неможливо визначити положення стилуса, якщо ввімкнено Windows Ink. Це призводить до затримки 100 мс перед відкриттям меню, тому, якщо ви не використовуєте стилус, ви можете вимкнути його, щоб меню відкривалося швидше.",
-            "windows-ink-workaround": "Тимчасове рішення Windows-Ink"
+            "windows-ink-workaround": "Тимчасове рішення Windows-Ink",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "max-selection-radius": "Maximum selection radius"
         },
         "hover-mode": "Режим наведення",
         "hover-mode-info": "Тільки для досвідчених користувачів! Виберіть елементи, навівши на них курсор.",
@@ -362,13 +349,11 @@
         "menu-themes-dialog": {
             "author": "Автор: {{author}}",
             "light-dark-mode-info": "Якщо увімкнено, ви можете вибрати іншу тему та набір кольорів, якщо ваша система перебуває у світлому або темному колірному режимі.",
-            "reset-color-picker": "Скинути всі кольори до значень за замовчуванням",
             "title": "Теми меню",
             "dark": "Темний режим",
             "light": "Світлий режим",
             "accent-colors": "Акцентні кольори",
             "no-accent-colors": "Ця тема не підтримує акцентні кольори.",
-            "theme-colors": "Кольори теми",
             "fade-out-time": "Час згасання",
             "light-dark-mode": "Увімкнути світло-темний режим",
             "fade-in-time-info": "Час, необхідний для появи меню. За замовчуванням – 150 мс.",
@@ -378,10 +363,20 @@
             "get-themes-online": "Завантажте теми онлайн",
             "open-theme-directory": "Відкрити каталог тем",
             "fade-in-time": "Час поступового наростання",
-            "accent-colors-info": "Кожна тема може мати різний набір акцентних кольорів.",
             "menu-scale": "Масштаб меню",
             "selection-wedges-info": "Якщо ця функція увімкнена та підтримується вибраною темою, область вибору елементів меню буде виділена.",
-            "selection-wedges": "Намалюйте клини предметів"
+            "selection-wedges": "Намалюйте клини предметів",
+            "save-preset-error-title": "Failed to save preset",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "default-colors": "Default colors",
+            "choose-preset": "Choose preset…",
+            "reload-presets": "Reload presets",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "preset-name-placeholder": "e.g. My Custom Colors"
         },
         "not-bound": "Не зв'язаний",
         "shortcut-id-label": "Ідентифікатор ярлика",
@@ -410,7 +405,6 @@
         "screen-area-picker": {
             "bottom-right-value": "Праворуч: {{x}}, Знизу: {{y}}",
             "bottom-right": "Перетягніть це в правий нижній кут вашої області.",
-            "title": "Вибрати область екрана",
             "confirm": "Використати цю область",
             "top-left": "Перетягніть це у верхній лівий кут вашої області.",
             "valid": "Чудово! Ви вибрали правильний регіон.",
@@ -424,8 +418,6 @@
             "countdown_few": "Вибір через {{count}} секунди…",
             "countdown_many": "Вибір через {{count}} секунд…",
             "restart-countdown": "Знову розпочати зворотний відлік",
-            "pick-app-name-title": "Виберіть назву програми",
-            "pick-window-title-title": "Вибрати заголовок вікна",
             "instructions": "Натисніть кнопку нижче та сфокусуйте цільове вікно протягом наступних п'яти секунд.",
             "confirm": "Використати це значення"
         },
@@ -452,7 +444,6 @@
             "search-placeholder": "Пошук програми…",
             "use-selected": "Використати вибрані"
         },
-        "backup-general-settings-title": "Резервне копіювання загальних налаштувань…",
         "restore-backup": "Відновити резервну копію…",
         "restore-general-settings-warning-title": "Ви справді хочете відновити загальні налаштування?",
         "restore-general-settings-warning-message": "Це перезапише поточні налаштування вашої програми вмістом вибраного файлу резервної копії! Ваші меню та колекції меню залишаться в силі.",
@@ -476,11 +467,13 @@
             "no-in-progress-achievements": "Вітаємо! Ви виконали всі досягнення.",
             "no-completed-achievements": "Ви ще не виконали жодних досягнень."
         },
-        "export-menu": "Експорт меню",
         "import-menu": "Меню імпорту",
         "import-menu-error-title": "Не вдалося імпортувати меню",
         "import-menu-error-message": "Не вдалося імпортувати вибраний файл. Він не містить дійсного експортованого меню Kando.",
-        "export-menu-error-title": "Не вдалося експортувати меню"
+        "export-menu-error-title": "Не вдалося експортувати меню",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "quick-select-key-recording": "Select key…"
     },
     "achievements": {
         "attributes": {

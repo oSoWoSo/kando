@@ -22,7 +22,6 @@
             "title": "Generelle innstillinger",
             "message": "Alle innstillingene i Kando er lagret i en JSON-fil som du kan redigere, dele eller sikkerhetskopiere. Klikk [her] ({{link}}) for å åpne mappen hvor config.json filen er lagret.",
             "check-for-new-versions": "Se etter nye versjoner",
-            "app-behavior": "Appens Oppførsel",
             "check-for-new-versions-info": "Hvis dette er slått på, vil Kando vil vise en varsling når en ny versjon er tilgjengelig.",
             "invisible-settings-button": "Usynlig innstillinger-knapp",
             "invisible-settings-button-info": "Du kan fortsatt bruke knappen, den dukker opp når du holder musepekeren over den.",
@@ -79,7 +78,43 @@
             "enable-turbo-mode-info": "Med Turbomodus påslått, kan du gjøre musebevegelser så lenge du holder inne en modifikatortast slik som Skift eller CTRL.",
             "move-pointer-to-menu-center-info": "Hvis påslått, vil musepekeren flytter sil midten av an meny eller undermeny når nødvendig. Dette kan være tilfellet hvis en meny åpnes for nærme kanten av skjermen, eller hvis en meny åpnes i Sentermodus.",
             "right-mouse-button-selects-parent-info": "Hvis ikke avkrysset, vil høyre museknapp lukke menyen umiddelbart i stedet.",
-            "learn-how-to-add-sound-themes": "Finn ut hvordan du kan legge til nye lydtemaer til Kando [her]({{link}})!"
+            "learn-how-to-add-sound-themes": "Finn ut hvordan du kan legge til nye lydtemaer til Kando [her]({{link}})!",
+            "wlroots-pointer-get-timeout-default-behavior-info": "Determines where the pointer should be assumed to be if no position could be obtained from the wlroots-based backends within the configured timeout.",
+            "wlroots-pointer-get-timeout-touch-info": "The maximum time in milliseconds to wait for a touch pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 1500ms.",
+            "backup-and-restore": "Backup and Restore",
+            "windows-ink-workaround": "Windows-Ink workaround",
+            "enable-achievement-notifications-info": "If enabled, notifications are shown when achievements are unlocked.",
+            "close-menu": "Close menu",
+            "restore-settings": "Restore config.json…",
+            "cycle-from-recent": "Show next menu (continue from last)",
+            "do-nothing": "Do nothing",
+            "keep-input-focus-info": "If enabled, the menu will not receive keyboard input focus when opened. This disables Turbo Mode, but it may be useful if you require that other applications remain focused while the menu is open.",
+            "enable-achievements-info": "If enabled, Kando will track your progress towards achievements.",
+            "enable-achievement-notifications": "Show achievement notifications",
+            "windows-ink-workaround-info": "This enables a workaround for the issue where getting the stylus position is not possible with Windows Ink enabled. This introduces a delay of 100ms before opening the menu, so if you don't use a stylus, you can disable it to make the menu open faster.",
+            "localization-info": "Restart Kando to apply the new language.",
+            "localization-label": "Language",
+            "enable-achievements": "Track achievements",
+            "wlroots-pointer-get-timeout-mouse": "Get-pointer-position timeout",
+            "cycle-from-first": "Show next menu (begin at first)",
+            "center": "Center",
+            "hardware-acceleration": "Enable hardware acceleration",
+            "restore-menus": "Restore menus.json…",
+            "wlroots-pointer-get-timeout-mouse-info": "The maximum time in milliseconds to wait for a mouse pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 500ms.",
+            "backup-settings": "Backup config.json…",
+            "backup-menus": "Backup menus.json…",
+            "max-selection-radius": "Maximum selection radius",
+            "previously-reported": "Previously reported",
+            "options-that-will-only-affect-the-wlroots-backend": "These options only affect wlroots-based backends and have no effect on other backends.",
+            "wlroots-specific-options": "Options for wlroots-based Backends",
+            "auto-language": "Use system language",
+            "hardware-acceleration-info": "This option can boost the performance of the app, but can also lead to some rendering artifacts. You have to restart Kando to apply this setting.",
+            "keep-input-focus": "Keep active application focused",
+            "press-again-behavior-info": "This determines what happens when the shortcut is pressed again while a menu is shown. If multiple menus are assigned to the same shortcut, you can use this to cycle through all matching menus. Make sure to only hold down a modifier key if you want to use Turbo Mode together with an option other than 'Do nothing'.",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "press-again-behavior": "Press-shortcut-again behavior",
+            "wlroots-pointer-get-timeout-default-behavior": "Pointer fallback position",
+            "wlroots-pointer-get-timeout-touch": "Get-touch-position timeout"
         },
         "introduction-dialog": {
             "chapter2": "Markeringsmodus",
@@ -120,7 +155,6 @@
             "accent-colors": "Aksentfarger",
             "dark": "Mørk Modus",
             "light": "Lys Modus",
-            "accent-colors-info": "Hvert tema kan ha en ulik samling av aksentfarger.",
             "no-accent-colors": "Dette temaet støtter ikke aksentfarger.",
             "title": "Menytemaer",
             "fade-in-time": "Ton-in tid",
@@ -132,7 +166,19 @@
             "get-themes-online": "Få temaer fra internettet",
             "create-your-own-themes": "Lag dine egne temaer",
             "author": "av {{author}}",
-            "reset-color-picker": "Tilbakestill til standard"
+            "default-colors": "Default colors",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "save-preset-error-title": "Failed to save preset",
+            "selection-wedges": "Draw item wedges",
+            "reload-presets": "Reload presets",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "selection-wedges-info": "If enabled and supported by the selected theme, the selectable area of menu items will be highlighted.",
+            "preset-name-placeholder": "e.g. My Custom Colors",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "choose-preset": "Choose preset…"
         },
         "empty-collection-note": "Rediger tagger over eller legg til en helt ny meny til denne samlingen med knappen under.",
         "menu-behavior-info": "Før du endrer disse innstillingene, anbefaler vi at du lærer hvorfor vi liker Kando's standardinnstillinger [her] ({{link}})!",
@@ -142,7 +188,8 @@
             "search-placeholder": "Søk ikoner…",
             "hint": "Finn ut [her] ({{link}}) hvordan du kan legge til eller lage dine egne ikontemaer.",
             "file-example": "file: URI eksempel:",
-            "url-example": "URL eksempel:"
+            "url-example": "URL eksempel:",
+            "reload-button-tooltip": "Reload all icon themes"
         },
         "anchored-mode": "Forankret Modus",
         "add-collection-tooltip": "Lag en ny menysamling. Bruk samlinger for å gruppere menyene dine etter tagger!",
@@ -152,7 +199,6 @@
         "screen-area-picker": {
             "invalid": "Pass på at det øverste venstre hjørnet er over og til venstre for det nederste høyre hjørnet.",
             "bottom-right": "Dra denne til det nederste høyre hjørnet av skjermområdet ditt.",
-            "title": "Velg et Skjermområde",
             "top-left-value": "Venstre: {{x}}, Topp: {{y}}",
             "top-left": "Dra denne til øverste venstre hjørne av skjermområdet ditt.",
             "bottom-right-value": "Høyre: {{x}}, Bunn: {{y}}",
@@ -166,8 +212,6 @@
             "restart-countdown": "Start nedtellingen på nytt",
             "countdown_one": "Velger om {{count}} sekund…",
             "countdown_other": "Velger om {{count}} sekunder…",
-            "pick-app-name-title": "Velg et Appnavn",
-            "pick-window-title-title": "Velg en Vindustittel",
             "confirm": "Bruk denne verdien"
         },
         "window-condition-info": "Bare vis menyen hvis det fokuserte vinduet's tittel inneholder en valgt tekst. Dette støtter regulære uttrykk slik som /youtube|vimeo/i.",
@@ -227,7 +271,43 @@
         "tags": "Tagger",
         "tags-info": "Tagger kan brukes. til å gruppere menyer i menysamlinger.",
         "delete-menu-item": "Slett menyalternativ",
-        "cancel": "Avbryt"
+        "cancel": "Avbryt",
+        "achievements-dialog": {
+            "reset-button-tooltip": "Reset all achievements and level progress",
+            "xp": "XP",
+            "reset-button": "Reset Progress",
+            "no-completed-achievements": "You have not completed any achievements yet.",
+            "title": "Achievements",
+            "completed-button": "Completed",
+            "in-progress-button": "In Progress",
+            "reset-confirmation-title": "Do you really want to reset all progress?",
+            "reset-confirmation-message": "All achievements and level progress will be lost. This action cannot be undone.",
+            "no-in-progress-achievements": "Congratulations! You have completed all achievements."
+        },
+        "app-picker": {
+            "hint": "You can also drag and drop an app from your start menu to Kando's menu editor!",
+            "search-placeholder": "Search for an app…",
+            "use-selected": "Use selected"
+        },
+        "restore-general-settings-warning-title": "Do you really want to restore the general settings?",
+        "restore-general-settings-warning-message": "This will overwrite your current application settings with the contents of the selected backup file! Your menus and menu collections will not be affected.",
+        "export-menu-error-title": "Failed to export menu",
+        "import-menu-error-title": "Failed to import menu",
+        "add-menu-item-hint": "Drag this item to add it to the menu above!",
+        "restore-menu-settings-success-message": "Your menus and menu collections have been restored from the backup file.",
+        "restore-menu-settings-success-title": "Success!",
+        "import-menu-error-message": "The selected file could not be imported. It does not contain a valid Kando exported menu.",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "restore-general-settings-success-title": "Success!",
+        "quick-select-key-recording": "Select key…",
+        "restore-menu-settings-warning-message": "This will overwrite your current menus and menu collections with the contents of the selected backup file!",
+        "restore-menu-settings-error-title": "Failed to load menus backup!",
+        "import-menu": "Import menu",
+        "restore-general-settings-error-title": "Failed to load general settings backup!",
+        "restore-menu-settings-warning-title": "Do you really want to restore the menu settings?",
+        "restore-general-settings-success-message": "Your general settings have been restored from the backup file.",
+        "restore-backup": "Restore Backup…"
     },
     "menu-items": {
         "macro": {
@@ -283,7 +363,8 @@
             "tip-2": "Hvis banen til en kjørbar fil inneholder mellomrom, burde du \"sette den i anførselstegn\".",
             "tip-3": "Bruk {{app_name}} for å sette inn navnet på appen som var i fokus når du åpnet menyen.",
             "tip-4": "Bruk {{window_name}} for å sette inn navnet på vinduet som var i fokus når du åpnet menyen.",
-            "tip-6": "Klikk [her]({{link}}) for å finne kommandoene du kan bruke for å starte appene dine."
+            "tip-6": "Klikk [her]({{link}}) for å finne kommandoene du kan bruke for å starte appene dine.",
+            "choose-app": "Choose an app…"
         },
         "redirect": {
             "name": "Omdirigering",
@@ -308,7 +389,9 @@
         },
         "common": {
             "delayed-option": "Vent på ton-ut animasjonen",
-            "delayed-option-info": "Nyttig hvis menyalternativet bruker et vindu som må være i fokus."
+            "delayed-option-info": "Nyttig hvis menyalternativet bruker et vindu som må være i fokus.",
+            "inhibit-shortcuts": "Disable shortcuts",
+            "inhibit-shortcuts-info": "Disables all Kando shortcuts while the hotkey or macro is being simulated. This prevents the simulated input from accidentally triggering other menu shortcuts."
         }
     },
     "example-menu": {
@@ -375,8 +458,7 @@
         "inhibit-shortcuts": "Midlertidig slå av alle hurtigtaster",
         "quit": "Lukk",
         "invalid-link-header": "Ugyldig lenke",
-        "invalid-link-message": "Den dype lenken kunne ikke leses.",
-        "failed-to-start-header": "Kando kunne ikke starte"
+        "invalid-link-message": "Den dype lenken kunne ikke leses."
     },
     "backends": {
         "gnome": {
@@ -387,6 +469,104 @@
         },
         "kde-wayland": {
             "shortcut-info": "Kando kan ikke koble globale hurtigtaster i KDE/Wayland. I stedet, spesifiser en shortcut ID her og søk etter den i KWin delen av de globale snarveiene i KDE's systeminnstillinger. Der kan du sette hurtigtasten som åpner denne menyen."
+        },
+        "niri": {
+            "shortcut-info": "Niri does not yet support global shortcuts. But you can open this menu using 'kando --menu \"Menu Name\"' from the command line or from your niri config."
+        }
+    },
+    "achievements": {
+        "speedy-selections-streak": {
+            "description": "Make {{n}} consecutive selections on average faster than {{time}} ms.",
+            "name": "Faster than Thought {{tier}}"
+        },
+        "backup": {
+            "name": "Path of Foresight {{tier}}",
+            "description": "Backup your menus or settings {{n}} times."
+        },
+        "tier": {
+            "I": "I",
+            "IV": "IV",
+            "III": "III",
+            "II": "II",
+            "V": "V"
+        },
+        "keyboard-selector": {
+            "description": "Select {{n}} items using your keyboard.",
+            "name": "{{attribute}} Hotkey Hero"
+        },
+        "restore": {
+            "name": "Second Chance {{tier}}",
+            "description": "Restore a backup {{n}} times."
+        },
+        "click-selector": {
+            "description": "Select {{n}} items using mouse clicks.",
+            "name": "{{attribute}} Click-Click Champion"
+        },
+        "gesture-selector": {
+            "description": "Select {{n}} items using turbo or marking mode.",
+            "name": "{{attribute}} Power Ninja"
+        },
+        "depth-selector": {
+            "description": "Select {{n}} items at depth {{depth}} in less than {{time}} ms.",
+            "name2": "{{attribute}} Two-Layer Slicer",
+            "name3": "{{attribute}} Deep Slicer",
+            "name1": "{{attribute}} Slicer"
+        },
+        "attributes": {
+            "capable": "Capable",
+            "master": "Sensei",
+            "novice": "Novice",
+            "expert": "Expert",
+            "skilled": "Skilled"
+        },
+        "cancelor": {
+            "description": "Abort a selection {{n}} times.",
+            "name": "Road of Emptiness {{tier}}"
+        },
+        "deleted-all-menus": {
+            "description": "Delete all of your menus.",
+            "name": "Clear the Dojo"
+        },
+        "menu-themes-selected": {
+            "name": "Way of the Aesthete",
+            "description": "Switch the menu theme {{n}} times."
+        },
+        "full-menu": {
+            "name": "Breadth over Depth",
+            "description": "Create a menu with more than twelve items."
+        },
+        "tutorial-viewed": {
+            "description": "Complete the Kando introduction tutorial.",
+            "name": "The Journey Begins"
+        },
+        "selector": {
+            "description": "Select {{n}} items.",
+            "name": "{{attribute}} Samurai"
+        },
+        "deep-menu": {
+            "description": "Add a menu item to a four-level deep submenu.",
+            "name": "Master of Depth"
+        },
+        "sponsors-viewed": {
+            "description": "Consider becoming a sponsor of Kando.",
+            "name": "Guardian of Kando"
+        },
+        "completed-title": "Achievement unlocked!",
+        "settings-opened": {
+            "name": "The Journey is the Reward {{tier}}",
+            "description": "Open the settings dialog {{n}} times."
+        },
+        "many-selections-streak": {
+            "description": "Select {{n}} items within {{time}} s.",
+            "name": "Hands of Lightning {{tier}}"
+        },
+        "added-items": {
+            "description": "Create {{n}} items in the menu editor.",
+            "name": "Way of Kando {{tier}}"
+        },
+        "gamepad-selector": {
+            "name": "{{attribute}} Gamepad Warrior",
+            "description": "Select {{n}} items using a gamepad."
         }
     }
 }

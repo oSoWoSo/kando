@@ -70,7 +70,6 @@
         }
     },
     "main": {
-        "failed-to-start-header": "Kando não conseguiu se iniciar",
         "inhibit-shortcuts": "Desabilitar os atalhos temporariamente",
         "new-version-notification-header": "Uma nova versão do Kando está disponível!",
         "quit": "Sair",
@@ -78,13 +77,10 @@
         "un-inhibit-shortcuts": "Reativar atalhos",
         "invalid-link-message": "O link não pôde ser interpretado corretamente.",
         "new-version-notification-body": "Obtenha de {{link}}.",
-        "invalid-link-header": "Link inválido",
-        "no-backend-found": "Nenhum backend adequado foi encontrado."
+        "invalid-link-header": "Link inválido"
     },
     "menu-items": {
         "command": {
-            "command": "Comando",
-            "command-info": "Isso será executado.",
             "description": "Executa aplicativos ou scripts.",
             "name": "Executar Comando",
             "tip-1": "Você pode usar o item do tipo Comando para iniciar aplicativos ou scripts.",
@@ -102,7 +98,6 @@
         },
         "file": {
             "description": "Abre um arquivo ou pasta.",
-            "file": "Caminho do Arquivo",
             "name": "Abrir Arquivo",
             "tip-1": "Você pode usar esse tipo de item para abrir arquivos ou pastas.",
             "placeholder": "Escolher arquivo ou pasta…"
@@ -136,10 +131,7 @@
         },
         "submenu": {
             "description": "Contém outros itens de menu.",
-            "detailed-description_one": "",
-            "detailed-description_many": "Contém {{count}} itens de menu.",
-            "detailed-description_other": "",
-            "name": "",
+            "name": "Submenu",
             "tip-1": "Submenus podem ser usados para agrupar itens.",
             "tip-2": "Você também pode aninhar submenus dentro de submenus.",
             "tip-3": "Submenus podem ser usados para criar estruturas de menu complexas.",
@@ -163,12 +155,13 @@
             "tip-4": "Use {{app_name}} para inserir o nome do aplicativo que estava focado quando abriu o menu.",
             "tip-5": "Use {{window_name}} para inserir o nome da janela que estava focada quando abriu o menu.",
             "tip-6": "Use {{pointer_x}} e {{pointer_y}} para inserir a posição do ponteiro onde o menu foi aberto.",
-            "uri": "URI",
             "placeholder": "Insira alguma URL…"
         },
         "common": {
             "delayed-option": "Esperar pela animação de fade-out",
-            "delayed-option-info": "Útil se o alvo da ação é uma janela que precisa estar focada."
+            "delayed-option-info": "Útil se o alvo da ação é uma janela que precisa estar focada.",
+            "inhibit-shortcuts-info": "Disables all Kando shortcuts while the hotkey or macro is being simulated. This prevents the simulated input from accidentally triggering other menu shortcuts.",
+            "inhibit-shortcuts": "Disable shortcuts"
         }
     },
     "settings": {
@@ -194,7 +187,6 @@
         "centered-mode-info": "Abra o menu no centro da tela em vez de onde o cursor está.",
         "general-settings-dialog": {
             "reload-menu-theme": "Recarregar Tema Atual do Menu",
-            "reload-menu-theme-tooltip": "As alterações CSS serão aplicadas imediatamente. Para alterações feitas no arquivo theme.json, você precisa reabrir o menu.",
             "reload-sound-theme": "Recarregar tema de som atual",
             "reload-note": "Quando você recarregar o tema do menu, mudanças no CSS serão aplicadas mesmo se um menu está sendo exibido. Para mudanças feitas no arquivo theme.json, você precisa reabrir o menu.",
             "dev-tools-note": "Kando utiliza duas janelas: Uma para o menu e outra para as configurações. Você pode abrir as ferramentas de desenvolvedor para inspecionar ambas as janelas separadamente.",
@@ -237,7 +229,6 @@
             "title": "Configurações Gerais",
             "none": "Nenhum",
             "check-for-new-versions": "Verificar novas versões",
-            "app-behavior": "Comportamento do aplicativo",
             "check-for-new-versions-info": "Se ativado, o Kando mostrará uma notificação quando uma nova versão estiver disponível.",
             "invisible-settings-button": "Botão de configurações invisível",
             "top-left": "Superior esquerdo",
@@ -274,7 +265,6 @@
             "gesture-jitter-threshold-info": "Pequenos movimentos não serão considerados na detecção de gestos. Padrão é 10px.",
             "developer-options": "Opções de desenvolvedor",
             "auto-language": "Usar linguagem do sistema",
-            "app-settings": "Configurações do aplicativo",
             "localization-label": "Linguagem",
             "localization-info": "Reinicie o Kando para aplicar o novo idioma.",
             "hardware-acceleration": "Habilitar aceleração de hardware",
@@ -286,7 +276,30 @@
             "do-nothing": "Não faça nada",
             "cycle-from-first": "Mostrar próximo menu (começar do início)",
             "cycle-from-recent": "Mostrar próximo menu (continuar do último)",
-            "close-menu": "Fechar menu"
+            "close-menu": "Fechar menu",
+            "restore-settings": "Restore config.json…",
+            "backup-settings": "Backup config.json…",
+            "restore-menus": "Restore menus.json…",
+            "enable-achievements-info": "If enabled, Kando will track your progress towards achievements.",
+            "enable-achievements": "Track achievements",
+            "enable-achievement-notifications-info": "If enabled, notifications are shown when achievements are unlocked.",
+            "enable-achievement-notifications": "Show achievement notifications",
+            "windows-ink-workaround-info": "This enables a workaround for the issue where getting the stylus position is not possible with Windows Ink enabled. This introduces a delay of 100ms before opening the menu, so if you don't use a stylus, you can disable it to make the menu open faster.",
+            "windows-ink-workaround": "Windows-Ink workaround",
+            "backup-menus": "Backup menus.json…",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "max-selection-radius": "Maximum selection radius",
+            "wlroots-specific-options": "Options for wlroots-based Backends",
+            "options-that-will-only-affect-the-wlroots-backend": "These options only affect wlroots-based backends and have no effect on other backends.",
+            "wlroots-pointer-get-timeout-mouse-info": "The maximum time in milliseconds to wait for a mouse pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 500ms.",
+            "wlroots-pointer-get-timeout-mouse": "Get-pointer-position timeout",
+            "wlroots-pointer-get-timeout-touch-info": "The maximum time in milliseconds to wait for a touch pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 1500ms.",
+            "wlroots-pointer-get-timeout-touch": "Get-touch-position timeout",
+            "wlroots-pointer-get-timeout-default-behavior-info": "Determines where the pointer should be assumed to be if no position could be obtained from the wlroots-based backends within the configured timeout.",
+            "wlroots-pointer-get-timeout-default-behavior": "Pointer fallback position",
+            "center": "Center",
+            "previously-reported": "Previously reported",
+            "backup-and-restore": "Backup and Restore"
         },
         "hover-mode-info": "Para usuários avançados apenas! Selecione itens flutuando sobre eles.",
         "icon-picker-dialog": {
@@ -335,10 +348,8 @@
         "menu-themes-dialog": {
             "author": "por {{author}}",
             "light-dark-mode-info": "Se ativado, você pode escolher um tema e cor diferente dependendo se o seu sistema estiver no modo de cor clara ou escura.",
-            "reset-color-picker": "Resetar todas as cores aos seus padrões",
             "title": "Temas de Menu",
             "light": "Modo Claro",
-            "accent-colors-info": "Cada tema pode ter diferentes cores de destaque.",
             "light-dark-mode": "Ativar modo escuro/claro",
             "accent-colors": "Cores de destaque",
             "dark": "Modo Escuro",
@@ -351,7 +362,20 @@
             "fade-in-time-info": "O tempo que leva para que o menu apareça. Padrão é 150ms.",
             "fade-out-time": "Tempo de Fade-out",
             "no-accent-colors": "Esse tema não suporta cores de destaque.",
-            "fade-in-time": "Tempo de Fade-in"
+            "fade-in-time": "Tempo de Fade-in",
+            "save-preset-error-title": "Failed to save preset",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "default-colors": "Default colors",
+            "choose-preset": "Choose preset…",
+            "reload-presets": "Reload presets",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory",
+            "selection-wedges-info": "If enabled and supported by the selected theme, the selectable area of menu items will be highlighted.",
+            "selection-wedges": "Draw item wedges",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "preset-name-placeholder": "e.g. My Custom Colors"
         },
         "not-bound": "Não Atribuído",
         "shortcut-id-label": "ID de Atalho de Teclado",
@@ -364,7 +388,6 @@
         "delete-menu-item": "Excluir item do menu",
         "window-condition-info": "Exibir o menu apenas se o título da janela em foco contém o texto especificado. Suporta expressões regulares como /youtube|vimeo/i.",
         "screen-area-picker": {
-            "title": "Escolher uma área da tela",
             "valid": "Ótimo! Você selecionou uma área válida.",
             "top-left": "Arraste isto até o canto superior esquerdo de sua área.",
             "bottom-right-value": "Direita: {{x}}, Inferior: {{y}}",
@@ -387,11 +410,9 @@
         "area-condition-tooltip": "Selecionar uma área da tela",
         "delete-menu": "Excluir menu",
         "window-picker-dialog": {
-            "pick-window-title-title": "Selecionar um título de janela",
             "confirm": "Usar este valor",
             "instructions": "Clique no botão abaixo e foque na janela alvo dentro dos próximos cinco segundos.",
             "restart-countdown": "Reiniciar contador",
-            "pick-app-name-title": "Selecionar um nome de aplicação",
             "start-countdown": "Iniciar contador",
             "countdown_one": "Selecionando em {{count}} segundo…",
             "countdown_many": "Selecionando em {{count}} segundos…",
@@ -430,7 +451,123 @@
             "no-in-progress-achievements": "Parabéns! Você completou todas as conquistas.",
             "no-completed-achievements": "Você ainda não completou nenhuma conquista.",
             "in-progress-button": "Em Progresso",
-            "completed-button": "Completas"
+            "completed-button": "Completas",
+            "reset-button": "Reset Progress",
+            "reset-confirmation-title": "Do you really want to reset all progress?",
+            "reset-button-tooltip": "Reset all achievements and level progress"
+        },
+        "restore-backup": "Restore Backup…",
+        "restore-general-settings-warning-title": "Do you really want to restore the general settings?",
+        "restore-general-settings-warning-message": "This will overwrite your current application settings with the contents of the selected backup file! Your menus and menu collections will not be affected.",
+        "restore-general-settings-error-title": "Failed to load general settings backup!",
+        "restore-general-settings-success-title": "Success!",
+        "restore-general-settings-success-message": "Your general settings have been restored from the backup file.",
+        "restore-menu-settings-warning-title": "Do you really want to restore the menu settings?",
+        "restore-menu-settings-warning-message": "This will overwrite your current menus and menu collections with the contents of the selected backup file!",
+        "restore-menu-settings-error-title": "Failed to load menus backup!",
+        "restore-menu-settings-success-title": "Success!",
+        "restore-menu-settings-success-message": "Your menus and menu collections have been restored from the backup file.",
+        "export-menu-error-title": "Failed to export menu",
+        "import-menu-error-title": "Failed to import menu",
+        "import-menu-error-message": "The selected file could not be imported. It does not contain a valid Kando exported menu.",
+        "import-menu": "Import menu",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "quick-select-key-recording": "Select key…"
+    },
+    "achievements": {
+        "click-selector": {
+            "description": "Select {{n}} items using mouse clicks.",
+            "name": "{{attribute}} Click-Click Champion"
+        },
+        "keyboard-selector": {
+            "name": "{{attribute}} Hotkey Hero",
+            "description": "Select {{n}} items using your keyboard."
+        },
+        "gamepad-selector": {
+            "name": "{{attribute}} Gamepad Warrior",
+            "description": "Select {{n}} items using a gamepad."
+        },
+        "gesture-selector": {
+            "name": "{{attribute}} Power Ninja",
+            "description": "Select {{n}} items using turbo or marking mode."
+        },
+        "settings-opened": {
+            "name": "The Journey is the Reward {{tier}}",
+            "description": "Open the settings dialog {{n}} times."
+        },
+        "backup": {
+            "name": "Path of Foresight {{tier}}",
+            "description": "Backup your menus or settings {{n}} times."
+        },
+        "restore": {
+            "name": "Second Chance {{tier}}",
+            "description": "Restore a backup {{n}} times."
+        },
+        "added-items": {
+            "name": "Way of Kando {{tier}}",
+            "description": "Create {{n}} items in the menu editor."
+        },
+        "deleted-all-menus": {
+            "name": "Clear the Dojo",
+            "description": "Delete all of your menus."
+        },
+        "full-menu": {
+            "name": "Breadth over Depth",
+            "description": "Create a menu with more than twelve items."
+        },
+        "deep-menu": {
+            "name": "Master of Depth",
+            "description": "Add a menu item to a four-level deep submenu."
+        },
+        "sponsors-viewed": {
+            "name": "Guardian of Kando",
+            "description": "Consider becoming a sponsor of Kando."
+        },
+        "menu-themes-selected": {
+            "name": "Way of the Aesthete",
+            "description": "Switch the menu theme {{n}} times."
+        },
+        "tutorial-viewed": {
+            "name": "The Journey Begins",
+            "description": "Complete the Kando introduction tutorial."
+        },
+        "many-selections-streak": {
+            "name": "Hands of Lightning {{tier}}",
+            "description": "Select {{n}} items within {{time}} s."
+        },
+        "speedy-selections-streak": {
+            "name": "Faster than Thought {{tier}}",
+            "description": "Make {{n}} consecutive selections on average faster than {{time}} ms."
+        },
+        "completed-title": "Achievement unlocked!",
+        "attributes": {
+            "novice": "Novice",
+            "capable": "Capable",
+            "skilled": "Skilled",
+            "expert": "Expert",
+            "master": "Sensei"
+        },
+        "tier": {
+            "I": "I",
+            "II": "II",
+            "III": "III",
+            "IV": "IV",
+            "V": "V"
+        },
+        "cancelor": {
+            "name": "Road of Emptiness {{tier}}",
+            "description": "Abort a selection {{n}} times."
+        },
+        "selector": {
+            "name": "{{attribute}} Samurai",
+            "description": "Select {{n}} items."
+        },
+        "depth-selector": {
+            "name1": "{{attribute}} Slicer",
+            "name2": "{{attribute}} Two-Layer Slicer",
+            "name3": "{{attribute}} Deep Slicer",
+            "description": "Select {{n}} items at depth {{depth}} in less than {{time}} ms."
         }
     }
 }

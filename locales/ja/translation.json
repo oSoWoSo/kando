@@ -18,7 +18,6 @@
             "none": "なし",
             "title": "一般設定",
             "message": "メニューとKandoの設定はすべて、編集、共有、バックアップが可能な2つのJSONファイルに保存されています。ファイルが保存されているディレクトリを開くには、[こちら]({{link}})をクリックしてください。",
-            "app-settings": "アプリケーションの設定",
             "localization-label": "言語",
             "localization-info": "言語を適用するには Kando を再起動してください。",
             "check-for-new-versions": "新しいバージョンを確認",
@@ -52,7 +51,6 @@
             "enable-gamepad-support": "ゲームパッドのサポートを有効化",
             "enable-gamepad-support-info": "チェックすると接続されたゲームパッドでメニューをコントロールできます。",
             "do-nothing": "何もしない",
-            "cycle-menus": "一致するメニューを循環する",
             "close-menu": "メニューを閉じる",
             "learn-how-to-add-sound-themes": "[こちら]({{link}})から Kando に新しいサウンドテーマを追加する方法を学ぶことができます！",
             "volume": "音量",
@@ -100,16 +98,30 @@
             "restore-settings": "config.json の復元…",
             "enable-achievements-info": "有効にすると、Kandoは実績解除に向けたあなたの進捗状況を記録します。",
             "enable-achievements": "実績を記録",
-            "minimum-gesture-angle-info": "直線的な動きからのわずかなずれでは、選択はトリガーされません。既定は 20° です。"
+            "minimum-gesture-angle-info": "直線的な動きからのわずかなずれでは、選択はトリガーされません。既定は 20° です。",
+            "wlroots-specific-options": "Options for wlroots-based Backends",
+            "options-that-will-only-affect-the-wlroots-backend": "These options only affect wlroots-based backends and have no effect on other backends.",
+            "enable-achievement-notifications-info": "If enabled, notifications are shown when achievements are unlocked.",
+            "enable-achievement-notifications": "Show achievement notifications",
+            "windows-ink-workaround-info": "This enables a workaround for the issue where getting the stylus position is not possible with Windows Ink enabled. This introduces a delay of 100ms before opening the menu, so if you don't use a stylus, you can disable it to make the menu open faster.",
+            "windows-ink-workaround": "Windows-Ink workaround",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "max-selection-radius": "Maximum selection radius",
+            "wlroots-pointer-get-timeout-mouse-info": "The maximum time in milliseconds to wait for a mouse pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 500ms.",
+            "wlroots-pointer-get-timeout-mouse": "Get-pointer-position timeout",
+            "wlroots-pointer-get-timeout-touch-info": "The maximum time in milliseconds to wait for a touch pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 1500ms.",
+            "wlroots-pointer-get-timeout-touch": "Get-touch-position timeout",
+            "wlroots-pointer-get-timeout-default-behavior-info": "Determines where the pointer should be assumed to be if no position could be obtained from the wlroots-based backends within the configured timeout.",
+            "wlroots-pointer-get-timeout-default-behavior": "Pointer fallback position",
+            "center": "Center",
+            "previously-reported": "Previously reported"
         },
         "menu-themes-dialog": {
             "accent-colors": "アクセントカラー",
             "title": "メニューテーマ",
-            "accent-colors-info": "各テーマで異なるアクセントカラーが設定できます。",
             "menu-scale": "メニューの大きさ",
             "dark": "ダークモード",
             "light": "ライトモード",
-            "reset-color-picker": "既定値にリセット",
             "no-accent-colors": "このテーマはアクセントカラーをサポートしていません。",
             "fade-in-time": "フェードインの時間",
             "get-themes-online": "オンラインでテーマを入手",
@@ -123,12 +135,21 @@
             "menu-scale-info": "メニューのサイズを拡大・縮小するために使用します。既定は1.0です。",
             "selection-wedges-info": "有効かつ選択されたテーマでサポートされている場合、メニュー項目の選択可能領域がハイライト表示されます。",
             "selection-wedges": "項目の範囲を描画する",
-            "light-dark-mode-info": "有効にすると、システムがライトモードかダークモードかによって、異なるテーマや配色を選択できます。"
+            "light-dark-mode-info": "有効にすると、システムがライトモードかダークモードかによって、異なるテーマや配色を選択できます。",
+            "save-preset-error-title": "Failed to save preset",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "default-colors": "Default colors",
+            "choose-preset": "Choose preset…",
+            "reload-presets": "Reload presets",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "preset-name-placeholder": "e.g. My Custom Colors"
         },
         "window-picker-dialog": {
             "confirm": "この値を使用",
-            "pick-app-name-title": "アプリ名を選択",
-            "pick-window-title-title": "ウィンドウタイトルを選択",
             "start-countdown": "開始のカウントダウン",
             "result": "\"{{name}}\" を選択しました。",
             "instructions": "下のボタンを押して、5秒以内にターゲットウィンドウにフォーカスしてください。",
@@ -278,7 +299,14 @@
             "completed-button": "獲得済み",
             "reset-button-tooltip": "全ての実績とレベル進行状況をリセットする",
             "title": "実績"
-        }
+        },
+        "export-menu-error-title": "Failed to export menu",
+        "import-menu-error-title": "Failed to import menu",
+        "import-menu-error-message": "The selected file could not be imported. It does not contain a valid Kando exported menu.",
+        "import-menu": "Import menu",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "quick-select-key-recording": "Select key…"
     },
     "menu-items": {
         "command": {
@@ -360,7 +388,9 @@
         },
         "common": {
             "delayed-option": "フェードアウトアニメーションが終わるまで待機",
-            "delayed-option-info": "そのアクションが、フォーカスを必要とするウィンドウを対象としている場合に便利です。"
+            "delayed-option-info": "そのアクションが、フォーカスを必要とするウィンドウを対象としている場合に便利です。",
+            "inhibit-shortcuts-info": "Disables all Kando shortcuts while the hotkey or macro is being simulated. This prevents the simulated input from accidentally triggering other menu shortcuts.",
+            "inhibit-shortcuts": "Disable shortcuts"
         }
     },
     "main": {
@@ -412,11 +442,21 @@
         "windows": {
             "submenu": "ウィンドウ",
             "toggle-maximize": "最大化/元に戻す",
-            "close-window": "ウィンドウを閉じる"
+            "close-window": "ウィンドウを閉じる",
+            "mission-control": "Mission Control",
+            "tile-right": "Tile Right",
+            "tile-left": "Tile Left"
         },
         "previous-workspace": "前のワークスペース",
         "bookmarks": {
-            "submenu": "ブックマーク"
+            "submenu": "ブックマーク",
+            "downloads": "Downloads",
+            "videos": "Videos",
+            "pictures": "Pictures",
+            "documents": "Documents",
+            "desktop": "Desktop",
+            "home": "Home",
+            "music": "Music"
         }
     },
     "achievements": {
@@ -513,5 +553,19 @@
             "description": "平均して{{n}}回連続で{{time}}ミリ秒未満で選択する。"
         },
         "completed-title": "実績解除！"
+    },
+    "backends": {
+        "gnome": {
+            "error": "Could not connect to Kando Integration GNOME Shell extension. You can get it from here: {{link}}"
+        },
+        "hyprland": {
+            "shortcut-info": "Kando cannot directly bind global shortcuts on Hyprland. Instead, specify a shortcut ID here and bind a shortcut in your hyprland.conf with something like \"bind = CTRL, Space, global, kando:example-menu\". Replace example-menu with the ID chosen here."
+        },
+        "kde-wayland": {
+            "shortcut-info": "Kando cannot directly bind global shortcuts on KDE/Wayland. Instead, specify a shortcut ID here and then search for it in the KWin section of the global shortcuts in your KDE's system settings. There you can assign the shortcut which will open this menu."
+        },
+        "niri": {
+            "shortcut-info": "Niri does not yet support global shortcuts. But you can open this menu using 'kando --menu \"Menu Name\"' from the command line or from your niri config."
+        }
     }
 }

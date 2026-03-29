@@ -70,7 +70,6 @@
         }
     },
     "main": {
-        "failed-to-start-header": "Le lancement de Kando a échoué",
         "inhibit-shortcuts": "Désactiver temporairement tous les raccourcis clavier",
         "new-version-notification-header": "Une nouvelle version de Kando est disponible !",
         "quit": "Quitter",
@@ -78,13 +77,10 @@
         "un-inhibit-shortcuts": "Réactiver les raccourcis clavier",
         "invalid-link-message": "Le deep link n'a pas pu être analysé.",
         "new-version-notification-body": "Obtenez-la depuis {{link}}.",
-        "invalid-link-header": "Lien invalide",
-        "no-backend-found": "Aucun backend approprié n'a été trouvé."
+        "invalid-link-header": "Lien invalide"
     },
     "menu-items": {
         "command": {
-            "command": "Commande",
-            "command-info": "Cette commande sera exécutée.",
             "description": "Lancer une application ou un scripte.",
             "name": "Exécuter une Commande",
             "tip-1": "Tu peux utiliser l'élément Commande pour lancer des applications ou des scripts.",
@@ -102,7 +98,6 @@
         },
         "file": {
             "description": "Ouvre un fichier ou dossier.",
-            "file": "Chemin d'accès au fichier",
             "name": "Ouvrir un fichier",
             "tip-1": "Utilisez ce type d'élément pour ouvrir des fichiers ou dossiers.",
             "placeholder": "Choisir un fichier ou un dossier…"
@@ -136,9 +131,6 @@
         },
         "submenu": {
             "description": "Contient d'autres éléments de menu.",
-            "detailed-description_one": "",
-            "detailed-description_many": "Contient {{count}} éléments.",
-            "detailed-description_other": "",
             "name": "Sous-Menu",
             "tip-1": "Les sous-menus sont utilisés pour regrouper des éléments.",
             "tip-2": "Vous pouvez aussi placer des sous-menus à l'intérieur de sous-menus.",
@@ -163,7 +155,6 @@
             "tip-4": "Utilisez {{app_name}} pour insérer le nom de l'application qui était active lorsque vous avez ouvert le menu.",
             "tip-5": "Utilisez {{window_name}} pour insérer le nom de la fenêtre qui était active lorsque vous avez ouvert le menu.",
             "tip-6": "Utilisez {{pointer_x}} et {{pointer_y}} pour insérer la position du curseur à l'endroit où le menu a été ouvert.",
-            "uri": "URI",
             "placeholder": "Insérez un URI…"
         },
         "common": {
@@ -196,7 +187,6 @@
         "centered-mode-info": "Ouvrir le menu au centre de l'écran au lieu du curseur.",
         "general-settings-dialog": {
             "reload-menu-theme": "Recharger le Thème de Menu",
-            "reload-menu-theme-tooltip": "Les changements CSS seront appliqués immédiatement, pour les changements effectués au fichier theme.json, vous devez rouvrir le menu.",
             "reload-sound-theme": "Recharger le Thème Sonore",
             "menu-window-dev-tools": "Inspecter le menu",
             "settings-window-dev-tools": "Inspecter la fenêtre des paramètres",
@@ -228,7 +218,6 @@
             "none": "Aucun",
             "title": "Paramètres Globaux",
             "message": "Tous les menus et les paramètres de Kando sont stockés dans deux fichiers JSON que vous pouvez également éditer, partager ou sauvegarder. Cliquez sur [ici]({{link}}) pour ouvrir le répertoire où les fichiers sont stocké.",
-            "app-behavior": "Comportement de l'application",
             "check-for-new-versions": "Vérifier si de nouvelles versions de l'application sont disponibles",
             "invisible-settings-button-info": "Vous pouvez toujours utiliser le bouton, il apparaîtra lorsque vous passerez la souris dessus.",
             "settings-button-position-info": "Choisissez le coin de l'écran où le bouton des paramètres sera affiché.",
@@ -277,13 +266,11 @@
             "fixed-stroke-length": "Longueur de mouvement fixe",
             "press-again-behavior": "Quoi faire lors de la répétition du raccourci",
             "do-nothing": "Ne rien faire",
-            "cycle-menus": "Alterner entre les menus correspondants",
             "close-menu": "Fermer le menu",
             "press-again-behavior-info": "Cette fonction détermine ce qui se passe lorsque l'on appuie à nouveau sur le raccourci alors qu'un menu est affiché. Si plusieurs menus sont attribués au même raccourci, vous pouvez utiliser cette touche pour alterner entre tous les menus correspondants. Veillez à ne maintenir enfoncée que les touches modifiantes tels que Ctrl, Alt ou Maj si vous souhaitez utiliser le mode Turbo avec une option autre que \"Ne rien faire\".",
             "localization-label": "Langue",
             "localization-info": "Redémarrez Kando pour appliquer la modification.",
             "auto-language": "Utiliser la langue du système",
-            "app-settings": "Paramètres de l'application",
             "cycle-from-first": "Afficher le menu suivant",
             "cycle-from-recent": "Afficher le menu suivant (se souvenir de l'ordre)",
             "keep-input-focus-info": "Si cette option est activée, le menu ne recevra pas le focus de la saisie clavier lorsqu'il sera ouvert. Cette option désactive le mode Turbo, mais peut s'avérer utile si vous souhaitez que d'autres applications restent focalisées lorsque le menu est ouvert.",
@@ -362,17 +349,14 @@
         "menu-themes-dialog": {
             "author": "par {{author}}",
             "light-dark-mode-info": "Si cette option est activée, vous pouvez choisir un thème et un jeu de couleurs différents en fonction de si votre système est mode clair ou sombre.",
-            "reset-color-picker": "Réinitialiser toutes les couleurs à leurs valeurs par défaut",
             "title": "Thèmes de Menu",
             "light-dark-mode": "Activer le mode clair/sombre",
             "create-your-own-themes": "Créez vos propres thèmes",
             "open-theme-directory": "Ouvrir le répertoire des thèmes",
             "accent-colors": "Couleurs d'Accentuation",
             "light": "Mode Clair",
-            "accent-colors-info": "Chaque thèmes peuvent avoir leur propre ensemble de couleurs d'accentuation.",
             "dark": "Mode Sombre",
             "fade-out-time": "Temps de fondu sortant",
-            "theme-colors": "Thème couleurs",
             "fade-in-time": "Temps de fondu entrant",
             "no-accent-colors": "Ce thème ne prend pas en charge les couleurs d'accentuation.",
             "menu-scale": "Mise à l'échelle",
@@ -407,7 +391,6 @@
         "screen-area-picker": {
             "top-left-value": "Gauche : {{x}}, Haut : {{y}}",
             "bottom-right": "Glissez ceci au coin inférieur droit de votre zone.",
-            "title": "Définir une zone d'écran",
             "valid": "Superbe ! Vous avez sélectionné une zone valide.",
             "bottom-right-value": "Droite : {{x}}, Bas : {{y}}",
             "top-left": "Glissez ceci au coin supérieur gauche de votre zone.",
@@ -418,11 +401,9 @@
             "restart-countdown": "Redémarrer le compte à rebours",
             "result": "Vous avez sélectionné \"{{name}}\".",
             "instructions": "Appuyez sur le bouton ci-dessous et sélectionnez la fenêtre-cible dans les cinq prochaines secondes.",
-            "pick-app-name-title": "Sélectionnez un Nom d'Application",
             "countdown_one": "Sélection dans {{count}} seconde…",
             "countdown_many": "Sélection dans {{count}} secondes…",
             "countdown_other": "Sélection dans {{count}} secondes…",
-            "pick-window-title-title": "Sélectionner un Titre de Fenêtre",
             "start-countdown": "Démarrer le compte à rebours",
             "confirm": "Utiliser cette valeur"
         },
@@ -463,7 +444,6 @@
             "search-placeholder": "Rechercher une application…",
             "use-selected": "Sélectionner"
         },
-        "backup-general-settings-title": "Sauvgarder les Paramètres Globaux…",
         "restore-backup": "Restorer une sauvegarde…",
         "restore-general-settings-warning-title": "Souhaitez vous vraiment restorer les paramètres globaux ?",
         "restore-general-settings-warning-message": "Cette action écrasera les paramètres actuels de l'application par le contenu du fichier sélectionné ! Vos menus et collections ne seront pas affectés.",
@@ -490,8 +470,10 @@
         "export-menu-error-title": "Échec de l'exportation du menu",
         "import-menu-error-title": "Échec de l'importation du menu",
         "import-menu-error-message": "Le fichier sélectionné n'a pas pu être importé. Il ne contient pas de menu Kando valide.",
-        "export-menu": "Exporter le menu",
-        "import-menu": "Importer le menu"
+        "import-menu": "Importer le menu",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "quick-select-key-recording": "Select key…"
     },
     "achievements": {
         "attributes": {

@@ -70,7 +70,6 @@
         }
     },
     "main": {
-        "failed-to-start-header": "Kando se nepodařilo spustit",
         "inhibit-shortcuts": "Dočasně zakázat všechny zkratky",
         "new-version-notification-header": "Je dostupná nová verze Kando!",
         "quit": "Ukončit",
@@ -78,13 +77,10 @@
         "un-inhibit-shortcuts": "Znovu povolit zkratky",
         "new-version-notification-body": "Získejte z {{link}}.",
         "invalid-link-header": "Neplatný odkaz",
-        "invalid-link-message": "Hluboký odkaz nemohl být analyzován.",
-        "no-backend-found": "Nebyl nalezen žádný vhodný backend."
+        "invalid-link-message": "Hluboký odkaz nemohl být analyzován."
     },
     "menu-items": {
         "command": {
-            "command": "Příkaz",
-            "command-info": "Tento příkaz bude vykonán.",
             "description": "Spustit apku nebo skript.",
             "name": "Spustit příkaz",
             "tip-1": "Příkazy můžete použít ke spouštění aplikací nebo skriptů.",
@@ -102,7 +98,6 @@
         },
         "file": {
             "description": "Otevře soubor nebo složku.",
-            "file": "Cesta k souboru",
             "name": "Otevřít soubor",
             "tip-1": "Tento typ položky můžete použít k otevírání souborů nebo složek.",
             "placeholder": "Vyberte soubor nebo složku…"
@@ -136,9 +131,6 @@
         },
         "submenu": {
             "description": "Obsahuje další položky menu.",
-            "detailed-description_one": "",
-            "detailed-description_few": "Obsahuje {{count}} položek menu.",
-            "detailed-description_other": "",
             "name": "Podmenu",
             "tip-1": "Podmenu můžete použít ke skupinování položek.",
             "tip-2": "Můžete také vnořit podmenu do jiného podmenu.",
@@ -163,7 +155,6 @@
             "tip-4": "Použijte {{app_name}} k vložení názvu aplikace, která byla aktivní při otevření menu.",
             "tip-5": "Použijte {{window_name}} k vložení názvu okna, které bylo aktivní při otevření menu.",
             "tip-6": "Použijte {{pointer_x}} a {{pointer_y}} k vložení polohy kurzoru při otevření menu.",
-            "uri": "URI",
             "placeholder": "Vložte libovolné URI…"
         },
         "common": {
@@ -196,7 +187,6 @@
         "centered-mode-info": "Otevře menu uprostřed obrazovky místo u kurzoru.",
         "general-settings-dialog": {
             "reload-menu-theme": "Znovu načíst téma menu",
-            "reload-menu-theme-tooltip": "Změny v CSS se použijí okamžitě, ale pro změny v souboru theme.json je nutné menu znovu otevřít.",
             "reload-sound-theme": "Znovu načíst zvukové téma",
             "none": "Nic",
             "title": "Obecná nastavení",
@@ -246,7 +236,6 @@
             "developer-options": "Vývojářské Možnosti",
             "settings-window-dev-tools": "Nastavení Inspekce",
             "message": "Všechna vaše menu a Kando nastavení jsou uloženy ve dvou souborech JSON, které můžete také upravit, sdílet nebo zálohovat. Kliknutím na tlačítko [zde]({{link}}) otevřete adresář, kde jsou soubory uloženy.",
-            "app-behavior": "Chování Apky",
             "check-for-new-versions": "Kontrolovat nové verze",
             "check-for-new-versions-info": "Pokud je povoleno, Kando zobrazí upozornění pokud je k dispozici nová verze.",
             "invisible-settings-button-info": "Stále můžete tlačítko použít, objeví se, když přes něj přejedete myší.",
@@ -276,7 +265,6 @@
             "fixed-stroke-length-info": "Obvykle jsou položky vybrány, když zastavíte nebo provedete obrat. Pokud nastavíte hodnotu vyšší než 0, toto chování se změní: Nyní budou položky vybrány pouze v případě, že je přetáhnete pryč tak daleko z centra. Výchozí je 0px.",
             "fixed-stroke-length": "Upravená Délka Potahu",
             "auto-language": "Použít jazyk systému",
-            "app-settings": "Nastavení Aplikace",
             "localization-label": "Jazyk",
             "keep-input-focus": "Udržet zaměření aktivní aplikace",
             "keep-input-focus-info": "Pokud povoleno, menu nepřevezme zaměření klávesnice při otevření. To deaktivuje Turbo mód, ale může být užitečné, pokud potřebujete, aby ostatní aplikace zůstaly zaměřeny, zatímco menu je otevřeno.",
@@ -309,7 +297,9 @@
             "previously-reported": "Dříve nahlášeno",
             "windows-ink-workaround": "Obejít Windows-Ink",
             "wlroots-pointer-get-timeout-mouse-info": "Maximální čas čekání na pozici myši na wlroots backendu v milisekundách. Pokud bude dosaženo limitu, bude použit záchytný bod. Výchozí je 500ms.",
-            "wlroots-pointer-get-timeout-touch-info": "Maximální čas čekání na pozici doteku na wlroots backendu v milisekundách. Pokud bude dosaženo limitu, bude použita záchytná pozice. Výchozí je 500ms."
+            "wlroots-pointer-get-timeout-touch-info": "Maximální čas čekání na pozici doteku na wlroots backendu v milisekundách. Pokud bude dosaženo limitu, bude použita záchytná pozice. Výchozí je 500ms.",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "max-selection-radius": "Maximum selection radius"
         },
         "hover-mode": "Hover Mód",
         "hover-mode-info": "Pouze pro pokročilé uživatele! Položky vyberete najetím kurzoru.",
@@ -359,13 +349,10 @@
         "menu-themes-dialog": {
             "author": "od {{author}}",
             "light-dark-mode-info": "Pokud je povoleno, můžete zvolit různé motivy a zabarvení pokud je váš systém ve světlém či tmavém módu.",
-            "reset-color-picker": "Obnovit všechny barvy na výchozí hodnoty",
             "title": "Témata menu",
             "get-themes-online": "Získejte témata online",
             "light": "Světlý mód",
             "dark": "Tmavý Mód",
-            "accent-colors-info": "Každý motiv může mít jinou sadu zabarvení.",
-            "theme-colors": "Barvy Motivu",
             "fade-out-time-info": "Čas vyblednutí menu. Výchozí je 200ms.",
             "menu-scale": "Zvětšení menu",
             "accent-colors": "Zbarvení",
@@ -378,7 +365,18 @@
             "open-theme-directory": "Otevřít adresář motivů",
             "no-accent-colors": "Toto téma nepodporuje zabarvení.",
             "selection-wedges-info": "Pokud povoleno a podporováno vybraným tématem, vybraná oblast menu bude zvýrazněna.",
-            "selection-wedges": "Nakreslete klín položky"
+            "selection-wedges": "Nakreslete klín položky",
+            "save-preset-error-title": "Failed to save preset",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "default-colors": "Default colors",
+            "choose-preset": "Choose preset…",
+            "reload-presets": "Reload presets",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "preset-name-placeholder": "e.g. My Custom Colors"
         },
         "not-bound": "Nepřiřazeno",
         "shortcut-id-label": "Zkratka ID",
@@ -395,9 +393,7 @@
             "restart-countdown": "Začít odpočet znovu",
             "start-countdown": "Začít odpočet",
             "instructions": "Stiskněte tlačítko níže a zaměřte cílové okno do dalších pěti sekund.",
-            "pick-app-name-title": "Vybrat Jméno Aplikace",
-            "confirm": "Použít tuto hodnotu",
-            "pick-window-title-title": "Vybrat Název Okna"
+            "confirm": "Použít tuto hodnotu"
         },
         "file-picker": {
             "select-file": "Vyberte soubor",
@@ -415,7 +411,6 @@
             "confirm": "Použít tuto oblast",
             "bottom-right-value": "Vpravo: {{x}}, Dole: {{y}}",
             "top-left-value": "Vlevo: {{x}}, Nahoře: {{y}}",
-            "title": "Vyberte oblast obrazovky",
             "invalid": "Ujistěte se, že horní levý roh je nad a vlevo od dolního pravého rohu.",
             "bottom-right": "Přetáhněte do pravého dolního rohu vašeho prostoru."
         },
@@ -475,8 +470,10 @@
         "export-menu-error-title": "Export menu selhal",
         "import-menu-error-title": "Import menu selhal",
         "import-menu-error-message": "Zvolený soubor nelze importovat. Neobsahuje platné Kando menu.",
-        "export-menu": "Export menu",
-        "import-menu": "Import menu"
+        "import-menu": "Import menu",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "quick-select-key-recording": "Select key…"
     },
     "achievements": {
         "attributes": {

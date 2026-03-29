@@ -79,7 +79,76 @@
             "backup-settings": "Ḥrez config.json…",
             "restore-menus": "Err-d menus.json…",
             "restore-settings": "Err-d config.json…",
-            "developer-options": "Tinefrunin n uneflay"
+            "developer-options": "Tinefrunin n uneflay",
+            "reload-note": "When you reload the menu theme, CSS changes will be applied even if a menu is currently shown. For changes made to the theme.json file, you need to re-open the menu.",
+            "none": "None",
+            "auto-language": "Use system language",
+            "title": "General Settings",
+            "localization-info": "Restart Kando to apply the new language.",
+            "hardware-acceleration-info": "This option can boost the performance of the app, but can also lead to some rendering artifacts. You have to restart Kando to apply this setting.",
+            "lazy-initialization-info": "If enabled, the menu window will only be created when the menu is opened for the first time. This will make the first opening of the menu a bit slower, but it may prevent issues when Kando is started too soon during login. Default is disabled.",
+            "lazy-initialization": "Lazy initialization",
+            "enable-achievements-info": "If enabled, Kando will track your progress towards achievements.",
+            "enable-achievements": "Track achievements",
+            "enable-achievement-notifications-info": "If enabled, notifications are shown when achievements are unlocked.",
+            "enable-achievement-notifications": "Show achievement notifications",
+            "menu-behavior": "Menu Behavior",
+            "windows-ink-workaround-info": "This enables a workaround for the issue where getting the stylus position is not possible with Windows Ink enabled. This introduces a delay of 100ms before opening the menu, so if you don't use a stylus, you can disable it to make the menu open faster.",
+            "windows-ink-workaround": "Windows-Ink workaround",
+            "keep-input-focus-info": "If enabled, the menu will not receive keyboard input focus when opened. This disables Turbo Mode, but it may be useful if you require that other applications remain focused while the menu is open.",
+            "keep-input-focus": "Keep active application focused",
+            "enable-marking-mode-info": "With Marking Mode enabled, you can select items by dragging the mouse over them.",
+            "enable-marking-mode": "Enable Marking Mode",
+            "enable-turbo-mode-info": "With Turbo Mode enabled, you can perform gestures as long as you hold down a modifier key such as Shift or Ctrl.",
+            "enable-turbo-mode": "Enable Turbo Mode",
+            "move-pointer-to-menu-center-info": "If checked, the mouse pointer will be moved to the center of a menu or submenu when necessary. This could be the case if a menu is opened too close to the edge of the screen or if a menu is opened in Centered Mode.",
+            "move-pointer-to-menu-center": "Move pointer to the menu center",
+            "require-click-for-hover-mode-info": "If unchecked, items will be selected immediately when the mouse is moved over them for menus using Hover Mode.",
+            "require-click-for-hover-mode": "Require click for Hover Mode selections",
+            "right-mouse-button-selects-parent-info": "If unchecked, the right mouse button will close the menu instead.",
+            "right-mouse-button-selects-parent": "Right mouse button selects parent",
+            "enable-gamepad-support-info": "If checked, you can use a connected gamepad to control the menu.",
+            "enable-gamepad-support": "Enable gamepad support",
+            "press-again-behavior-info": "This determines what happens when the shortcut is pressed again while a menu is shown. If multiple menus are assigned to the same shortcut, you can use this to cycle through all matching menus. Make sure to only hold down a modifier key if you want to use Turbo Mode together with an option other than 'Do nothing'.",
+            "press-again-behavior": "Press-shortcut-again behavior",
+            "do-nothing": "Do nothing",
+            "cycle-from-first": "Show next menu (begin at first)",
+            "cycle-from-recent": "Show next menu (continue from last)",
+            "close-menu": "Close menu",
+            "menu-sounds": "Menu Sounds",
+            "learn-how-to-add-sound-themes": "Learn how to add new sound themes to Kando [here]({{link}})!",
+            "sound-theme-info": "A sound theme is a collection of sounds that are played when you interact with the menu.",
+            "sound-theme": "Sound theme",
+            "volume-info": "The overall volume of the sound theme. Default is 0.5.",
+            "volume": "Volume",
+            "advanced-menu-options": "Advanced Menu Options",
+            "advanced-menu-options-note": "Usually, you can leave these settings at their default values.",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "max-selection-radius": "Maximum selection radius",
+            "center-click-zone-radius-info": "The size of the area in the middle of the menu which will either close or navigate a level up when clicked. Default is 50px.",
+            "center-click-zone-radius": "Center click zone radius",
+            "minimum-submenu-distance-info": "If a submenu is opened close to the parent menu, the parent will be moved away to this distance. Default is 150px.",
+            "minimum-submenu-distance": "Minimum submenu distance",
+            "movement-threshold-info": "Smaller mouse movements will not be considered in Marking or Turbo mode. Default is 15px.",
+            "movement-threshold": "Movement threshold",
+            "minimum-gesture-length-info": "Straight movements must be at least this long to trigger a selection. Default is 150px.",
+            "minimum-gesture-length": "Minimum Gesture Length",
+            "minimum-gesture-angle-info": "Smaller deviations from straight movements will not trigger selections. Default is 20°.",
+            "minimum-gesture-angle": "Minimum Gesture Angle",
+            "gesture-jitter-threshold-info": "Smaller movements will not be considered in the gesture detection. Default is 10px.",
+            "gesture-jitter-threshold": "Gesture Jitter Threshold",
+            "gesture-pause-timeout-info": "Stop your gesture for this long to trigger a selection. Default is 100ms.",
+            "fixed-stroke-length-info": "Usually, items are selected when you stop the movement or make a turn. If you set this to a value greater than 0, this behavior will change: Now items will only be selected if you dragged an item this far away from the center. Default is 0px.",
+            "fixed-stroke-length": "Fixed Stroke Length",
+            "wlroots-specific-options": "Options for wlroots-based Backends",
+            "options-that-will-only-affect-the-wlroots-backend": "These options only affect wlroots-based backends and have no effect on other backends.",
+            "wlroots-pointer-get-timeout-mouse-info": "The maximum time in milliseconds to wait for a mouse pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 500ms.",
+            "wlroots-pointer-get-timeout-mouse": "Get-pointer-position timeout",
+            "wlroots-pointer-get-timeout-touch-info": "The maximum time in milliseconds to wait for a touch pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 1500ms.",
+            "wlroots-pointer-get-timeout-touch": "Get-touch-position timeout",
+            "wlroots-pointer-get-timeout-default-behavior-info": "Determines where the pointer should be assumed to be if no position could be obtained from the wlroots-based backends within the configured timeout.",
+            "wlroots-pointer-get-timeout-default-behavior": "Pointer fallback position",
+            "message": "All your menus and Kando's settings are stored in two JSON files which you can also edit, share, or backup. Click [here]({{link}}) to open the directory where the files are stored."
         },
         "introduction-dialog": {
             "slide3-hint1": "Tzemreḍ daɣen ad tsiteḍ dagi akken ad tmedleḍ umuɣ.",
@@ -122,8 +191,6 @@
             "accent-colors": "Initen n uɣdebbu",
             "dark": "Askar Aɣmayan",
             "light": "Askar Aceɛlal",
-            "accent-colors-info": "Yal asentel yezmer ad isɛu tagrumma-nniḍen n yiniten s uɣdebbu.",
-            "reset-color-picker": "Ales awennez ɣer umezwer",
             "no-accent-colors": "Asentel-agi ur isefrak ara initen n uɣdebbu.",
             "title": "Isental n wumuɣ",
             "fade-in-time-info": "Akud yettaṭṭaf i wumuɣ akken ad d-iban cwiṭ, cwiṭ. Amezwer d 150mili-tasint.",
@@ -133,7 +200,18 @@
             "menu-scale-info": "Seqdec wagi iwakken ad tsimɣureḍ neɣ ad tessidreḍ tiddi n wumuɣen-ik·im. Amezwer d 1.0.",
             "menu-scale": "Tafesna n wumuɣ",
             "selection-wedges-info": "Ma yella yermed yerna itteddu deg usentel yettwafernen, teɣzut n wefran n iferdisen ad ttwasebrureq.",
-            "selection-wedges": "Suneɣ iḥricen n iferdisen"
+            "selection-wedges": "Suneɣ iḥricen n iferdisen",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "preset-name-placeholder": "e.g. My Custom Colors",
+            "save-preset-error-title": "Failed to save preset",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "default-colors": "Default colors",
+            "choose-preset": "Choose preset…",
+            "reload-presets": "Reload presets",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory"
         },
         "all-menus": "Akk umuɣen",
         "search-menus-placeholder": "Nadi umuɣen…",
@@ -146,7 +224,6 @@
         "empty-collection-note": "Ẓreg ticṛaḍ yellan ddaw-a neɣ rnu umuɣ amaynut ɣer tagrumma-agi s tqeffalt ddaw-a.",
         "create-menu-button": "Umuɣ amaynut",
         "duplicate-menu": "Sisleg umuɣ",
-        "export-menu": "Sifeḍ umuɣ",
         "import-menu": "Kter umuɣ",
         "delete-menu": "Kkes umuɣ",
         "add-menu-item-hint": "Zuɣer aferdis-agi akken ad t-ternuḍ ɣer wumuɣ uksawen!",
@@ -206,7 +283,31 @@
         "area-condition-top-placeholder": "Uksawen",
         "area-condition-left-placeholder": "Azelmaḍ",
         "area-condition-bottom-placeholder": "Ukessar",
-        "area-condition-right-placeholder": "Ayeffus"
+        "area-condition-right-placeholder": "Ayeffus",
+        "import-menu-error-message": "The selected file could not be imported. It does not contain a valid Kando exported menu.",
+        "not-bound": "Not Bound",
+        "invalid-dropdown-selection": "Select an option…",
+        "file-picker": {
+            "select-file": "Select a file",
+            "select-directory": "Select a directory"
+        },
+        "add-tags-placeholder": "Add tags…",
+        "about-dialog": {
+            "title": "About Kando",
+            "message": "I am creating Kando out of sheer passion. If you enjoy using it as much as I love creating it, you can [buy me a coffee]({{link}})!\n\n💖 Simon",
+            "kando-version": "Kando Version",
+            "kando-backend": "Kando Backend",
+            "electron-version": "Electron Version",
+            "chrome-version": "Chrome Version",
+            "check-latest-release": "Check latest release",
+            "read-release-notes": "Read release notes"
+        },
+        "window-condition-info": "Show the menu only if the focused window's title contains a given text. This supports regular expressions like /youtube|vimeo/i.",
+        "area-condition-info": "Show the menu only if the pointer is in a given area on the screen. The area is given in pixels relative to the top left corner of your main display. If you leave a field empty, the area is unbounded in that direction.",
+        "shortcut-info": "This shortcut opens the menu. It must contain one normal key and any number of modifiers such as Ctrl, Alt, or Shift. When recording, you do not have to press all keys at once, you can also press them one after another. This is useful if a shortcut is already bound to another menu!",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key",
+        "quick-select-key-recording": "Select key…"
     },
     "menu-items": {
         "command": {
@@ -220,7 +321,10 @@
             "tip-3": "Seqdec {{app_name}} akken ad tegreḍ isem n usnas yellan yermed mi ara teldiḍ umuɣ.",
             "tip-4": "Seqdec {{window_name}} akken ad tegreḍ isem n usfaylu yellan yermed mi ara teldiḍ umuɣ.",
             "tip-5": "Seqdec {{pointer_x}} akked {{pointer_y}} iwakken ad tegreḍ ideg usewweṛ ɣer wanda yella wumuɣ yeldi.",
-            "tip-6": "Sit ɣef [here] {{link}} iwakken ad tlemdeḍ amek ara d-tafeḍ tiludna i usekker n yisnasen-ik·im."
+            "tip-6": "Sit ɣef [here] {{link}} iwakken ad tlemdeḍ amek ara d-tafeḍ tiludna i usekker n yisnasen-ik·im.",
+            "isolated-info": "This will run the command in a clean environment, meaning that it will not inherit any environment variables from Kando. This can help with commands that do not start properly.",
+            "detached-info": "This will disconnect the command from Kando, so it will continue to run even if Kando is closed. Disabling this may resolve issues with commands that do not start properly.",
+            "tip-2": "If the path to an executable contains spaces, you should \"wrap it in quotes\"."
         },
         "uri": {
             "tip-3": "Tzemreḍ ad tesqedceḍ aferdis URI akken ad teldiḍ aseɣwen: mailto.",
@@ -230,10 +334,14 @@
             "name": "Ldi URI",
             "description": "Ldi ismal web d ugar nniḍen.",
             "placeholder": "Ger URI tebɣiḍ…",
-            "tip-1": "Tzemreḍ ad tesqedceḍ anaw n uferdis URI akken ad teldiḍ asmel web s useqdec n uneggaf http://."
+            "tip-1": "Tzemreḍ ad tesqedceḍ anaw n uferdis URI akken ad teldiḍ asmel web s useqdec n uneggaf http://.",
+            "tip-2": "You can use this to call custom URI schemes like slack:// or zoommtg://."
         },
         "common": {
-            "inhibit-shortcuts": "Sens inegzumen"
+            "inhibit-shortcuts": "Sens inegzumen",
+            "delayed-option-info": "Useful if the action targets a window that needs to be focused.",
+            "delayed-option": "Wait for fade-out animation",
+            "inhibit-shortcuts-info": "Disables all Kando shortcuts while the hotkey or macro is being simulated. This prevents the simulated input from accidentally triggering other menu shortcuts."
         },
         "file": {
             "name": "Ldi Afaylu",
@@ -246,13 +354,18 @@
             "description": "Sit ɣef usuddes n tsura.",
             "hotkey": "Inegzumen",
             "recording-placeholder": "Aru anegzum n unasiw…",
-            "tip-3": "Sif ɣef [this link]{{link}} akken ad twaliḍ akk ismawen n tsarut tameɣtut."
+            "tip-3": "Sif ɣef [this link]{{link}} akken ad twaliḍ akk ismawen n tsarut tameɣtut.",
+            "tip-1": "When recording a hotkey, you do not have to press all keys at once. You can press them one after another.",
+            "tip-2": "If you cannot record a key because it is used by the system, try typing its name directly.",
+            "hotkey-info": "This hotkey will be triggered when the item is selected. When recording, you do not have to press all keys at once, you can also press them one after another. This is useful if a hotkey is already bound to some global action!"
         },
         "macro": {
             "name": "Selkem amakṛu",
             "description": "Aru amakṛu n unasiw.",
             "placeholder": "Tekki ɣef tqeffalt n usekles akken ad tebduḍ asekles!",
-            "recording-placeholder": "Tekki ɣef kra n tsura…"
+            "recording-placeholder": "Tekki ɣef kra n tsura…",
+            "tip-1": "Per default, Kando adds a 10ms delay before each key event. You can change this with the \"delay\" property.",
+            "tip-2": "You can edit the macro also by hand. This is useful if you want to adjust the timing of the keys."
         },
         "redirect": {
             "description": "Ldi umuɣ nniḍen.",
@@ -266,7 +379,13 @@
         "submenu": {
             "name": "Umuɣ anaddaw",
             "description": "Yegber iferdisen-nniḍen n wumuɣ.",
-            "tip-1": "Umuɣ anaddaw yezmer ad yettwaseqdec i wegraw n iferdisen."
+            "tip-1": "Umuɣ anaddaw yezmer ad yettwaseqdec i wegraw n iferdisen.",
+            "tip-2": "You can also nest submenus inside of submenus.",
+            "tip-3": "Submenus can be used to create complex menu structures.",
+            "tip-4": "You should avoid adding more than twelve items to a submenu. Eight is a good number.",
+            "tip-5": "You can use the tiny lock icons in the preview to fix an item's position in the menu.",
+            "tip-6": "You can reorder items by dragging them in the preview.",
+            "tip-7": "You can delete a menu or a menu item with the trash icon below."
         },
         "text": {
             "name": "Senṭeḍ aḍris",
@@ -322,7 +441,8 @@
             "description": "Ldi tankult n udiwenni n yiɣewwaṛen {{n}} n tikkal."
         },
         "backup": {
-            "description": "Ḥrez iɣewwaṛen neɣ umuɣen-ik·im {{n}} n tikkal."
+            "description": "Ḥrez iɣewwaṛen neɣ umuɣen-ik·im {{n}} n tikkal.",
+            "name": "Path of Foresight {{tier}}"
         },
         "restore": {
             "name": "Tagnit tis snat {{tier}}",
@@ -433,6 +553,20 @@
             "desktop": "Tanarit",
             "home": "Agejdan",
             "music": "Aẓawan"
+        }
+    },
+    "backends": {
+        "gnome": {
+            "error": "Could not connect to Kando Integration GNOME Shell extension. You can get it from here: {{link}}"
+        },
+        "hyprland": {
+            "shortcut-info": "Kando cannot directly bind global shortcuts on Hyprland. Instead, specify a shortcut ID here and bind a shortcut in your hyprland.conf with something like \"bind = CTRL, Space, global, kando:example-menu\". Replace example-menu with the ID chosen here."
+        },
+        "kde-wayland": {
+            "shortcut-info": "Kando cannot directly bind global shortcuts on KDE/Wayland. Instead, specify a shortcut ID here and then search for it in the KWin section of the global shortcuts in your KDE's system settings. There you can assign the shortcut which will open this menu."
+        },
+        "niri": {
+            "shortcut-info": "Niri does not yet support global shortcuts. But you can open this menu using 'kando --menu \"Menu Name\"' from the command line or from your niri config."
         }
     }
 }

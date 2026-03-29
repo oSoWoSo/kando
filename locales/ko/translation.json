@@ -70,7 +70,6 @@
         }
     },
     "main": {
-        "failed-to-start-header": "Kando를 실행하지 못했어요",
         "inhibit-shortcuts": "일시적으로 모든 단축키 비활성화하기",
         "new-version-notification-header": "Kando를 새 버전으로 업데이트할 수 있어요!",
         "quit": "종료하기",
@@ -78,13 +77,10 @@
         "un-inhibit-shortcuts": "단축키 다시 활성화하기",
         "new-version-notification-body": "[여기]{{link}}에서 다운받으세요.",
         "invalid-link-header": "잘못된 링크예요",
-        "invalid-link-message": "딥 링크를 해석할 수 없어요.",
-        "no-backend-found": "알맞는 백엔드를 찾지 못했어요."
+        "invalid-link-message": "딥 링크를 해석할 수 없어요."
     },
     "menu-items": {
         "command": {
-            "command": "명령어",
-            "command-info": "이 명령어가 실행될 거예요.",
             "description": "앱이나 스크립트를 실행해요.",
             "name": "명령어 실행하기",
             "tip-1": "Command 항목 유형을 사용하여 애플리케이션이나 스크립트를 실행할 수 있어요.",
@@ -102,7 +98,6 @@
         },
         "file": {
             "description": "파일이나 폴더를 열어요.",
-            "file": "파일 경로",
             "name": "파일 열기",
             "tip-1": "이 항목 유형으로 파일 또는 폴더를 열 수 있어요.",
             "placeholder": "파일이나 폴더를 고르세요…"
@@ -160,12 +155,13 @@
             "tip-4": "현재 메뉴를 열었을 때 활성화되어 있던 앱의 이름으로 {{app_name}}을 사용하세요.",
             "tip-5": "현재 메뉴를 열었을 때 활성화되어 있던 창의 이름으로 {{window_name}}을 사용하세요.",
             "tip-6": "현재 메뉴가 열렸을 때의 커서 지점으로 {{pointer_x}}, {{pointer_y}}를 사용하세요.",
-            "uri": "URI",
             "placeholder": "아무 URI나 넣어 주세요…"
         },
         "common": {
             "delayed-option": "페이드 아웃 애니메이션 기다리기",
-            "delayed-option-info": "동작 대상이 포커스가 필요한 창일 경우 유용해요."
+            "delayed-option-info": "동작 대상이 포커스가 필요한 창일 경우 유용해요.",
+            "inhibit-shortcuts-info": "Disables all Kando shortcuts while the hotkey or macro is being simulated. This prevents the simulated input from accidentally triggering other menu shortcuts.",
+            "inhibit-shortcuts": "Disable shortcuts"
         }
     },
     "settings": {
@@ -191,14 +187,11 @@
         "centered-mode-info": "커서 위치 대신 화면 중앙에 메뉴를 띄워요.",
         "general-settings-dialog": {
             "reload-menu-theme": "메뉴 테마 새로고침하기",
-            "reload-menu-theme-tooltip": "CSS 변경은 즉시 적용돼요. theme.json 파일을 변경했다면, 메뉴를 다시 열어야 해요.",
             "reload-sound-theme": "사운드 테마 새로고침하기",
-            "cycle-menus": "해당 메뉴들을 순차적으로 전환하기",
             "do-nothing": "아무것도 하지 않기",
             "close-menu": "메뉴 닫기",
             "press-again-behavior": "단축키를 한번 더 눌러 실행하기",
             "center-click-zone-radius": "중앙 클릭 영역 반지름",
-            "app-settings": "애플리케이션 설정",
             "localization-label": "언어",
             "auto-language": "시스템 언어",
             "settings-button-position": "버튼 위치 설정",
@@ -283,7 +276,30 @@
             "menu-window-dev-tools": "메뉴 검사하기",
             "settings-window-dev-tools": "설정 검사하기",
             "hardware-acceleration": "하드웨어 가속 활성화",
-            "hardware-acceleration-info": "이 옵션은 앱의 성능을 높일 수 있지만, 렌더링 아티팩트가 나타날 수 있어요. 이 설정을 적용하려면 Kando를 재시작해야 해요."
+            "hardware-acceleration-info": "이 옵션은 앱의 성능을 높일 수 있지만, 렌더링 아티팩트가 나타날 수 있어요. 이 설정을 적용하려면 Kando를 재시작해야 해요.",
+            "enable-achievements-info": "If enabled, Kando will track your progress towards achievements.",
+            "enable-achievements": "Track achievements",
+            "enable-achievement-notifications-info": "If enabled, notifications are shown when achievements are unlocked.",
+            "enable-achievement-notifications": "Show achievement notifications",
+            "windows-ink-workaround-info": "This enables a workaround for the issue where getting the stylus position is not possible with Windows Ink enabled. This introduces a delay of 100ms before opening the menu, so if you don't use a stylus, you can disable it to make the menu open faster.",
+            "windows-ink-workaround": "Windows-Ink workaround",
+            "max-selection-radius-info": "If set to a value greater than 0, clicks outside of this radius will close the menu. Default is 0, which means there is no maximum selection radius.",
+            "max-selection-radius": "Maximum selection radius",
+            "wlroots-specific-options": "Options for wlroots-based Backends",
+            "options-that-will-only-affect-the-wlroots-backend": "These options only affect wlroots-based backends and have no effect on other backends.",
+            "wlroots-pointer-get-timeout-mouse-info": "The maximum time in milliseconds to wait for a mouse pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 500ms.",
+            "wlroots-pointer-get-timeout-mouse": "Get-pointer-position timeout",
+            "wlroots-pointer-get-timeout-touch-info": "The maximum time in milliseconds to wait for a touch pointer position from wlroots-based backends. If the timeout is reached, a fallback position will be used. Default is 1500ms.",
+            "wlroots-pointer-get-timeout-touch": "Get-touch-position timeout",
+            "wlroots-pointer-get-timeout-default-behavior-info": "Determines where the pointer should be assumed to be if no position could be obtained from the wlroots-based backends within the configured timeout.",
+            "wlroots-pointer-get-timeout-default-behavior": "Pointer fallback position",
+            "center": "Center",
+            "previously-reported": "Previously reported",
+            "backup-and-restore": "Backup and Restore",
+            "backup-menus": "Backup menus.json…",
+            "backup-settings": "Backup config.json…",
+            "restore-menus": "Restore menus.json…",
+            "restore-settings": "Restore config.json…"
         },
         "hover-mode": "호버 모드",
         "hover-mode-info": "숙련된 사용자 전용! 항목 위로 호버링해서 선택해요.",
@@ -333,12 +349,10 @@
         "menu-themes-dialog": {
             "author": "{{author}} 제작",
             "light-dark-mode-info": "이 옵션을 선택하면, 시스템이 라이트 또는 다크 모드일 때 서로 다른 테마와 색상을 선택할 수 있어요.",
-            "reset-color-picker": "초기화하기",
             "title": "메뉴 테마",
             "accent-colors": "강조 색상",
             "dark": "다크 모드",
             "light": "라이트 모드",
-            "accent-colors-info": "테마는 서로 다른 강조 색상을 가질 수 있어요.",
             "no-accent-colors": "이 테마는 강조 색상을 지원하지 않아요.",
             "fade-in-time": "페이드 인 시간",
             "fade-in-time-info": "메뉴의 페이드 인에 걸리는 시간이예요. 기본값은 150ms예요.",
@@ -349,7 +363,20 @@
             "light-dark-mode": "라이트/다크 모드 활성화하기",
             "get-themes-online": "온라인에서 테마 찾아보기",
             "create-your-own-themes": "나만의 테마 만들기",
-            "open-theme-directory": "테마 디렉토리 열기"
+            "open-theme-directory": "테마 디렉토리 열기",
+            "preset-name-empty": "The preset name cannot be empty!",
+            "preset-name-invalid": "The preset name can only contain letters, numbers, hyphens, underscores, and spaces!",
+            "preset-name-exists": "A preset with this name already exists.",
+            "preset-name-placeholder": "e.g. My Custom Colors",
+            "save-preset-error-title": "Failed to save preset",
+            "save-preset-error-message": "Failed to save the color preset. Please check that the directory is writable. Error: {{error}}",
+            "default-colors": "Default colors",
+            "choose-preset": "Choose preset…",
+            "reload-presets": "Reload presets",
+            "save-preset": "Save preset",
+            "open-presets-directory": "Open preset directory",
+            "selection-wedges-info": "If enabled and supported by the selected theme, the selectable area of menu items will be highlighted.",
+            "selection-wedges": "Draw item wedges"
         },
         "not-bound": "할당되지 않음",
         "shortcut-id-label": "전역 단축키 ID",
@@ -398,7 +425,6 @@
             "top-left": "이것을 영역의 좌측 상단 모서리로 드래그하세요.",
             "bottom-right-value": "오른쪽: {{x}}, 아래쪽: {{y}}",
             "bottom-right": "이것을 영역의 우측 하단 모서리로 드래그하세요.",
-            "title": "화면 영역 선택하기",
             "valid": "좋아요! 유효한 영역을 선택했어요.",
             "invalid": "좌측 상단 모서리가 우측 하단 모서리보다 위쪽이고 왼쪽에 있도록 설정하세요.",
             "confirm": "이 영역 사용하기"
@@ -409,8 +435,6 @@
             "restart-countdown": "카운트다운 다시 시작하기",
             "start-countdown": "카운트다운 시작하기",
             "countdown_other": "{{count}}초 후에 선택돼요…",
-            "pick-app-name-title": "애플리케이션 이름 선택하기",
-            "pick-window-title-title": "창 제목 선택하기",
             "confirm": "이 값을 사용하기"
         },
         "app-picker": {
@@ -426,9 +450,122 @@
             "xp": "XP",
             "in-progress-button": "진행 중",
             "completed-button": "완료",
-            "reset-button-tooltip": "모든 업적과 레벨링 초기화하기"
+            "reset-button-tooltip": "모든 업적과 레벨링 초기화하기",
+            "no-in-progress-achievements": "Congratulations! You have completed all achievements.",
+            "no-completed-achievements": "You have not completed any achievements yet."
         },
         "restore-backup": "백업 불러오기…",
-        "restore-general-settings-warning-title": "정말로 설정을 불러올까요?"
+        "restore-general-settings-warning-title": "정말로 설정을 불러올까요?",
+        "quick-select-key-recording": "Select key…",
+        "restore-general-settings-warning-message": "This will overwrite your current application settings with the contents of the selected backup file! Your menus and menu collections will not be affected.",
+        "restore-general-settings-error-title": "Failed to load general settings backup!",
+        "restore-general-settings-success-title": "Success!",
+        "restore-general-settings-success-message": "Your general settings have been restored from the backup file.",
+        "restore-menu-settings-warning-title": "Do you really want to restore the menu settings?",
+        "restore-menu-settings-warning-message": "This will overwrite your current menus and menu collections with the contents of the selected backup file!",
+        "restore-menu-settings-error-title": "Failed to load menus backup!",
+        "restore-menu-settings-success-title": "Success!",
+        "restore-menu-settings-success-message": "Your menus and menu collections have been restored from the backup file.",
+        "export-menu-error-title": "Failed to export menu",
+        "import-menu-error-title": "Failed to import menu",
+        "import-menu-error-message": "The selected file could not be imported. It does not contain a valid Kando exported menu.",
+        "import-menu": "Import menu",
+        "quick-select-key-info": "This key allows you to quickly select the menu item.",
+        "quick-select-key-label": "Quick-select key"
+    },
+    "achievements": {
+        "tutorial-viewed": {
+            "description": "Complete the Kando introduction tutorial.",
+            "name": "The Journey Begins"
+        },
+        "many-selections-streak": {
+            "name": "Hands of Lightning {{tier}}",
+            "description": "Select {{n}} items within {{time}} s."
+        },
+        "speedy-selections-streak": {
+            "name": "Faster than Thought {{tier}}",
+            "description": "Make {{n}} consecutive selections on average faster than {{time}} ms."
+        },
+        "completed-title": "Achievement unlocked!",
+        "gesture-selector": {
+            "name": "{{attribute}} Power Ninja",
+            "description": "Select {{n}} items using turbo or marking mode."
+        },
+        "settings-opened": {
+            "name": "The Journey is the Reward {{tier}}",
+            "description": "Open the settings dialog {{n}} times."
+        },
+        "backup": {
+            "name": "Path of Foresight {{tier}}",
+            "description": "Backup your menus or settings {{n}} times."
+        },
+        "restore": {
+            "name": "Second Chance {{tier}}",
+            "description": "Restore a backup {{n}} times."
+        },
+        "added-items": {
+            "name": "Way of Kando {{tier}}",
+            "description": "Create {{n}} items in the menu editor."
+        },
+        "deleted-all-menus": {
+            "name": "Clear the Dojo",
+            "description": "Delete all of your menus."
+        },
+        "full-menu": {
+            "name": "Breadth over Depth",
+            "description": "Create a menu with more than twelve items."
+        },
+        "deep-menu": {
+            "name": "Master of Depth",
+            "description": "Add a menu item to a four-level deep submenu."
+        },
+        "sponsors-viewed": {
+            "name": "Guardian of Kando",
+            "description": "Consider becoming a sponsor of Kando."
+        },
+        "menu-themes-selected": {
+            "name": "Way of the Aesthete",
+            "description": "Switch the menu theme {{n}} times."
+        },
+        "gamepad-selector": {
+            "description": "Select {{n}} items using a gamepad.",
+            "name": "{{attribute}} Gamepad Warrior"
+        },
+        "attributes": {
+            "novice": "Novice",
+            "capable": "Capable",
+            "skilled": "Skilled",
+            "expert": "Expert",
+            "master": "Sensei"
+        },
+        "tier": {
+            "I": "I",
+            "II": "II",
+            "III": "III",
+            "IV": "IV",
+            "V": "V"
+        },
+        "cancelor": {
+            "name": "Road of Emptiness {{tier}}",
+            "description": "Abort a selection {{n}} times."
+        },
+        "selector": {
+            "name": "{{attribute}} Samurai",
+            "description": "Select {{n}} items."
+        },
+        "depth-selector": {
+            "name1": "{{attribute}} Slicer",
+            "name2": "{{attribute}} Two-Layer Slicer",
+            "name3": "{{attribute}} Deep Slicer",
+            "description": "Select {{n}} items at depth {{depth}} in less than {{time}} ms."
+        },
+        "click-selector": {
+            "name": "{{attribute}} Click-Click Champion",
+            "description": "Select {{n}} items using mouse clicks."
+        },
+        "keyboard-selector": {
+            "name": "{{attribute}} Hotkey Hero",
+            "description": "Select {{n}} items using your keyboard."
+        }
     }
 }
